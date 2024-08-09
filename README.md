@@ -1,4 +1,4 @@
-[![Build Status](https://drone.onebytedata.net/api/badges/one-byte-data/obd-dicom/status.svg?ref=refs/heads/main)](https://drone.onebytedata.net/one-byte-data/obd-dicom)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=t2care_obd-dicom&metric=bugs)](https://sonarcloud.io/summary/new_code?id=t2care_obd-dicom)
 
 # obd-dicom
 
@@ -8,6 +8,7 @@ One Byte Data DICOM Golang Library
 
 ```bash
 go get -u github.com/one-byte-data/obd-dicom
+go mod edit --replace="github.com/one-byte-data/obd-dicom=github.com/t2care/obd-dicom@<version>"
 ```
 
 ## Usage
