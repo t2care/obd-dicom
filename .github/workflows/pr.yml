@@ -13,7 +13,9 @@ jobs:
       with:
         go-version-file: 'go.mod'
         
-    - name: Test    
+    - name: Test
+      env:
+        CGO_ENABLED: 1   
       run:  go test ./... --coverprofile="coverage.out"  
 
     - name: SonarQube Scan
