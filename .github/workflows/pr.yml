@@ -7,7 +7,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-
+      with:
+        fetch-depth: 0 
+        
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
@@ -18,8 +20,7 @@ jobs:
         CGO_ENABLED: 1   
       run:  go test ./... --coverprofile="coverage.out"  
 
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v2.3.0
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }} 
