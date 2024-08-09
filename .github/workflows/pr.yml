@@ -15,9 +15,13 @@ jobs:
       with:
         go-version-file: 'go.mod'
         
-    - name: Test
-      env:
-        CGO_ENABLED: 1   
+    - name: Check env  
+      run:  |
+        go env
+        gcc -v
+        g++ -v
+      
+    - name: Test  
       run:  go test -p 1 ./... --coverprofile="coverage.out"  
 
     - name: SonarCloud Scan
