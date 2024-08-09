@@ -18,7 +18,7 @@ jobs:
     - name: Test
       env:
         CGO_ENABLED: 1   
-      run:  go test -p1 ./... --coverprofile="coverage.out"  
+      run:  go test -p 1 ./... --coverprofile="coverage.out"  
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
