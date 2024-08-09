@@ -323,7 +323,7 @@ func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 		Length:    4,
 		VR:        "UL",
 		Data:      []byte{0, 0, 0, 0},
-		BigEndian: false}
+		BigEndian: bd.IsBigEndian()}
 	bd.WriteTag(tag, explicitVR)
 	tag = &DcmTag{
 		Group:     0x02,
@@ -331,7 +331,7 @@ func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 		Length:    2,
 		VR:        "OB",
 		Data:      []byte{0x00, 0x01},
-		BigEndian: false,
+		BigEndian: bd.IsBigEndian(),
 	}
 	bd.WriteTag(tag, explicitVR)
 
@@ -347,9 +347,8 @@ func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 	// calculate group length and go Back to group size tag
 	ptr := bd.GetPosition()
 	largo = uint32(bd.GetSize() - 12 - 128 - 4)
-	binary.BigEndian.PutUint32(buffer, largo)
 	bd.SetPosition(128 + 4 + 8)
-	bd.MS.Write(buffer, 4)
+	bd.WriteUint32(largo)
 	bd.SetPosition(ptr)
 }
 
