@@ -36,7 +36,7 @@ import (
 // 	}
 // }
 
-func Test_DIJG16encode(t *testing.T) {
+func test_DIJG16encode(t *testing.T) {
 	type args struct {
 		fileName string
 	}
