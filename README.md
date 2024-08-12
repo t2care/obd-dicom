@@ -1,3 +1,4 @@
+[![test](https://github.com/t2care/obd-dicom/actions/workflows/pr.yml/badge.svg)](https://github.com/t2care/obd-dicom/actions/workflows/pr.yml)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=t2care_obd-dicom&metric=bugs)](https://sonarcloud.io/summary/new_code?id=t2care_obd-dicom)
 
 # obd-dicom
