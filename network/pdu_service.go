@@ -327,10 +327,8 @@ func (pdu *pduService) interogateAAssociateAC() bool {
 		if presContextAccept.GetResult() == 0 {
 			pdu.AcceptedPresentationContexts = append(pdu.AcceptedPresentationContexts, presContextAccept)
 			if len(TS) == 0 {
-				if presContextAccept.GetTrnSyntax().GetUID() == transfersyntax.ExplicitVRLittleEndian.UID || presContextAccept.GetTrnSyntax().GetUID() == transfersyntax.ImplicitVRLittleEndian.UID {
-					TS = presContextAccept.GetTrnSyntax().GetUID()
-					PresentationContextID = presContextAccept.GetPresentationContextID()
-				}
+				TS = presContextAccept.GetTrnSyntax().GetUID()
+				PresentationContextID = presContextAccept.GetPresentationContextID()
 			}
 		}
 	}
@@ -418,11 +416,12 @@ func (pdu *pduService) parseRawVRIntoDCM(DCO media.DcmObj) bool {
 		return false
 	}
 	DCO.SetTransferSyntax(TrnSyntax)
-	if TrnSyntax.UID == transfersyntax.ExplicitVRLittleEndian.UID {
-		DCO.SetExplicitVR(true)
-	}
-	if TrnSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
+	switch TrnSyntax {
+	case transfersyntax.ImplicitVRLittleEndian:
+	case transfersyntax.ExplicitVRBigEndian:
 		DCO.SetBigEndian(true)
+	default:
+		DCO.SetExplicitVR(true)
 	}
 	pdu.Pdata.Buffer.SetPosition(0)
 	return pdu.Pdata.Buffer.ReadObj(DCO) == nil

@@ -199,6 +199,27 @@ func Test_scu_StoreSCU(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Should store Lossless SV1 DICOM file",
+			fields: fields{
+				destination: &network.Destination{
+					Name:      "Test Destination",
+					CalledAE:  "TEST_SCP",
+					CallingAE: "TEST_SCU",
+					HostName:  "localhost",
+					Port:      1042,
+					IsCFind:   true,
+					IsCMove:   true,
+					IsCStore:  true,
+					IsTLS:     false,
+				},
+			},
+			args: args{
+				FileName: "../samples/test-losslessSV1.dcm",
+				timeout:  0,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
