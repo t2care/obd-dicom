@@ -581,7 +581,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 	return nil, fmt.Errorf("there was an error getting pixel data")
 }
 
-func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) (err error) {
+func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) error {
 	flag := false
 
 	var i int
@@ -655,7 +655,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) (err
 				}
 				img := make([]byte, size)
 				if tag.Length == 0xFFFFFFFF {
-					err = obj.uncompress(i, img, size, frames, bitsa, PhotoInt)
+					obj.uncompress(i, img, size, frames, bitsa, PhotoInt)
 				} else { // Uncompressed
 					if RGB && (planar == 1) { // change from planar=1 to planar=0
 						var img_offset, img_size uint32
@@ -672,12 +672,12 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) (err
 					} else {
 						copy(img, tag.Data)
 					}
-					err = obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, pixelrep, planar, frames, outTS.UID)
 				}
-				if err != nil {
-					return
+				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, pixelrep, planar, frames, outTS.UID); err != nil {
+					return err
+				} else {
+					flag = true
 				}
-				flag = true
 			}
 		}
 		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
@@ -686,7 +686,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) (err
 	}
 	if flag {
 		obj.SetTransferSyntax(outTS)
-		return
+		return nil
 	}
 	return fmt.Errorf("there was an error changing the transfer synxtax")
 }
@@ -1147,6 +1147,7 @@ func (obj *dcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		}
 		obj.DelTag(i + 1)
 	case transfersyntax.JPEGLosslessSV1.UID:
+		fallthrough
 	case transfersyntax.JPEGLossless.UID:
 		for j = 0; j < frames; j++ {
 			offset = j * single
