@@ -355,13 +355,13 @@ func (obj *dcmObj) Add(tag *DcmTag) {
 
 func (obj *dcmObj) WriteToBytes() []byte {
 	bufdata := NewEmptyBufData()
-
-	if obj.TransferSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
-		bufdata.SetBigEndian(true)
-	}
 	SOPClassUID := obj.GetStringGE(0x08, 0x16)
 	SOPInstanceUID := obj.GetStringGE(0x08, 0x18)
 	bufdata.WriteMeta(SOPClassUID, SOPInstanceUID, obj.TransferSyntax.UID)
+	// Don't write metadata header in BigEndian (ReadMeta does not support )
+	if obj.TransferSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
+		bufdata.SetBigEndian(true)
+	}
 	bufdata.WriteObj(obj)
 	bufdata.SetPosition(0)
 	return bufdata.GetAllBytes()
@@ -469,6 +469,17 @@ func (obj *dcmObj) GetTransferSyntax() *transfersyntax.TransferSyntax {
 
 func (obj *dcmObj) SetTransferSyntax(ts *transfersyntax.TransferSyntax) {
 	obj.TransferSyntax = ts
+	switch ts {
+	case transfersyntax.ImplicitVRLittleEndian:
+		obj.SetBigEndian(false)
+		obj.SetExplicitVR(false)
+	case transfersyntax.ExplicitVRBigEndian:
+		obj.SetBigEndian(true)
+		obj.SetExplicitVR(true)
+	default:
+		obj.SetBigEndian(false)
+		obj.SetExplicitVR(true)
+	}
 }
 
 func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
@@ -674,7 +685,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 		}
 	}
 	if flag {
-		obj.TransferSyntax = outTS
+		obj.SetTransferSyntax(outTS)
 		return nil
 	}
 	return fmt.Errorf("there was an error changing the transfer synxtax")
@@ -1136,6 +1147,7 @@ func (obj *dcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		}
 		obj.DelTag(i + 1)
 	case transfersyntax.JPEGLosslessSV1.UID:
+		fallthrough
 	case transfersyntax.JPEGLossless.UID:
 		for j = 0; j < frames; j++ {
 			offset = j * single

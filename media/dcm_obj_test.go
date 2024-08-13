@@ -116,16 +116,30 @@ func Test_dcmObj_ChangeTransferSynx(t *testing.T) {
 			args:     args{transfersyntax.JPEG2000},
 			wantErr:  false,
 		},
+		{
+			name:     "Should change transfer synxtax from JPEGLosslessSV1",
+			fileName: "../samples/test-losslessSV1.dcm",
+			args:     args{transfersyntax.ExplicitVRLittleEndian},
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dcmObj, err := NewDCMObjFromFile(tt.fileName)
-			if err != nil {
-				panic(err)
-			}
-			if err := dcmObj.ChangeTransferSynx(tt.args.outTS); (err != nil) != tt.wantErr {
-				t.Errorf("dcmObj.ChangeTransferSynx() error = %v, wantErr %v", err, tt.wantErr)
+			if err := changeSyntax(tt.fileName, tt.args.outTS); (err != nil) != tt.wantErr {
+				t.Errorf("changeSyntax() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
+}
+
+func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error) {
+	dcmObj, err := NewDCMObjFromFile(filename)
+	if err != nil {
+		return
+	}
+	if err = dcmObj.ChangeTransferSynx(ts); err != nil {
+		return
+	}
+	_, err = NewDCMObjFromBytes(dcmObj.WriteToBytes())
+	return
 }

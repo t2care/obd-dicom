@@ -8,7 +8,6 @@ import (
 
 	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 	"github.com/one-byte-data/obd-dicom/dimsec"
 	"github.com/one-byte-data/obd-dicom/media"
 	"github.com/one-byte-data/obd-dicom/network"
@@ -194,14 +193,7 @@ func (d *scu) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj, SOPClassUID
 	}
 
 	DDO.SetTransferSyntax(TrnSyntOUT)
-	DDO.SetExplicitVR(true)
-	DDO.SetBigEndian(false)
-	if TrnSyntOUT.UID == transfersyntax.ImplicitVRLittleEndian.UID {
-		DDO.SetExplicitVR(false)
-	}
-	if TrnSyntOUT.UID == transfersyntax.ExplicitVRBigEndian.UID {
-		DDO.SetBigEndian(true)
-	}
+
 	err := dimsec.CStoreWriteRQ(pdu, DDO)
 	if err != nil {
 		return dicomstatus.FailureUnableToProcess, err
