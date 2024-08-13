@@ -99,6 +99,10 @@ scp.OnCStoreRequest(func(request network.AAssociationRQ, data media.DcmObj) uint
 
   path := filepath.Join(directory, data.GetString(tags.SOPInstanceUID)+".dcm")
 
+  // Lossless compression 
+  if err := data.ChangeTransferSynx(transfersyntax.JPEGLosslessSV1); err != nil{
+    log.Printf("ERROR: Compression %s : %s", path, err.Error())
+  }
   err := data.WriteToFile(path)
   if err != nil {
     log.Printf("ERROR: There was an error saving %s : %s", path, err.Error())

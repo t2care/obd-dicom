@@ -127,7 +127,6 @@ func Test_dcmObj_ChangeTransferSynx(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := changeSyntax(tt.fileName, tt.args.outTS); (err != nil) != tt.wantErr {
 				t.Errorf("changeSyntax() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 		})
 	}
