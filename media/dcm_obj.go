@@ -355,13 +355,13 @@ func (obj *dcmObj) Add(tag *DcmTag) {
 
 func (obj *dcmObj) WriteToBytes() []byte {
 	bufdata := NewEmptyBufData()
-
-	if obj.TransferSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
-		bufdata.SetBigEndian(true)
-	}
 	SOPClassUID := obj.GetStringGE(0x08, 0x16)
 	SOPInstanceUID := obj.GetStringGE(0x08, 0x18)
 	bufdata.WriteMeta(SOPClassUID, SOPInstanceUID, obj.TransferSyntax.UID)
+	// Don't write metadata header in BigEndian (ReadMeta does not support )
+	if obj.TransferSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
+		bufdata.SetBigEndian(true)
+	}
 	bufdata.WriteObj(obj)
 	bufdata.SetPosition(0)
 	return bufdata.GetAllBytes()
@@ -469,6 +469,17 @@ func (obj *dcmObj) GetTransferSyntax() *transfersyntax.TransferSyntax {
 
 func (obj *dcmObj) SetTransferSyntax(ts *transfersyntax.TransferSyntax) {
 	obj.TransferSyntax = ts
+	switch ts {
+	case transfersyntax.ImplicitVRLittleEndian:
+		obj.SetBigEndian(false)
+		obj.SetExplicitVR(false)
+	case transfersyntax.ExplicitVRBigEndian:
+		obj.SetBigEndian(true)
+		obj.SetExplicitVR(true)
+	default:
+		obj.SetBigEndian(false)
+		obj.SetExplicitVR(true)
+	}
 }
 
 func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
@@ -570,7 +581,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 	return nil, fmt.Errorf("there was an error getting pixel data")
 }
 
-func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) error {
+func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) (err error) {
 	flag := false
 
 	var i int
@@ -644,7 +655,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				}
 				img := make([]byte, size)
 				if tag.Length == 0xFFFFFFFF {
-					obj.uncompress(i, img, size, frames, bitsa, PhotoInt)
+					err = obj.uncompress(i, img, size, frames, bitsa, PhotoInt)
 				} else { // Uncompressed
 					if RGB && (planar == 1) { // change from planar=1 to planar=0
 						var img_offset, img_size uint32
@@ -661,12 +672,12 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 					} else {
 						copy(img, tag.Data)
 					}
+					err = obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, pixelrep, planar, frames, outTS.UID)
 				}
-				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, pixelrep, planar, frames, outTS.UID); err != nil {
-					return err
-				} else {
-					flag = true
+				if err != nil {
+					return
 				}
+				flag = true
 			}
 		}
 		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
@@ -674,8 +685,8 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 		}
 	}
 	if flag {
-		obj.TransferSyntax = outTS
-		return nil
+		obj.SetTransferSyntax(outTS)
+		return
 	}
 	return fmt.Errorf("there was an error changing the transfer synxtax")
 }

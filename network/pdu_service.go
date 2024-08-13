@@ -416,13 +416,6 @@ func (pdu *pduService) parseRawVRIntoDCM(DCO media.DcmObj) bool {
 		return false
 	}
 	DCO.SetTransferSyntax(TrnSyntax)
-	switch TrnSyntax {
-	case transfersyntax.ImplicitVRLittleEndian:
-	case transfersyntax.ExplicitVRBigEndian:
-		DCO.SetBigEndian(true)
-	default:
-		DCO.SetExplicitVR(true)
-	}
 	pdu.Pdata.Buffer.SetPosition(0)
 	return pdu.Pdata.Buffer.ReadObj(DCO) == nil
 }
