@@ -79,6 +79,10 @@ scp.OnAssociationRequest(func(request network.AAssociationRQ) bool {
   return *calledAE == called
 })
 
+scp.OnAssociationRelease(func(request network.AAssociationRQ) {
+  request.GetID()
+})
+
 scp.OnCFindRequest(func(request network.AAssociationRQ, queryLevel string, query media.DcmObj) ([]media.DcmObj, uint16) {
   query.DumpTags()
   results := make([]media.DcmObj, 0)
