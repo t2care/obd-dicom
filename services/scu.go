@@ -22,7 +22,7 @@ type SCU interface {
 	StoreSCU(FileName string, timeout int) error
 	SetOnCFindResult(f func(result media.DcmObj))
 	SetOnCMoveResult(f func(result media.DcmObj))
-	openAssociation(pdu network.PDUService, abstractSyntax string, transferSyntaxes []string, timeout int) error
+	openAssociation(pdu network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error
 	writeStoreRQ(pdu network.PDUService, DDO media.DcmObj, SOPClassUID string) (uint16, error)
 }
 
@@ -41,7 +41,7 @@ func NewSCU(destination *network.Destination) SCU {
 
 func (d *scu) EchoSCU(timeout int) error {
 	pdu := network.NewPDUService()
-	if err := d.openAssociation(pdu, sopclass.Verification.UID, []string{}, timeout); err != nil {
+	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.Verification}, []string{}, timeout); err != nil {
 		return err
 	}
 	defer pdu.Close()
@@ -57,10 +57,9 @@ func (d *scu) EchoSCU(timeout int) error {
 func (d *scu) FindSCU(Query media.DcmObj, timeout int) (int, uint16, error) {
 	results := 0
 	status := dicomstatus.Warning
-	SOPClassUID := sopclass.StudyRootQueryRetrieveInformationModelFind
 
 	pdu := network.NewPDUService()
-	if err := d.openAssociation(pdu, SOPClassUID.UID, []string{}, timeout); err != nil {
+	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.StudyRootQueryRetrieveInformationModelFind}, []string{}, timeout); err != nil {
 		return results, status, err
 	}
 	defer pdu.Close()
@@ -89,10 +88,9 @@ func (d *scu) FindSCU(Query media.DcmObj, timeout int) (int, uint16, error) {
 func (d *scu) MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, error) {
 	var pending int
 	status := dicomstatus.Pending
-	SOPClassUID := sopclass.StudyRootQueryRetrieveInformationModelMove
 
 	pdu := network.NewPDUService()
-	if err := d.openAssociation(pdu, SOPClassUID.UID, []string{}, timeout); err != nil {
+	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.StudyRootQueryRetrieveInformationModelMove}, []string{}, timeout); err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}
 	defer pdu.Close()
@@ -124,7 +122,7 @@ func (d *scu) StoreSCU(FileName string, timeout int) error {
 	SOPClassUID := DDO.GetString(tags.SOPClassUID)
 	if len(SOPClassUID) > 0 {
 		pdu := network.NewPDUService()
-		err := d.openAssociation(pdu, SOPClassUID, []string{DDO.GetTransferSyntax().UID}, timeout)
+		err := d.openAssociation(pdu, []*sopclass.SOPClass{{UID: SOPClassUID}}, []string{DDO.GetTransferSyntax().UID}, timeout)
 		if err != nil {
 			return err
 		}
@@ -156,18 +154,20 @@ func (d *scu) SetOnCMoveResult(f func(result media.DcmObj)) {
 	d.onCMoveResult = f
 }
 
-func (d *scu) openAssociation(pdu network.PDUService, abstractSyntax string, transferSyntaxes []string, timeout int) error {
+func (d *scu) openAssociation(pdu network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error {
 	pdu.SetCallingAE(d.destination.CallingAE)
 	pdu.SetCalledAE(d.destination.CalledAE)
 	pdu.SetTimeout(timeout)
 
 	network.Resetuniq()
-	PresContext := network.NewPresentationContext()
-	PresContext.SetAbstractSyntax(abstractSyntax)
-	for _, ts := range transferSyntaxes {
-		PresContext.AddTransferSyntax(ts)
+	for _, syntax := range abstractSyntaxes {
+		PresContext := network.NewPresentationContext()
+		PresContext.SetAbstractSyntax(syntax.UID)
+		for _, ts := range transferSyntaxes {
+			PresContext.AddTransferSyntax(ts)
+		}
+		pdu.AddPresContexts(PresContext)
 	}
-	pdu.AddPresContexts(PresContext)
 
 	return pdu.Connect(d.destination.HostName, strconv.Itoa(d.destination.Port))
 }
