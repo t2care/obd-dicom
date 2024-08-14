@@ -19,7 +19,7 @@ type SCU interface {
 	EchoSCU(timeout int) error
 	FindSCU(Query media.DcmObj, timeout int) (int, uint16, error)
 	MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, error)
-	StoreSCU(FileNames []string, timeout int) error
+	StoreSCU(FileNames []string, timeout int, transferSyntaxes ...string) error
 	SetOnCFindResult(f func(result media.DcmObj))
 	SetOnCMoveResult(f func(result media.DcmObj))
 	openAssociation(pdu network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error
@@ -113,9 +113,12 @@ func (d *scu) MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, 
 	return status, nil
 }
 
-func (d *scu) StoreSCU(FileNames []string, timeout int) error {
+func (d *scu) StoreSCU(FileNames []string, timeout int, transferSyntaxes ...string) error {
 	pdu := network.NewPDUService()
-	err := d.openAssociation(pdu, sopclass.DcmShortSCUStorageSOPClassUIDs, []string{transfersyntax.ImplicitVRLittleEndian.UID, transfersyntax.JPEGLosslessSV1.UID}, timeout)
+	if len(transferSyntaxes) == 0 {
+		transferSyntaxes = append(transferSyntaxes, transfersyntax.ImplicitVRLittleEndian.UID, transfersyntax.JPEGLosslessSV1.UID)
+	}
+	err := d.openAssociation(pdu, sopclass.DcmShortSCUStorageSOPClassUIDs, transferSyntaxes, timeout)
 	if err != nil {
 		return err
 	}
