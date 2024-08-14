@@ -121,7 +121,9 @@ func (d *scu) StoreSCU(FileNames []string, timeout int) error {
 	}
 	defer pdu.Close()
 	for _, FileName := range FileNames {
-		d.cstore(pdu, FileName)
+		if err := d.cstore(pdu, FileName); err != nil {
+			slog.Warn("StoreSCU: Send file failed.", "Error", err.Error())
+		}
 	}
 	c, err := dimsec.CStoreReadRSP(pdu)
 	if err != nil {
@@ -143,7 +145,7 @@ func (d *scu) cstore(pdu network.PDUService, FileName string) error {
 		return err
 	}
 	if r != dicomstatus.Success {
-		return errors.New("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed")
+		return fmt.Errorf("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed - %d", r)
 	}
 	return nil
 }
