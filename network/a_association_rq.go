@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"strconv"
+	"time"
 
 	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
@@ -31,6 +32,7 @@ type AAssociationRQ interface {
 	Write(rw *bufio.ReadWriter) error
 	Read(ms media.MemoryStream) error
 	AddPresContexts(presentationContext PresentationContext)
+	GetID() int64
 }
 
 type aassociationRQ struct {
@@ -45,6 +47,7 @@ type aassociationRQ struct {
 	AppContext      UIDItem
 	PresContexts    []PresentationContext
 	UserInfo        UserInformation
+	ID              int64
 }
 
 // NewAAssociationRQ - NewAAssociationRQ
@@ -62,6 +65,7 @@ func NewAAssociationRQ() AAssociationRQ {
 		},
 		PresContexts: make([]PresentationContext, 0),
 		UserInfo:     NewUserInformation(),
+		ID:           time.Now().UnixNano(),
 	}
 }
 
@@ -243,4 +247,8 @@ func (aarq *aassociationRQ) Read(ms media.MemoryStream) (err error) {
 
 func (aarq *aassociationRQ) AddPresContexts(presentationContext PresentationContext) {
 	aarq.PresContexts = append(aarq.PresContexts, presentationContext)
+}
+
+func (aarq *aassociationRQ) GetID() int64 {
+	return aarq.ID
 }
