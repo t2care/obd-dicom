@@ -38,9 +38,9 @@ func Test_Association_ID(t *testing.T) {
 				CallingAE: "TEST_SCU",
 				HostName:  "localhost",
 				Port:      1043,
-				IsCFind:   true,
-				IsCMove:   true,
-				IsCStore:  true,
+				IsCFind:   false,
+				IsCMove:   false,
+				IsCStore:  false,
 				IsTLS:     false,
 			})
 			if err := d.EchoSCU(0); (err != nil) != tt.wantErr {
