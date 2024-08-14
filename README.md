@@ -49,10 +49,10 @@ if err != nil {
 }
 ```
 
-### Send C-Store Request
+### Send C-Store Request: Multiple files and Transcode are supported
 ```golang
 scu := services.NewSCU(destination)
-err := scu.StoreSCU(fileName, 0)
+err := scu.StoreSCU([]string{fileName}, 0)
 if err != nil {
   log.Fatalln(err)
 }

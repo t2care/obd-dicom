@@ -194,7 +194,8 @@ func (d *scu) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj) (uint16, er
 		return dicomstatus.Success, nil
 	}
 
-	DDO.SetTransferSyntax(TrnSyntOUT)
+	DDO.ChangeTransferSynx(TrnSyntOUT)
+	slog.Info("StoreSCU: Transcode.", "From", DDO.GetTransferSyntax().Description, "To", TrnSyntOUT.Description)
 
 	err := dimsec.CStoreWriteRQ(pdu, DDO)
 	if err != nil {
