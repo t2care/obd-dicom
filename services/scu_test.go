@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
+	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 	"github.com/one-byte-data/obd-dicom/media"
 	"github.com/one-byte-data/obd-dicom/network"
 	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
@@ -169,8 +170,9 @@ func Test_scu_StoreSCU(t *testing.T) {
 		destination *network.Destination
 	}
 	type args struct {
-		FileName string
-		timeout  int
+		FileNames        []string
+		timeout          int
+		transfersyntaxes []string
 	}
 	tests := []struct {
 		name    string
@@ -194,8 +196,8 @@ func Test_scu_StoreSCU(t *testing.T) {
 				},
 			},
 			args: args{
-				FileName: "../samples/test.dcm",
-				timeout:  0,
+				FileNames: []string{"../samples/test.dcm"},
+				timeout:   0,
 			},
 			wantErr: false,
 		},
@@ -215,8 +217,51 @@ func Test_scu_StoreSCU(t *testing.T) {
 				},
 			},
 			args: args{
-				FileName: "../samples/test-losslessSV1.dcm",
-				timeout:  0,
+				FileNames: []string{"../samples/test-losslessSV1.dcm"},
+				timeout:   0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should store multiples Lossless SV1 DICOM files",
+			fields: fields{
+				destination: &network.Destination{
+					Name:      "Test Destination",
+					CalledAE:  "TEST_SCP",
+					CallingAE: "TEST_SCU",
+					HostName:  "localhost",
+					Port:      1042,
+					IsCFind:   true,
+					IsCMove:   true,
+					IsCStore:  true,
+					IsTLS:     false,
+				},
+			},
+			args: args{
+				FileNames: []string{"../samples/test-losslessSV1.dcm", "../samples/MR-lossless.dcm"},
+				timeout:   0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should transcode file to send",
+			fields: fields{
+				destination: &network.Destination{
+					Name:      "Test Destination",
+					CalledAE:  "TEST_SCP",
+					CallingAE: "TEST_SCU",
+					HostName:  "localhost",
+					Port:      1042,
+					IsCFind:   true,
+					IsCMove:   true,
+					IsCStore:  true,
+					IsTLS:     false,
+				},
+			},
+			args: args{
+				FileNames:        []string{"../samples/test-losslessSV1.dcm"},
+				timeout:          0,
+				transfersyntaxes: []string{transfersyntax.ExplicitVRLittleEndian.UID},
 			},
 			wantErr: false,
 		},
@@ -224,7 +269,7 @@ func Test_scu_StoreSCU(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := NewSCU(tt.fields.destination)
-			if err := d.StoreSCU(tt.args.FileName, tt.args.timeout); (err != nil) != tt.wantErr {
+			if err := d.StoreSCU(tt.args.FileNames, tt.args.timeout, tt.args.transfersyntaxes...); (err != nil) != tt.wantErr {
 				t.Errorf("scu.StoreSCU() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

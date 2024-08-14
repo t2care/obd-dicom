@@ -170,7 +170,7 @@ func main() {
 			log.Fatalln("file is required for a C-Store")
 		}
 		scu := services.NewSCU(destination)
-		err := scu.StoreSCU(*fileName, 0)
+		err := scu.StoreSCU([]string{*fileName}, 0)
 		if err != nil {
 			log.Fatalln(err)
 		}

@@ -2684,3 +2684,87 @@ var sopClasses = []*SOPClass{
 	AudioWaveformRealTimeCommunication,
 	RenditionSelectionDocumentRealTimeCommunication,
 }
+
+/** an array of const strings containing all storage SOP classes that
+ *  are proposed by default by those Storage SCU components in DCMTK
+ *  that always propose TWO presentation context for each SOP class,
+ *  e.g. storescu. This list is guaranteed to have at most 64 entries.
+ *
+ * 	https://github.com/DCMTK/dcmtk/blob/DCMTK-3.6.8/dcmdata/libsrc/dcuid.cc#L1092
+ */
+var DcmShortSCUStorageSOPClassUIDs = []*SOPClass{
+	/* This list *must* be limited to 64 SOP classes or less (currently: 64).
+	 * If we have more than 64 storage transfer syntaxes, tools such as
+	 * storescu will fail because they attempt to negotiate two presentation
+	 * contexts for each SOP class, and there is a total limit of 128 contexts
+	 * for one association.
+	 * Because of this limitation, all draft and retired storage SOP classes
+	 * are removed from this list. We have also omitted support for some
+	 * recently approved SOP classes.
+	 *MediaStorageDirectoryStorage should not be present in this list.
+	 */
+	AmbulatoryECGWaveformStorage,
+	BasicTextSRStorage,
+	BasicVoiceAudioWaveformStorage,
+	BlendingSoftcopyPresentationStateStorage,
+	CardiacElectrophysiologyWaveformStorage,
+	ChestCADSRStorage,
+	ColonCADSRStorage,
+	ColorSoftcopyPresentationStateStorage,
+	ComprehensiveSRStorage,
+	ComputedRadiographyImageStorage,
+	CTImageStorage,
+	DigitalIntraOralXRayImageStorageForPresentation,
+	DigitalIntraOralXRayImageStorageForProcessing,
+	DigitalMammographyXRayImageStorageForPresentation,
+	DigitalMammographyXRayImageStorageForProcessing,
+	DigitalXRayImageStorageForPresentation,
+	DigitalXRayImageStorageForProcessing,
+	EncapsulatedPDFStorage,
+	EnhancedCTImageStorage,
+	EnhancedMRImageStorage,
+	EnhancedSRStorage,
+	EnhancedXAImageStorage,
+	EnhancedXRFImageStorage,
+	GeneralECGWaveformStorage,
+	GrayscaleSoftcopyPresentationStateStorage,
+	HemodynamicWaveformStorage,
+	KeyObjectSelectionDocumentStorage,
+	MammographyCADSRStorage,
+	MRImageStorage,
+	MRSpectroscopyStorage,
+	MultiFrameGrayscaleByteSecondaryCaptureImageStorage,
+	MultiFrameGrayscaleWordSecondaryCaptureImageStorage,
+	MultiFrameSingleBitSecondaryCaptureImageStorage,
+	MultiFrameTrueColorSecondaryCaptureImageStorage,
+	NuclearMedicineImageStorage,
+	OphthalmicPhotography16BitImageStorage,
+	OphthalmicPhotography8BitImageStorage,
+	OphthalmicTomographyImageStorage,
+	PositronEmissionTomographyImageStorage,
+	ProcedureLogStorage,
+	PseudoColorSoftcopyPresentationStateStorage,
+	RawDataStorage,
+	RealWorldValueMappingStorage,
+	RTBeamsTreatmentRecordStorage,
+	RTBrachyTreatmentRecordStorage,
+	RTDoseStorage,
+	RTImageStorage,
+	RTPlanStorage,
+	RTStructureSetStorage,
+	RTTreatmentSummaryRecordStorage,
+	SecondaryCaptureImageStorage,
+	SpatialFiducialsStorage,
+	SpatialRegistrationStorage,
+	StereometricRelationshipStorage,
+	TwelveLeadECGWaveformStorage,
+	UltrasoundImageStorage,
+	UltrasoundMultiFrameImageStorage,
+	VLEndoscopicImageStorage,
+	VLMicroscopicImageStorage,
+	VLPhotographicImageStorage,
+	VLSlideCoordinatesMicroscopicImageStorage,
+	XRayAngiographicImageStorage,
+	XRayRadiationDoseSRStorage,
+	XRayRadiofluoroscopicImageStorage,
+}
