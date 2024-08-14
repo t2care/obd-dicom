@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
+	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 	"github.com/one-byte-data/obd-dicom/dimsec"
 	"github.com/one-byte-data/obd-dicom/media"
 	"github.com/one-byte-data/obd-dicom/network"
@@ -19,11 +19,11 @@ type SCU interface {
 	EchoSCU(timeout int) error
 	FindSCU(Query media.DcmObj, timeout int) (int, uint16, error)
 	MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, error)
-	StoreSCU(FileName string, timeout int) error
+	StoreSCU(FileNames []string, timeout int) error
 	SetOnCFindResult(f func(result media.DcmObj))
 	SetOnCMoveResult(f func(result media.DcmObj))
 	openAssociation(pdu network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error
-	writeStoreRQ(pdu network.PDUService, DDO media.DcmObj, SOPClassUID string) (uint16, error)
+	writeStoreRQ(pdu network.PDUService, DDO media.DcmObj) (uint16, error)
 }
 
 type scu struct {
@@ -113,37 +113,39 @@ func (d *scu) MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, 
 	return status, nil
 }
 
-func (d *scu) StoreSCU(FileName string, timeout int) error {
+func (d *scu) StoreSCU(FileNames []string, timeout int) error {
+	pdu := network.NewPDUService()
+	err := d.openAssociation(pdu, sopclass.DcmShortSCUStorageSOPClassUIDs, []string{transfersyntax.ImplicitVRLittleEndian.UID, transfersyntax.JPEGLosslessSV1.UID}, timeout)
+	if err != nil {
+		return err
+	}
+	defer pdu.Close()
+	for _, FileName := range FileNames {
+		d.cstore(pdu, FileName)
+	}
+	c, err := dimsec.CStoreReadRSP(pdu)
+	if err != nil {
+		return err
+	}
+	if c != dicomstatus.Success {
+		return fmt.Errorf("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed - %d", c)
+	}
+	return nil
+}
+
+func (d *scu) cstore(pdu network.PDUService, FileName string) error {
 	DDO, err := media.NewDCMObjFromFile(FileName)
 	if err != nil {
 		return err
 	}
-
-	SOPClassUID := DDO.GetString(tags.SOPClassUID)
-	if len(SOPClassUID) > 0 {
-		pdu := network.NewPDUService()
-		err := d.openAssociation(pdu, []*sopclass.SOPClass{{UID: SOPClassUID}}, []string{DDO.GetTransferSyntax().UID}, timeout)
-		if err != nil {
-			return err
-		}
-		defer pdu.Close()
-		r, err := d.writeStoreRQ(pdu, DDO, SOPClassUID)
-		if err != nil {
-			return err
-		}
-		if r != dicomstatus.Success {
-			return errors.New("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed")
-		}
-		c, err := dimsec.CStoreReadRSP(pdu)
-		if err != nil {
-			return err
-		}
-		if c != dicomstatus.Success {
-			return fmt.Errorf("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed - %d", c)
-		}
-		return nil
+	r, err := d.writeStoreRQ(pdu, DDO)
+	if err != nil {
+		return err
 	}
-	return errors.New("serviceuser::StoreSCU, OpenAssociation failed, RAET: " + d.destination.CalledAE)
+	if r != dicomstatus.Success {
+		return errors.New("serviceuser::StoreSCU, dimsec.CStoreReadRSP failed")
+	}
+	return nil
 }
 
 func (d *scu) SetOnCFindResult(f func(result media.DcmObj)) {
@@ -172,7 +174,7 @@ func (d *scu) openAssociation(pdu network.PDUService, abstractSyntaxes []*sopcla
 	return pdu.Connect(d.destination.HostName, strconv.Itoa(d.destination.Port))
 }
 
-func (d *scu) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj, SOPClassUID string) (uint16, error) {
+func (d *scu) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj) (uint16, error) {
 	status := dicomstatus.FailureUnableToProcess
 
 	PCID := pdu.GetPresentationContextID()
