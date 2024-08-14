@@ -32,6 +32,7 @@ type PDUService interface {
 	AddPresContexts(presentationContext PresentationContext)
 	GetPresentationContextID() byte
 	SetOnAssociationRequest(f func(request AAssociationRQ) bool)
+	SetOnAssociationRelease(f func(request AAssociationRQ))
 	Write(DCO media.DcmObj, ItemType byte) error
 	interogateAAssociateAC() bool
 	interogateAAssociateRQ(rw *bufio.ReadWriter) error
@@ -55,6 +56,7 @@ type pduService struct {
 	Pdata                        PDataTF
 	Timeout                      int
 	OnAssociationRequest         func(request AAssociationRQ) bool
+	OnAssociationRelease         func(request AAssociationRQ)
 }
 
 // NewPDUService - creates a pointer to PDUService
@@ -240,6 +242,9 @@ func (pdu *pduService) NextPDU() (command media.DcmObj, err error) {
 			}
 		case pdutype.AssociationReleaseRequest:
 			slog.Info("ASSOC-R-RQ:", "CallingAE", pdu.AssocRQ.GetCallingAE(), "CalledAE", pdu.AssocRQ.GetCalledAE())
+			if pdu.OnAssociationRelease != nil {
+				pdu.OnAssociationRelease(pdu.AssocRQ)
+			}
 			pdu.ReleaseRQ.ReadDynamic(pdu.ms)
 			pdu.ReleaseRP.Write(pdu.readWriter)
 			return nil, errors.New("pduservice::Read - A-Release-RQ")
@@ -286,6 +291,10 @@ func (pdu *pduService) GetPresentationContextID() byte {
 
 func (pdu *pduService) SetOnAssociationRequest(f func(request AAssociationRQ) bool) {
 	pdu.OnAssociationRequest = f
+}
+
+func (pdu *pduService) SetOnAssociationRelease(f func(request AAssociationRQ)) {
+	pdu.OnAssociationRelease = f
 }
 
 func (pdu *pduService) Write(DCO media.DcmObj, ItemType byte) error {

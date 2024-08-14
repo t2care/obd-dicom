@@ -19,6 +19,7 @@ type SCP interface {
 	Start() error
 	Stop() error
 	OnAssociationRequest(f func(request network.AAssociationRQ) bool)
+	OnAssociationRelease(f func(request network.AAssociationRQ))
 	OnCFindRequest(f func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16))
 	OnCMoveRequest(f func(request network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16)
 	OnCStoreRequest(f func(request network.AAssociationRQ, data media.DcmObj) uint16)
@@ -29,6 +30,7 @@ type scp struct {
 	Port                 int
 	listener             net.Listener
 	onAssociationRequest func(request network.AAssociationRQ) bool
+	onAssociationRelease func(request network.AAssociationRQ)
 	onCFindRequest       func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)
 	onCMoveRequest       func(request network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16
 	onCStoreRequest      func(request network.AAssociationRQ, data media.DcmObj) uint16
@@ -73,6 +75,9 @@ func (s *scp) handleConnection(conn net.Conn) {
 
 	if s.onAssociationRequest != nil {
 		pdu.SetOnAssociationRequest(s.onAssociationRequest)
+	}
+	if s.onAssociationRelease != nil {
+		pdu.SetOnAssociationRelease(s.onAssociationRelease)
 	}
 
 	var err error
@@ -184,6 +189,10 @@ func (s *scp) handleConnection(conn net.Conn) {
 
 func (s *scp) OnAssociationRequest(f func(request network.AAssociationRQ) bool) {
 	s.onAssociationRequest = f
+}
+
+func (s *scp) OnAssociationRelease(f func(request network.AAssociationRQ)) {
+	s.onAssociationRelease = f
 }
 
 func (s *scp) OnCFindRequest(f func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)) {
