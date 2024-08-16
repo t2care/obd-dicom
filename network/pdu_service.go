@@ -385,6 +385,7 @@ func (pdu *pduService) interogateAAssociateRQ(rw *bufio.ReadWriter) error {
 		TS := ""
 		for _, TrnSyntax := range PresContext.GetTransferSyntaxes() {
 			TS = TrnSyntax.GetUID()
+			break
 		}
 		if TS == "" {
 			TS = transfersyntax.ImplicitVRLittleEndian.UID
