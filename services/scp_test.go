@@ -2,6 +2,7 @@ package services
 
 import (
 	"testing"
+	"time"
 
 	"github.com/one-byte-data/obd-dicom/network"
 )
@@ -46,6 +47,7 @@ func Test_Association_ID(t *testing.T) {
 			if err := d.EchoSCU(0); (err != nil) != tt.wantErr {
 				t.Errorf("scu.EchoSCU() error = %v, wantErr %v", err, tt.wantErr)
 			}
+			time.Sleep(100 * time.Millisecond) // wait for association closed
 			if onAssociationRequestID != onAssociationReleaseID {
 				t.Errorf("onAssociationRequestID = %v, onAssociationReleaseID = %v", onAssociationRequestID, onAssociationReleaseID)
 			}

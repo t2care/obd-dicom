@@ -2,6 +2,7 @@ package services
 
 import (
 	"testing"
+	"time"
 
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
@@ -283,7 +284,7 @@ func StartSCP(t testing.TB, port int) (func(t testing.TB), SCP) {
 			panic(err)
 		}
 	}()
-
+	time.Sleep(100 * time.Millisecond) // wait for server started
 	return func(t testing.TB) {
 		if err := testSCP.Stop(); err != nil {
 			panic(err)
