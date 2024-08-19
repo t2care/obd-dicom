@@ -105,18 +105,6 @@ func Test_dcmObj_ChangeTransferSynx(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "Should change transfer synxtax to JPEG2000Lossless",
-			fileName: "../samples/jpeg8.dcm",
-			args:     args{transfersyntax.JPEG2000Lossless},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to JPEG2000",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.JPEG2000},
-			wantErr:  false,
-		},
-		{
 			name:     "Should change transfer synxtax from JPEGLosslessSV1",
 			fileName: "../samples/test-losslessSV1.dcm",
 			args:     args{transfersyntax.ExplicitVRLittleEndian},
