@@ -15,8 +15,6 @@ var supportedTransferSyntaxes = []*TransferSyntax{
 	JPEGLosslessSV1,
 	JPEGBaseline8Bit,
 	JPEGExtended12Bit,
-	JPEG2000Lossless,
-	JPEG2000,
 }
 
 func GetTransferSyntaxFromName(name string) *TransferSyntax {
@@ -51,4 +49,29 @@ func SupportedTransferSyntax(uid string) bool {
 		}
 	}
 	return false
+}
+
+type decodeFunc func([]byte, uint32, []byte) error
+type encodeFunc func(rawData []byte, width uint16, height uint16, samples uint16, bitsa uint16, outData *[]byte, outSize *int, ratio int) error
+
+var decodes = make(map[string]decodeFunc)
+var encodes = make(map[string]encodeFunc)
+
+func RegisterCodec(uid string, decode decodeFunc, encode encodeFunc) {
+	decodes[uid] = decode
+	supportedTransferSyntaxes = append(supportedTransferSyntaxes, GetTransferSyntaxFromUID(uid))
+}
+
+func (ts *TransferSyntax) Decode(in []byte, sizeIn uint32, out []byte) error {
+	if fn, ok := decodes[ts.UID]; ok {
+		return fn(in, sizeIn, out)
+	}
+	return nil
+}
+
+func (ts *TransferSyntax) Encode(rawData []byte, width uint16, height uint16, samples uint16, bitsa uint16, outData *[]byte, outSize *int, ratio int) error {
+	if fn, ok := encodes[ts.UID]; ok {
+		return fn(rawData, width, height, samples, bitsa, outData, outSize, ratio)
+	}
+	return nil
 }

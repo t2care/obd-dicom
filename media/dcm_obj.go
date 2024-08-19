@@ -13,7 +13,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 	"github.com/one-byte-data/obd-dicom/jpeglib"
-	"github.com/one-byte-data/obd-dicom/openjpeg"
 	"github.com/one-byte-data/obd-dicom/transcoder"
 )
 
@@ -1029,11 +1028,11 @@ func (obj *dcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 			offset = j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 			if RGB {
 				offset = 3 * offset
-				if err := openjpeg.J2Kencode(img[offset:], cols, rows, 3, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
+				if err := transfersyntax.JPEG2000Lossless.Encode(img[offset:], cols, rows, 3, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
 					return err
 				}
 			} else {
-				if err := openjpeg.J2Kencode(img[offset:], cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
+				if err := transfersyntax.JPEG2000Lossless.Encode(img[offset:], cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
 					return err
 				}
 			}
@@ -1082,11 +1081,11 @@ func (obj *dcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 			offset = j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 			if RGB {
 				offset = 3 * offset
-				if err := openjpeg.J2Kencode(img[offset:], cols, rows, 3, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
+				if err := transfersyntax.JPEG2000.Encode(img[offset:], cols, rows, 3, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
 					return err
 				}
 			} else {
-				if err := openjpeg.J2Kencode(img[offset:], cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
+				if err := transfersyntax.JPEG2000.Encode(img[offset:], cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
 					return err
 				}
 			}
@@ -1194,7 +1193,8 @@ func (obj *dcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		for j = 0; j < frames; j++ {
 			offset = j * single
 			tag := obj.GetTagAt(i + 1)
-			if err := openjpeg.J2Kdecode(tag.Data, tag.Length, img[offset:]); err != nil {
+
+			if err := transfersyntax.JPEG2000Lossless.Decode(tag.Data, tag.Length, img[offset:]); err != nil {
 				return err
 			}
 			obj.DelTag(i + 1)
@@ -1204,7 +1204,7 @@ func (obj *dcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		for j = 0; j < frames; j++ {
 			offset = j * single
 			tag := obj.GetTagAt(i + 1)
-			if err := openjpeg.J2Kdecode(tag.Data, tag.Length, img[offset:]); err != nil {
+			if err := transfersyntax.JPEG2000.Decode(tag.Data, tag.Length, img[offset:]); err != nil {
 				return err
 			}
 			obj.DelTag(i + 1)
