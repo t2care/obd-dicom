@@ -12,6 +12,12 @@ go get -u github.com/one-byte-data/obd-dicom
 go mod edit --replace="github.com/one-byte-data/obd-dicom=github.com/t2care/obd-dicom@<version>"
 ```
 
+## Plugin JPEG2000:
+
+```bash
+go build -tags jpeg2000 ...
+```
+
 ## Usage
 
 ### Load DICOM File
