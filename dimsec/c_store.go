@@ -20,10 +20,8 @@ func CStoreReadRQ(pdu network.PDUService, command media.DcmObj) (media.DcmObj, e
 func CStoreWriteRQ(pdu network.PDUService, DDO media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()
 
-	sopClassUID := ""
-	for _, presContext := range pdu.GetAAssociationRQ().GetPresContexts() {
-		sopClassUID = presContext.GetAbstractSyntax().GetUID()
-	}
+	sopClassUID := DDO.GetString(tags.SOPClassUID)
+
 	valor := uint16(len(sopClassUID))
 	if valor%2 == 1 {
 		valor++
