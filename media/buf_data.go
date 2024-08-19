@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"encoding/binary"
 	"errors"
-	"log"
+	"fmt"
 
+	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 )
 
@@ -241,6 +242,13 @@ func (bd *bufData) ReadTag(explicitVR bool) (*DcmTag, error) {
 func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	bd.WriteUint16(tag.Group)
 	bd.WriteUint16(tag.Element)
+	// If the byte length is not even, append 1 padding byte to make it even.
+	// https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_8.1.1
+	padding := false
+	if tag.Name == tags.Item.Name && tag.Length%2 != 0 {
+		tag.Length += 1
+		padding = true
+	}
 	if (tag.Group != 0x0000) && (tag.Group != 0xfffe) && (explicitVR) {
 		bd.MS.Write([]byte(tag.VR), 2)
 		if (tag.VR == "OB") || (tag.VR == "OW") || (tag.VR == "SQ") || (tag.VR == "UN") || (tag.VR == "UT") {
@@ -253,6 +261,9 @@ func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 		bd.WriteUint32(tag.Length)
 	}
 	if (tag.Length != 0) && (tag.Length != 0xFFFFFFFF) {
+		if padding {
+			tag.Data = append(tag.Data, 0)
+		}
 		bd.MS.Write(tag.Data, int(tag.Length))
 	}
 }
@@ -363,7 +374,7 @@ func (bd *bufData) ReadObj(obj DcmObj) error {
 			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
 		}
 		if tag.Length%2 != 0 && tag.VR != "SQ" && tag.Length != 0xffffffff {
-			log.Printf("%s is odd", tag.Name)
+			return fmt.Errorf("%s is odd", tag.Name)
 		}
 		obj.Add(tag)
 	}
