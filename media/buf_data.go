@@ -245,7 +245,7 @@ func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	// If the byte length is not even, append 1 padding byte to make it even.
 	// https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_8.1.1
 	padding := false
-	if tag.Name == tags.Item.Name && tag.Length%2 != 0 {
+	if (tag.Name == tags.Item.Name || tag.Name == tags.PixelData.Name) && tag.Length%2 != 0 {
 		tag.Length += 1
 		padding = true
 	}
@@ -263,6 +263,7 @@ func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	if (tag.Length != 0) && (tag.Length != 0xFFFFFFFF) {
 		if padding {
 			tag.Data = append(tag.Data, 0)
+			padding = false
 		}
 		bd.MS.Write(tag.Data, int(tag.Length))
 	}
