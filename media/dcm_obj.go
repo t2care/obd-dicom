@@ -12,8 +12,8 @@ import (
 	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/jpeglib"
 	"github.com/one-byte-data/obd-dicom/media/transcoder"
+	"github.com/one-byte-data/obd-dicom/media/transcoder/jpeglib"
 )
 
 // DcmObj - DICOM Object structure
