@@ -4,7 +4,7 @@ package transcoder
 
 import (
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/openjpeg"
+	"github.com/one-byte-data/obd-dicom/media/transcoder/openjpeg"
 )
 
 func init() {
