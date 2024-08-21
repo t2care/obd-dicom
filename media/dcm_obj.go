@@ -13,7 +13,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 	"github.com/one-byte-data/obd-dicom/jpeglib"
-	"github.com/one-byte-data/obd-dicom/transcoder"
+	"github.com/one-byte-data/obd-dicom/media/transcoder"
 )
 
 // DcmObj - DICOM Object structure
