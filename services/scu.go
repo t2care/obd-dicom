@@ -125,7 +125,7 @@ func (d *scu) StoreSCU(FileNames []string, timeout int, transferSyntaxes ...stri
 	defer pdu.Close()
 	for _, FileName := range FileNames {
 		if err := d.cstore(pdu, FileName); err != nil {
-			slog.Warn("StoreSCU: Send file failed.", "Error", err.Error())
+			slog.Warn("StoreSCU: Send file failed.", "Error", err.Error(), "File", FileName)
 		}
 	}
 	c, err := dimsec.CStoreReadRSP(pdu)
@@ -198,9 +198,8 @@ func (d *scu) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj) (uint16, er
 		}
 		return dicomstatus.Success, nil
 	}
-
-	DDO.ChangeTransferSynx(TrnSyntOUT)
 	slog.Info("StoreSCU: Transcode.", "From", DDO.GetTransferSyntax().Description, "To", TrnSyntOUT.Description)
+	DDO.ChangeTransferSynx(TrnSyntOUT)
 
 	err := dimsec.CStoreWriteRQ(pdu, DDO)
 	if err != nil {
