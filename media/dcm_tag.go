@@ -139,7 +139,6 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 
 func (tag *DcmTag) WriteItem(obj DcmObj) {
 	tag.WriteSeq(0xFFFE, 0xE000, obj)
-	tag.VR = "SQ"
 }
 
 func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {

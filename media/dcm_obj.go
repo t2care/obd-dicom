@@ -239,7 +239,7 @@ func (obj *dcmObj) dumpSeq(indent int) error {
 	}
 
 	for _, tag := range obj.Tags {
-		if tag.VR == "SQ" {
+		if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
 			fmt.Printf("%s(%04X,%04X) %s - %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
