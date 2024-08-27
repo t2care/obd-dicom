@@ -733,6 +733,7 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	item.WriteString(tags.CodeMeaning, CodeMeaning)
 	tag.WriteSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
+	tag = new(DcmTag)
 	tag.WriteSeq(group, element, seq)
 	obj.Add(tag)
 }
