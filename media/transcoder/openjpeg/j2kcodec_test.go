@@ -16,7 +16,7 @@ func Test_J2Kdecode(t *testing.T) {
 	}{
 		{
 			name:    "Should decode j2k image",
-			args:    args{fileName: "../samples/test.j2k"},
+			args:    args{fileName: "../../../samples/test.j2k"},
 			wantErr: false,
 		},
 	}
@@ -48,7 +48,7 @@ func Test_J2Kencode(t *testing.T) {
 	}{
 		{
 			name:    "Should encode j2k image",
-			args:    args{fileName: "../samples/test.raw"},
+			args:    args{fileName: "../../../samples/test.raw"},
 			wantErr: false,
 		},
 	}

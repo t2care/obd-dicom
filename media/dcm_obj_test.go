@@ -128,6 +128,9 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 	if err = dcmObj.ChangeTransferSynx(ts); err != nil {
 		return
 	}
+	if err = dcmObj.DumpTags(); err != nil{
+		return
+	}
 	_, err = NewDCMObjFromBytes(dcmObj.WriteToBytes())
 	return
 }

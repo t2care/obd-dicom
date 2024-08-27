@@ -16,7 +16,7 @@ func TestDIJG8decode(t *testing.T) {
 	}{
 		{
 			name:    "Should decode jpeg 8 image",
-			args:    args{fileName: "../samples/test8.jpg"},
+			args:    args{fileName: "../../../samples/test8.jpg"},
 			wantErr: false,
 		},
 	}
@@ -48,7 +48,7 @@ func Test_DIJG8encode(t *testing.T) {
 	}{
 		{
 			name:    "Should encode jpeg 8 image",
-			args:    args{fileName: "../samples/test.raw"},
+			args:    args{fileName: "../../../samples/test.raw"},
 			wantErr: false,
 		},
 	}
