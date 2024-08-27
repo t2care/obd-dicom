@@ -250,6 +250,9 @@ func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 		padding = true
 	}
 	if (tag.Group != 0x0000) && (tag.Group != 0xfffe) && (explicitVR) {
+		if tag.VR == "" { // In case converting from illicit
+			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
+		}
 		bd.MS.Write([]byte(tag.VR), 2)
 		if (tag.VR == "OB") || (tag.VR == "OW") || (tag.VR == "SQ") || (tag.VR == "UN") || (tag.VR == "UT") {
 			bd.WriteUint16(0)

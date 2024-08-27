@@ -156,6 +156,7 @@ func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax
 		for _, item := range seq.GetTags() {
 			item.Convert(explicitVR, outTS)
 		}
+		seq.SetTransferSyntax(outTS)
 		tag.WriteSeq(tag.Group, tag.Element, seq)
 	}
 	return nil
