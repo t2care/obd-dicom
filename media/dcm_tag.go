@@ -105,7 +105,8 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 
 	bufdata.Write(tag.Data, int(tag.Length))
 	bufdata.MS.SetPosition(0)
-
+	var tempTags *dcmObj
+	haveItem := false
 	for bufdata.MS.GetPosition() < bufdata.MS.GetSize() {
 		temptag, err := bufdata.ReadTag(ExplicitVR)
 		if err != nil {
@@ -115,7 +116,26 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 		if !ExplicitVR {
 			temptag.VR = GetDictionaryVR(tag.Group, tag.Element)
 		}
-		seq.Add(temptag)
+		switch temptag.Element {
+		case 0xE000:
+			haveItem = true
+			tempTags = new(dcmObj)
+		case 0xE00D:
+			item := new(DcmTag)
+			item.WriteItem(tempTags)
+			seq.Add(item)
+		default:
+			if haveItem {
+				tempTags.Add(temptag)
+			} else {
+				seq.Add(temptag)
+			}
+		}
 	}
 	return seq, nil
+}
+
+func (tag *DcmTag) WriteItem(obj DcmObj) {
+	tag.WriteSeq(0xFFFE, 0xE000, obj)
+	tag.VR = "SQ"
 }
