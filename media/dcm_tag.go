@@ -120,6 +120,10 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 		}
 		switch temptag.Element {
 		case 0xE000:
+			if temptag.Length != 0xFFFFFFFF {
+				seq.Add(temptag)
+				continue
+			}
 			haveItem = true
 			tempTags = new(dcmObj)
 		case 0xE00D:
