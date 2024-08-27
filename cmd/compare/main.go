@@ -45,12 +45,12 @@ func compare(source media.DcmObj, destination media.DcmObj) {
 	for _, st := range source.GetTags() {
 		found := false
 		if st.VR == "SQ" {
-			sSeq := st.ReadSeq(source.IsExplicitVR())
+			sSeq, _ := st.ReadSeq(source.IsExplicitVR())
 			dt := destination.GetTagGE(st.Group, st.Element)
 			if dt == nil {
 				log.Printf("Sequence: (%04X,%04X) %s not found in destination", st.Group, st.Element, st.Name)
 			}
-			dSeq := dt.ReadSeq(destination.IsExplicitVR())
+			dSeq, _ := dt.ReadSeq(destination.IsExplicitVR())
 			compareSeq(1, sSeq, dSeq)
 			continue
 		}
@@ -90,12 +90,12 @@ func compareSeq(indent int, source media.DcmObj, destination media.DcmObj) {
 	for _, st := range source.GetTags() {
 		found := false
 		if st.VR == "SQ" {
-			sSeq := st.ReadSeq(source.IsExplicitVR())
+			sSeq, _ := st.ReadSeq(source.IsExplicitVR())
 			dt := destination.GetTagGE(st.Group, st.Element)
 			if dt == nil {
 				log.Printf("%sSequence: (%04X,%04X) %s not found in destination", tabs, st.Group, st.Element, st.Name)
 			}
-			dSeq := dt.ReadSeq(destination.IsExplicitVR())
+			dSeq, _ := dt.ReadSeq(destination.IsExplicitVR())
 			compareSeq(indent+1, sSeq, dSeq)
 			continue
 		}

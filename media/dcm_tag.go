@@ -3,6 +3,7 @@ package media
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -95,7 +96,7 @@ func (tag *DcmTag) WriteSeq(group uint16, element uint16, seq DcmObj) {
 }
 
 // ReadSeq - reads a dicom sequence
-func (tag *DcmTag) ReadSeq(ExplicitVR bool) DcmObj {
+func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 	seq := NewEmptyDCMObj()
 	bufdata := &bufData{
 		BigEndian: false,
@@ -108,7 +109,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) DcmObj {
 	for bufdata.MS.GetPosition() < bufdata.MS.GetSize() {
 		temptag, err := bufdata.ReadTag(ExplicitVR)
 		if err != nil {
-			continue
+			return seq, fmt.Errorf("cannot read (%04X,%04X). Error: %s", tag.Group, tag.Element, err.Error())
 		}
 
 		if !ExplicitVR {
@@ -116,5 +117,5 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) DcmObj {
 		}
 		seq.Add(temptag)
 	}
-	return seq
+	return seq, nil
 }

@@ -21,7 +21,7 @@ type DcmObj interface {
 	Add(tag *DcmTag)
 	AddConceptNameSeq(group uint16, element uint16, CodeValue string, CodeMeaning string)
 	AddSRText(text string)
-	DumpTags()
+	DumpTags() error
 	IsExplicitVR() bool
 	SetExplicitVR(explicit bool)
 	IsBigEndian() bool
@@ -58,7 +58,7 @@ type DcmObj interface {
 	CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string, fileName string)
 	WriteToBytes() []byte
 	WriteToFile(fileName string) error
-	dumpSeq(indent int)
+	dumpSeq(indent int) error
 	compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, pixelrep uint16, planar uint16, frames uint32, outTS string) error
 	uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error
 }
@@ -206,11 +206,14 @@ func (obj *dcmObj) DelTag(i int) {
 	obj.Tags = append(obj.Tags[:i], obj.Tags[i+1:]...)
 }
 
-func (obj *dcmObj) DumpTags() {
+func (obj *dcmObj) DumpTags() error {
 	for _, tag := range obj.Tags {
 		if tag.VR == "SQ" {
 			fmt.Printf("\t(%04X,%04X) %s - %s\n", tag.Group, tag.Element, tag.VR, tag.Description)
-			seq := tag.ReadSeq(obj.IsExplicitVR())
+			seq, err := tag.ReadSeq(obj.IsExplicitVR())
+			if err != nil {
+				return err
+			}
 			seq.dumpSeq(1)
 			continue
 		}
@@ -226,9 +229,10 @@ func (obj *dcmObj) DumpTags() {
 		}
 	}
 	fmt.Println()
+	return nil
 }
 
-func (obj *dcmObj) dumpSeq(indent int) {
+func (obj *dcmObj) dumpSeq(indent int) error {
 	tabs := "\t"
 	for i := 0; i < indent; i++ {
 		tabs += "\t"
@@ -237,7 +241,10 @@ func (obj *dcmObj) dumpSeq(indent int) {
 	for _, tag := range obj.Tags {
 		if tag.VR == "SQ" {
 			fmt.Printf("%s(%04X,%04X) %s - %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description)
-			seq := tag.ReadSeq(obj.IsExplicitVR())
+			seq, err := tag.ReadSeq(obj.IsExplicitVR())
+			if err != nil {
+				return err
+			}
 			seq.dumpSeq(indent + 1)
 			continue
 		}
@@ -252,6 +259,7 @@ func (obj *dcmObj) dumpSeq(indent int) {
 			fmt.Printf("%s(%04X,%04X) %s - %s : %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description, tag.Data)
 		}
 	}
+	return nil
 }
 
 func (obj *dcmObj) GetDate(tag *tags.Tag) time.Time {
