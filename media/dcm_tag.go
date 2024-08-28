@@ -148,7 +148,7 @@ func (tag *DcmTag) WriteItem(obj DcmObj) {
 func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
 	seq := new(dcmObj)
 	seq.SetTransferSyntax(outTS)
-	if (explicitVR != seq.IsExplicitVR()) && (tag.VR == "SQ" || (tag.Group == 0xFFFE)) {
+	if (explicitVR != seq.IsExplicitVR()) && tag.isSequence() {
 		seq, err := tag.ReadSeq(explicitVR)
 		if err != nil {
 			return err
@@ -160,4 +160,11 @@ func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax
 		tag.WriteSeq(tag.Group, tag.Element, seq)
 	}
 	return nil
+}
+
+func (tag *DcmTag) isSequence() bool {
+	if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
+		return true
+	}
+	return false
 }

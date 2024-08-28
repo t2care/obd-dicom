@@ -208,7 +208,7 @@ func (obj *dcmObj) DelTag(i int) {
 
 func (obj *dcmObj) DumpTags() error {
 	for _, tag := range obj.Tags {
-		if tag.VR == "SQ" {
+		if tag.isSequence() {
 			fmt.Printf("\t(%04X,%04X) %s - %s\n", tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
@@ -239,7 +239,7 @@ func (obj *dcmObj) dumpSeq(indent int) error {
 	}
 
 	for _, tag := range obj.Tags {
-		if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
+		if tag.isSequence() {
 			fmt.Printf("%s(%04X,%04X) %s - %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
@@ -609,7 +609,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 
 	for i = 0; i < len(obj.Tags); i++ {
 		tag := obj.GetTagAt(i)
-		if tag.VR == "SQ" || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000)) {
+		if tag.isSequence() {
 			if tag.Length == 0xFFFFFFFF {
 				sq++
 			} else {
