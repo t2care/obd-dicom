@@ -9,7 +9,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type PresentationContextAccept struct {
+type presentationContextAccept struct {
 	ItemType              byte //0x21
 	Reserved1             byte
 	Length                uint16
@@ -17,65 +17,65 @@ type PresentationContextAccept struct {
 	Reserved2             byte
 	Result                byte
 	Reserved4             byte
-	AbsSyntax             UIDItem
-	TrnSyntax             UIDItem
+	AbsSyntax             uidItem
+	TrnSyntax             uidItem
 }
 
 // NewPresentationContextAccept creates a PresentationContextAccept
-func NewPresentationContextAccept() *PresentationContextAccept {
-	return &PresentationContextAccept{
+func NewPresentationContextAccept() *presentationContextAccept {
+	return &presentationContextAccept{
 		ItemType:              0x21,
 		PresentationContextID: Uniq8(),
 		Result:                2,
 	}
 }
 
-func (pc *PresentationContextAccept) GetPresentationContextID() byte {
+func (pc *presentationContextAccept) GetPresentationContextID() byte {
 	return pc.PresentationContextID
 }
 
-func (pc *PresentationContextAccept) SetPresentationContextID(id byte) {
+func (pc *presentationContextAccept) SetPresentationContextID(id byte) {
 	pc.PresentationContextID = id
 }
 
-func (pc *PresentationContextAccept) GetResult() byte {
+func (pc *presentationContextAccept) GetResult() byte {
 	return pc.Result
 }
 
-func (pc *PresentationContextAccept) SetResult(result byte) {
+func (pc *presentationContextAccept) SetResult(result byte) {
 	pc.Result = result
 }
 
-func (pc *PresentationContextAccept) GetTrnSyntax() *UIDItem {
+func (pc *presentationContextAccept) GetTrnSyntax() *uidItem {
 	return &pc.TrnSyntax
 }
 
 // Size gets the size of presentation
-func (pc *PresentationContextAccept) Size() uint16 {
+func (pc *presentationContextAccept) Size() uint16 {
 	pc.Length = 4
 	pc.Length += pc.TrnSyntax.GetSize()
 	return pc.Length + 4
 }
 
-func (pc *PresentationContextAccept) GetAbstractSyntax() *UIDItem {
+func (pc *presentationContextAccept) GetAbstractSyntax() *uidItem {
 	return &pc.AbsSyntax
 }
 
-func (pc *PresentationContextAccept) SetAbstractSyntax(Abst string) {
+func (pc *presentationContextAccept) SetAbstractSyntax(Abst string) {
 	pc.AbsSyntax.SetType(0x30)
 	pc.AbsSyntax.SetReserved(0x00)
 	pc.AbsSyntax.SetUID(Abst)
 	pc.AbsSyntax.SetLength(uint16(len(Abst)))
 }
 
-func (pc *PresentationContextAccept) SetTransferSyntax(Tran string) {
+func (pc *presentationContextAccept) SetTransferSyntax(Tran string) {
 	pc.TrnSyntax.SetType(0x40)
 	pc.TrnSyntax.SetReserved(0)
 	pc.TrnSyntax.SetUID(Tran)
 	pc.TrnSyntax.SetLength(uint16(len(Tran)))
 }
 
-func (pc *PresentationContextAccept) Write(rw *bufio.ReadWriter) (err error) {
+func (pc *presentationContextAccept) Write(rw *bufio.ReadWriter) (err error) {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -106,14 +106,14 @@ func (pc *PresentationContextAccept) Write(rw *bufio.ReadWriter) (err error) {
 	return
 }
 
-func (pc *PresentationContextAccept) Read(ms *media.MemoryStream) (err error) {
+func (pc *presentationContextAccept) Read(ms *media.MemoryStream) (err error) {
 	if pc.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return pc.ReadDynamic(ms)
 }
 
-func (pc *PresentationContextAccept) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (pc *presentationContextAccept) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pc.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

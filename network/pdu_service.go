@@ -17,7 +17,7 @@ import (
 )
 
 type PDUService struct {
-	AcceptedPresentationContexts []*PresentationContextAccept
+	AcceptedPresentationContexts []*presentationContextAccept
 	readWriter                   *bufio.ReadWriter
 	ms                           *media.MemoryStream
 	pdutype                      int
@@ -256,7 +256,7 @@ func (pdu *PDUService) SetCallingAE(callingAE string) {
 	pdu.AssocRQ.SetCallingAE(callingAE)
 }
 
-func (pdu *PDUService) AddPresContexts(presentationContext *PresentationContext) {
+func (pdu *PDUService) AddPresContexts(presentationContext *presentationContext) {
 	pdu.AssocRQ.AddPresContexts(presentationContext)
 }
 

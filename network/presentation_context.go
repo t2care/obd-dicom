@@ -7,7 +7,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type PresentationContext struct {
+type presentationContext struct {
 	ItemType              byte //0x20
 	Reserved1             byte
 	Length                uint16
@@ -15,47 +15,47 @@ type PresentationContext struct {
 	Reserved2             byte
 	Reserved3             byte
 	Reserved4             byte
-	AbsSyntax             UIDItem
-	TrnSyntaxs            []*UIDItem
+	AbsSyntax             uidItem
+	TrnSyntaxs            []*uidItem
 }
 
 // NewPresentationContext - NewPresentationContext
-func NewPresentationContext() *PresentationContext {
-	return &PresentationContext{
+func NewPresentationContext() *presentationContext {
+	return &presentationContext{
 		ItemType:              0x20,
 		PresentationContextID: Uniq8odd(),
 	}
 }
 
-func (pc *PresentationContext) GetPresentationContextID() byte {
+func (pc *presentationContext) GetPresentationContextID() byte {
 	return pc.PresentationContextID
 }
 
-func (pc *PresentationContext) SetPresentationContextID(id byte) {
+func (pc *presentationContext) SetPresentationContextID(id byte) {
 	pc.PresentationContextID = id
 }
 
-func (pc *PresentationContext) GetAbstractSyntax() *UIDItem {
+func (pc *presentationContext) GetAbstractSyntax() *uidItem {
 	return &pc.AbsSyntax
 }
 
-func (pc *PresentationContext) SetAbstractSyntax(Abst string) {
+func (pc *presentationContext) SetAbstractSyntax(Abst string) {
 	pc.AbsSyntax.SetType(0x30)
 	pc.AbsSyntax.SetReserved(0x00)
 	pc.AbsSyntax.SetUID(Abst)
 	pc.AbsSyntax.SetLength(uint16(len(Abst)))
 }
 
-func (pc *PresentationContext) AddTransferSyntax(Tran string) {
+func (pc *presentationContext) AddTransferSyntax(Tran string) {
 	TrnSyntax := NewUIDItem(Tran, 0x40)
 	pc.TrnSyntaxs = append(pc.TrnSyntaxs, TrnSyntax)
 }
 
-func (pc *PresentationContext) GetTransferSyntaxes() []*UIDItem {
+func (pc *presentationContext) GetTransferSyntaxes() []*uidItem {
 	return pc.TrnSyntaxs
 }
 
-func (pc *PresentationContext) Size() uint16 {
+func (pc *presentationContext) Size() uint16 {
 	pc.Length = 4 + pc.AbsSyntax.GetSize()
 	for _, TrnSyntax := range pc.TrnSyntaxs {
 		pc.Length += TrnSyntax.GetSize()
@@ -63,7 +63,7 @@ func (pc *PresentationContext) Size() uint16 {
 	return pc.Length + 4
 }
 
-func (pc *PresentationContext) Write(rw *bufio.ReadWriter) error {
+func (pc *presentationContext) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -89,14 +89,14 @@ func (pc *PresentationContext) Write(rw *bufio.ReadWriter) error {
 	return nil
 }
 
-func (pc *PresentationContext) Read(ms *media.MemoryStream) (err error) {
+func (pc *presentationContext) Read(ms *media.MemoryStream) (err error) {
 	if pc.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return pc.ReadDynamic(ms)
 }
 
-func (pc *PresentationContext) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (pc *presentationContext) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pc.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (pc *PresentationContext) ReadDynamic(ms *media.MemoryStream) (err error) {
 
 	Count := pc.Length - 4 - pc.AbsSyntax.GetSize()
 	for Count > 0 {
-		var TrnSyntax UIDItem
+		var TrnSyntax uidItem
 		TrnSyntax.Read(ms)
 		Count = Count - TrnSyntax.GetSize()
 		if TrnSyntax.GetSize() > 0 {

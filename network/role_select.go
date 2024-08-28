@@ -6,7 +6,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type RoleSelect struct {
+type roleSelect struct {
 	ItemType  byte //0x54
 	Reserved1 byte
 	Length    uint16
@@ -16,17 +16,17 @@ type RoleSelect struct {
 }
 
 // NewRoleSelect - NewRoleSelect
-func NewRoleSelect() *RoleSelect {
-	return &RoleSelect{
+func NewRoleSelect() *roleSelect {
+	return &roleSelect{
 		ItemType: 0x54,
 	}
 }
 
-func (scpscu *RoleSelect) Size() uint16 {
+func (scpscu *roleSelect) Size() uint16 {
 	return scpscu.Length + 4
 }
 
-func (scpscu *RoleSelect) Write(rw *bufio.ReadWriter) bool {
+func (scpscu *roleSelect) Write(rw *bufio.ReadWriter) bool {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -44,14 +44,14 @@ func (scpscu *RoleSelect) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (scpscu *RoleSelect) Read(ms *media.MemoryStream) (err error) {
+func (scpscu *roleSelect) Read(ms *media.MemoryStream) (err error) {
 	if scpscu.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return scpscu.ReadDynamic(ms)
 }
 
-func (scpscu *RoleSelect) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (scpscu *roleSelect) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if scpscu.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

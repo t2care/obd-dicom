@@ -21,8 +21,8 @@ type AAssociationRQ struct {
 	CallingAE       [16]byte // 16 bytes transfered
 	CalledAE        [16]byte // 16 bytes transfered
 	Reserved3       [32]byte
-	AppContext      *UIDItem
-	PresContexts    []*PresentationContext
+	AppContext      *uidItem
+	PresContexts    []*presentationContext
 	UserInfo        *UserInformation
 	ID              int64
 }
@@ -34,23 +34,23 @@ func NewAAssociationRQ() *AAssociationRQ {
 		Reserved1:       0x00,
 		ProtocolVersion: 0x01,
 		Reserved2:       0x00,
-		AppContext: &UIDItem{
+		AppContext: &uidItem{
 			itemType:  0x10,
 			reserved1: 0x00,
 			uid:       sopclass.DICOMApplicationContext.UID,
 			length:    uint16(len(sopclass.DICOMApplicationContext.UID)),
 		},
-		PresContexts: make([]*PresentationContext, 0),
+		PresContexts: make([]*presentationContext, 0),
 		UserInfo:     NewUserInformation(),
 		ID:           time.Now().UnixNano(),
 	}
 }
 
-func (aarq *AAssociationRQ) GetAppContext() *UIDItem {
+func (aarq *AAssociationRQ) GetAppContext() *uidItem {
 	return aarq.AppContext
 }
 
-func (aarq *AAssociationRQ) SetAppContext(context *UIDItem) {
+func (aarq *AAssociationRQ) SetAppContext(context *uidItem) {
 	aarq.AppContext = context
 }
 
@@ -92,7 +92,7 @@ func (aarq *AAssociationRQ) SetCalledAE(AET string) {
 	}
 }
 
-func (aarq *AAssociationRQ) GetPresContexts() []*PresentationContext {
+func (aarq *AAssociationRQ) GetPresContexts() []*presentationContext {
 	return aarq.PresContexts
 }
 
@@ -112,7 +112,7 @@ func (aarq *AAssociationRQ) SetMaxSubLength(length uint32) {
 	aarq.UserInfo.GetMaxSubLength().SetMaximumLength(length)
 }
 
-func (aarq *AAssociationRQ) GetImpClass() *UIDItem {
+func (aarq *AAssociationRQ) GetImpClass() *uidItem {
 	return aarq.UserInfo.GetImpClass()
 }
 
@@ -222,7 +222,7 @@ func (aarq *AAssociationRQ) Read(ms *media.MemoryStream) (err error) {
 	return errors.New("aarq::ReadDynamic, Count is not zero")
 }
 
-func (aarq *AAssociationRQ) AddPresContexts(presentationContext *PresentationContext) {
+func (aarq *AAssociationRQ) AddPresContexts(presentationContext *presentationContext) {
 	aarq.PresContexts = append(aarq.PresContexts, presentationContext)
 }
 

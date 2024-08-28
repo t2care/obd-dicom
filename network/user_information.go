@@ -15,9 +15,9 @@ type UserInformation struct {
 	UserInfoBaggage uint32
 	MaxSubLength    *maximumSubLength
 	AsyncOpWindow   *asyncOperationWindow
-	SCPSCURole      *RoleSelect
-	ImpClass        *UIDItem
-	ImpVersion      *UIDItem
+	SCPSCURole      *roleSelect
+	ImpClass        *uidItem
+	ImpVersion      *uidItem
 }
 
 // NewUserInformation - NewUserInformation
@@ -27,10 +27,10 @@ func NewUserInformation() *UserInformation {
 		MaxSubLength:  NewMaximumSubLength(),
 		AsyncOpWindow: NewAsyncOperationWindow(),
 		SCPSCURole:    NewRoleSelect(),
-		ImpClass: &UIDItem{
+		ImpClass: &uidItem{
 			itemType: 0x52,
 		},
-		ImpVersion: &UIDItem{
+		ImpVersion: &uidItem{
 			itemType: 0x55,
 		},
 	}
@@ -63,7 +63,7 @@ func (ui *UserInformation) Size() uint16 {
 	return ui.Length + 4
 }
 
-func (ui *UserInformation) GetImpClass() *UIDItem {
+func (ui *UserInformation) GetImpClass() *uidItem {
 	return ui.ImpClass
 }
 
@@ -74,7 +74,7 @@ func (ui *UserInformation) SetImpClassUID(name string) {
 	ui.ImpClass.SetLength(uint16(len(name)))
 }
 
-func (ui *UserInformation) GetImpVersion() *UIDItem {
+func (ui *UserInformation) GetImpVersion() *uidItem {
 	return ui.ImpVersion
 }
 

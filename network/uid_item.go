@@ -6,58 +6,58 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type UIDItem struct {
+type uidItem struct {
 	itemType  byte
 	reserved1 byte
 	length    uint16
 	uid       string
 }
 
-func NewUIDItem(uid string, itemType byte) *UIDItem {
-	return &UIDItem{
+func NewUIDItem(uid string, itemType byte) *uidItem {
+	return &uidItem{
 		itemType: itemType,
 		uid:      uid,
 		length:   uint16(len(uid)),
 	}
 }
 
-func (u *UIDItem) GetLength() uint16 {
+func (u *uidItem) GetLength() uint16 {
 	return u.length
 }
 
-func (u *UIDItem) GetReserved() byte {
+func (u *uidItem) GetReserved() byte {
 	return u.reserved1
 }
 
-func (u *UIDItem) GetSize() uint16 {
+func (u *uidItem) GetSize() uint16 {
 	return u.length + 4
 }
 
-func (u *UIDItem) GetType() byte {
+func (u *uidItem) GetType() byte {
 	return u.itemType
 }
 
-func (u *UIDItem) GetUID() string {
+func (u *uidItem) GetUID() string {
 	return u.uid
 }
 
-func (u *UIDItem) SetReserved(reserve byte) {
+func (u *uidItem) SetReserved(reserve byte) {
 	u.reserved1 = reserve
 }
 
-func (u *UIDItem) SetLength(length uint16) {
+func (u *uidItem) SetLength(length uint16) {
 	u.length = length
 }
 
-func (u *UIDItem) SetType(itemType byte) {
+func (u *uidItem) SetType(itemType byte) {
 	u.itemType = itemType
 }
 
-func (u *UIDItem) SetUID(uid string) {
+func (u *uidItem) SetUID(uid string) {
 	u.uid = uid
 }
 
-func (u *UIDItem) Write(rw *bufio.ReadWriter) error {
+func (u *uidItem) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -69,14 +69,14 @@ func (u *UIDItem) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (u *UIDItem) Read(ms *media.MemoryStream) (err error) {
+func (u *uidItem) Read(ms *media.MemoryStream) (err error) {
 	if u.itemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return u.ReadDynamic(ms)
 }
 
-func (u *UIDItem) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (u *uidItem) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if u.reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
