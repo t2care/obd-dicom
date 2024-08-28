@@ -17,7 +17,7 @@ import (
 )
 
 type PDUService struct {
-	AcceptedPresentationContexts []PresentationContextAccept
+	AcceptedPresentationContexts []*PresentationContextAccept
 	readWriter                   *bufio.ReadWriter
 	ms                           media.MemoryStream
 	pdutype                      int

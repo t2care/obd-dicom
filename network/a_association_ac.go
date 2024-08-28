@@ -21,7 +21,7 @@ type AAssociationAC struct {
 	CalledAE           [16]byte
 	Reserved3          [32]byte
 	AppContext         *UIDItem
-	PresContextAccepts []PresentationContextAccept
+	PresContextAccepts []*PresentationContextAccept
 	UserInfo           *UserInformation
 }
 
@@ -38,7 +38,7 @@ func NewAAssociationAC() *AAssociationAC {
 			uid:       sopclass.DICOMApplicationContext.UID,
 			length:    uint16(len(sopclass.DICOMApplicationContext.UID)),
 		},
-		PresContextAccepts: make([]PresentationContextAccept, 0),
+		PresContextAccepts: make([]*PresentationContextAccept, 0),
 		UserInfo:           NewUserInformation(),
 	}
 }
@@ -89,11 +89,11 @@ func (aaac *AAssociationAC) SetCalledAE(AET string) {
 	}
 }
 
-func (aaac *AAssociationAC) AddPresContextAccept(context PresentationContextAccept) {
+func (aaac *AAssociationAC) AddPresContextAccept(context *PresentationContextAccept) {
 	aaac.PresContextAccepts = append(aaac.PresContextAccepts, context)
 }
 
-func (aaac *AAssociationAC) GetPresContextAccepts() []PresentationContextAccept {
+func (aaac *AAssociationAC) GetPresContextAccepts() []*PresentationContextAccept {
 	return aaac.PresContextAccepts
 }
 
