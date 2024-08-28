@@ -208,7 +208,7 @@ func (obj *dcmObj) DelTag(i int) {
 
 func (obj *dcmObj) DumpTags() error {
 	for _, tag := range obj.Tags {
-		if tag.isSequence() {
+		if tag.VR == "SQ" {
 			fmt.Printf("\t(%04X,%04X) %s - %s\n", tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
@@ -731,7 +731,7 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	item.WriteString(tags.CodeValue, CodeValue)
 	item.WriteString(tags.CodingSchemeDesignator, "odb")
 	item.WriteString(tags.CodeMeaning, CodeMeaning)
-	tag.writeSeq(0xFFFE, 0xE000, item)
+	tag.writeItem(item)
 	seq.Add(tag)
 	tag = new(DcmTag)
 	tag.writeSeq(group, element, seq)
