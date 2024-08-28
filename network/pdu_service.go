@@ -49,7 +49,7 @@ type pduService struct {
 	pdulength                    uint32
 	AssocRQ                      AAssociationRQ
 	AssocAC                      *AAssociationAC
-	AssocRJ                      AAssociationRJ
+	AssocRJ                      *AAssociationRJ
 	ReleaseRQ                    *AReleaseRQ
 	ReleaseRP                    *AReleaseRP
 	AbortRQ                      *AAbortRQ

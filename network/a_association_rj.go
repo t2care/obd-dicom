@@ -23,17 +23,7 @@ var TransientRejectReasons map[byte]string = map[byte]string{
 	2: "Local limit exceeded",
 }
 
-// AAssociationRJ association reject struct
-type AAssociationRJ interface {
-	GetReason() string
-	Set(result byte, reason byte)
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
-type aassociationRJ struct {
+type AAssociationRJ struct {
 	ItemType  byte // 0x03
 	Reserved1 byte
 	Length    uint32
@@ -44,8 +34,8 @@ type aassociationRJ struct {
 }
 
 // NewAAssociationRJ creates an association reject
-func NewAAssociationRJ() AAssociationRJ {
-	return &aassociationRJ{
+func NewAAssociationRJ() *AAssociationRJ {
+	return &AAssociationRJ{
 		ItemType:  0x03,
 		Reserved1: 0x00,
 		Reserved2: 0x00,
@@ -55,7 +45,7 @@ func NewAAssociationRJ() AAssociationRJ {
 	}
 }
 
-func (aarj *aassociationRJ) GetReason() string {
+func (aarj *AAssociationRJ) GetReason() string {
 	reason := "No reason given"
 	if aarj.Result == 0x01 {
 		reason = PermanentRejectReasons[aarj.Reason]
@@ -66,12 +56,12 @@ func (aarj *aassociationRJ) GetReason() string {
 	return reason
 }
 
-func (aarj *aassociationRJ) Size() uint32 {
+func (aarj *AAssociationRJ) Size() uint32 {
 	aarj.Length = 4
 	return aarj.Length + 6
 }
 
-func (aarj *aassociationRJ) Write(rw *bufio.ReadWriter) error {
+func (aarj *AAssociationRJ) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	slog.Info("ASSOC-RJ:", "Reason", aarj.GetReason())
@@ -89,19 +79,19 @@ func (aarj *aassociationRJ) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (aarj *aassociationRJ) Set(result byte, reason byte) {
+func (aarj *AAssociationRJ) Set(result byte, reason byte) {
 	aarj.Result = result
 	aarj.Reason = reason
 }
 
-func (aarj *aassociationRJ) Read(ms media.MemoryStream) (err error) {
+func (aarj *AAssociationRJ) Read(ms media.MemoryStream) (err error) {
 	if aarj.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarj.ReadDynamic(ms)
 }
 
-func (aarj *aassociationRJ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aarj *AAssociationRJ) ReadDynamic(ms media.MemoryStream) (err error) {
 	if aarj.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
