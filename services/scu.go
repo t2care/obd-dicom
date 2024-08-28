@@ -126,7 +126,7 @@ func (d *SCU) StoreSCU(FileNames []string, timeout int, transferSyntaxes ...stri
 	return nil
 }
 
-func (d *SCU) cstore(pdu network.PDUService, FileName string) error {
+func (d *SCU) cstore(pdu *network.PDUService, FileName string) error {
 	DDO, err := media.NewDCMObjFromFile(FileName)
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func (d *SCU) SetOnCMoveResult(f func(result media.DcmObj)) {
 	d.onCMoveResult = f
 }
 
-func (d *SCU) openAssociation(pdu network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error {
+func (d *SCU) openAssociation(pdu *network.PDUService, abstractSyntaxes []*sopclass.SOPClass, transferSyntaxes []string, timeout int) error {
 	pdu.SetCallingAE(d.destination.CallingAE)
 	pdu.SetCalledAE(d.destination.CalledAE)
 	pdu.SetTimeout(timeout)
@@ -167,7 +167,7 @@ func (d *SCU) openAssociation(pdu network.PDUService, abstractSyntaxes []*sopcla
 	return pdu.Connect(d.destination.HostName, strconv.Itoa(d.destination.Port))
 }
 
-func (d *SCU) writeStoreRQ(pdu network.PDUService, DDO media.DcmObj) (uint16, error) {
+func (d *SCU) writeStoreRQ(pdu *network.PDUService, DDO media.DcmObj) (uint16, error) {
 	status := dicomstatus.FailureUnableToProcess
 
 	PCID := pdu.GetPresentationContextID()

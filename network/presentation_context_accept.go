@@ -33,8 +33,8 @@ type presentationContextAccept struct {
 	Reserved2             byte
 	Result                byte
 	Reserved4             byte
-	AbsSyntax             *UIDItem
-	TrnSyntax             *UIDItem
+	AbsSyntax             UIDItem
+	TrnSyntax             UIDItem
 }
 
 // NewPresentationContextAccept creates a PresentationContextAccept
@@ -63,7 +63,7 @@ func (pc *presentationContextAccept) SetResult(result byte) {
 }
 
 func (pc *presentationContextAccept) GetTrnSyntax() *UIDItem {
-	return pc.TrnSyntax
+	return &pc.TrnSyntax
 }
 
 // Size gets the size of presentation
@@ -74,7 +74,7 @@ func (pc *presentationContextAccept) Size() uint16 {
 }
 
 func (pc *presentationContextAccept) GetAbstractSyntax() *UIDItem {
-	return pc.AbsSyntax
+	return &pc.AbsSyntax
 }
 
 func (pc *presentationContextAccept) SetAbstractSyntax(Abst string) {

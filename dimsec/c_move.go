@@ -12,12 +12,12 @@ import (
 )
 
 // CMoveReadRQ CMove request read
-func CMoveReadRQ(pdu network.PDUService) (media.DcmObj, error) {
+func CMoveReadRQ(pdu *network.PDUService) (media.DcmObj, error) {
 	return pdu.NextPDU()
 }
 
 // CMoveWriteRQ CMove request write
-func CMoveWriteRQ(pdu network.PDUService, DDO media.DcmObj, AETDest string) error {
+func CMoveWriteRQ(pdu *network.PDUService, DDO media.DcmObj, AETDest string) error {
 	DCO := media.NewEmptyDCMObj()
 
 	largo := uint16(len(AETDest))
@@ -51,7 +51,7 @@ func CMoveWriteRQ(pdu network.PDUService, DDO media.DcmObj, AETDest string) erro
 }
 
 // CMoveReadRSP CMove response read
-func CMoveReadRSP(pdu network.PDUService, pending *int) (media.DcmObj, uint16, error) {
+func CMoveReadRSP(pdu *network.PDUService, pending *int) (media.DcmObj, uint16, error) {
 	status := dicomstatus.FailureUnableToProcess
 	dco, err := pdu.NextPDU()
 	if err != nil {
@@ -76,7 +76,7 @@ func CMoveReadRSP(pdu network.PDUService, pending *int) (media.DcmObj, uint16, e
 }
 
 // CMoveWriteRSP CMove response write
-func CMoveWriteRSP(pdu network.PDUService, DCO media.DcmObj, status uint16, pending uint16) error {
+func CMoveWriteRSP(pdu *network.PDUService, DCO media.DcmObj, status uint16, pending uint16) error {
 	DCOR := media.NewEmptyDCMObj()
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())

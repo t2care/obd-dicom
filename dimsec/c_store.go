@@ -12,12 +12,12 @@ import (
 )
 
 // CStoreReadRQ CStore request read
-func CStoreReadRQ(pdu network.PDUService, command media.DcmObj) (media.DcmObj, error) {
+func CStoreReadRQ(pdu *network.PDUService, command media.DcmObj) (media.DcmObj, error) {
 	return pdu.NextPDU()
 }
 
 // CStoreWriteRQ CStore request write
-func CStoreWriteRQ(pdu network.PDUService, DDO media.DcmObj) error {
+func CStoreWriteRQ(pdu *network.PDUService, DDO media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()
 
 	sopClassUID := DDO.GetString(tags.SOPClassUID)
@@ -54,7 +54,7 @@ func CStoreWriteRQ(pdu network.PDUService, DDO media.DcmObj) error {
 }
 
 // CStoreReadRSP CStore response read
-func CStoreReadRSP(pdu network.PDUService) (uint16, error) {
+func CStoreReadRSP(pdu *network.PDUService) (uint16, error) {
 	dco, err := pdu.NextPDU()
 	if err != nil {
 		return dicomstatus.FailureUnableToProcess, err
@@ -67,7 +67,7 @@ func CStoreReadRSP(pdu network.PDUService) (uint16, error) {
 }
 
 // CStoreWriteRSP CStore response write
-func CStoreWriteRSP(pdu network.PDUService, DCO media.DcmObj, status uint16) error {
+func CStoreWriteRSP(pdu *network.PDUService, DCO media.DcmObj, status uint16) error {
 	DCOR := media.NewEmptyDCMObj()
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
