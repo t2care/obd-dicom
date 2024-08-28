@@ -23,10 +23,10 @@ type PDUService struct {
 	pdutype                      int
 	pdulength                    uint32
 	AssocRQ                      *AAssociationRQ
-	AssocAC                      *AAssociationAC
-	AssocRJ                      *AAssociationRJ
-	ReleaseRQ                    *AReleaseRQ
-	ReleaseRP                    *AReleaseRP
+	AssocAC                      *aassociationAC
+	AssocRJ                      *aassociationRJ
+	ReleaseRQ                    *areleaseRQ
+	ReleaseRP                    *areleaseRP
 	AbortRQ                      *aabortRQ
 	Pdata                        PDataTF
 	Timeout                      int

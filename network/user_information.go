@@ -13,8 +13,8 @@ type UserInformation struct {
 	Reserved1       byte
 	Length          uint16
 	UserInfoBaggage uint32
-	MaxSubLength    *MaximumSubLength
-	AsyncOpWindow   *AsyncOperationWindow
+	MaxSubLength    *maximumSubLength
+	AsyncOpWindow   *asyncOperationWindow
 	SCPSCURole      *RoleSelect
 	ImpClass        *UIDItem
 	ImpVersion      *UIDItem
@@ -44,15 +44,15 @@ func (ui *UserInformation) SetItemType(t byte) {
 	ui.ItemType = t
 }
 
-func (ui *UserInformation) GetMaxSubLength() *MaximumSubLength {
+func (ui *UserInformation) GetMaxSubLength() *maximumSubLength {
 	return ui.MaxSubLength
 }
 
-func (ui *UserInformation) GetAsyncOperationWindow() *AsyncOperationWindow {
+func (ui *UserInformation) GetAsyncOperationWindow() *asyncOperationWindow {
 	return ui.AsyncOpWindow
 }
 
-func (ui *UserInformation) SetMaxSubLength(length *MaximumSubLength) {
+func (ui *UserInformation) SetMaxSubLength(length *maximumSubLength) {
 	ui.MaxSubLength = length
 }
 

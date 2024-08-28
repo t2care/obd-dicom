@@ -6,7 +6,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type MaximumSubLength struct {
+type maximumSubLength struct {
 	ItemType      byte //0x51
 	Reserved1     byte
 	Length        uint16
@@ -14,26 +14,26 @@ type MaximumSubLength struct {
 }
 
 // NewMaximumSubLength - NewMaximumSubLength
-func NewMaximumSubLength() *MaximumSubLength {
-	return &MaximumSubLength{
+func NewMaximumSubLength() *maximumSubLength {
+	return &maximumSubLength{
 		ItemType: 0x51,
 		Length:   4,
 	}
 }
 
-func (maxim *MaximumSubLength) GetMaximumLength() uint32 {
+func (maxim *maximumSubLength) GetMaximumLength() uint32 {
 	return maxim.MaximumLength
 }
 
-func (maxim *MaximumSubLength) SetMaximumLength(length uint32) {
+func (maxim *maximumSubLength) SetMaximumLength(length uint32) {
 	maxim.MaximumLength = length
 }
 
-func (maxim *MaximumSubLength) Size() uint16 {
+func (maxim *maximumSubLength) Size() uint16 {
 	return maxim.Length + 4
 }
 
-func (maxim *MaximumSubLength) Write(rw *bufio.ReadWriter) bool {
+func (maxim *maximumSubLength) Write(rw *bufio.ReadWriter) bool {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -48,14 +48,14 @@ func (maxim *MaximumSubLength) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (maxim *MaximumSubLength) Read(ms *media.MemoryStream) (err error) {
+func (maxim *maximumSubLength) Read(ms *media.MemoryStream) (err error) {
 	if maxim.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return maxim.ReadDynamic(ms)
 }
 
-func (maxim *MaximumSubLength) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (maxim *maximumSubLength) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if maxim.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

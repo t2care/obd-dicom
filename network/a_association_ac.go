@@ -11,7 +11,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type AAssociationAC struct {
+type aassociationAC struct {
 	ItemType           byte
 	Reserved1          byte
 	Length             uint32
@@ -26,8 +26,8 @@ type AAssociationAC struct {
 }
 
 // NewAAssociationAC NewAAssociationAC
-func NewAAssociationAC() *AAssociationAC {
-	return &AAssociationAC{
+func NewAAssociationAC() *aassociationAC {
+	return &aassociationAC{
 		ItemType:        0x02,
 		Reserved1:       0x00,
 		ProtocolVersion: 0x01,
@@ -43,15 +43,15 @@ func NewAAssociationAC() *AAssociationAC {
 	}
 }
 
-func (aaac *AAssociationAC) GetAppContext() *UIDItem {
+func (aaac *aassociationAC) GetAppContext() *UIDItem {
 	return aaac.AppContext
 }
 
-func (aaac *AAssociationAC) SetAppContext(context *UIDItem) {
+func (aaac *aassociationAC) SetAppContext(context *UIDItem) {
 	aaac.AppContext = context
 }
 
-func (aaac *AAssociationAC) GetCallingAE() string {
+func (aaac *aassociationAC) GetCallingAE() string {
 	temp := []byte{}
 	for _, b := range aaac.CallingAE {
 		if b != 0x00 && b != 0x20 {
@@ -61,7 +61,7 @@ func (aaac *AAssociationAC) GetCallingAE() string {
 	return string(temp)
 }
 
-func (aaac *AAssociationAC) SetCallingAE(AET string) {
+func (aaac *aassociationAC) SetCallingAE(AET string) {
 	copy(aaac.CallingAE[:], AET)
 	for index, b := range aaac.CallingAE {
 		if b == 0x00 {
@@ -70,7 +70,7 @@ func (aaac *AAssociationAC) SetCallingAE(AET string) {
 	}
 }
 
-func (aaac *AAssociationAC) GetCalledAE() string {
+func (aaac *aassociationAC) GetCalledAE() string {
 	temp := []byte{}
 	for _, b := range aaac.CalledAE {
 		if b != 0x00 && b != 0x20 {
@@ -80,7 +80,7 @@ func (aaac *AAssociationAC) GetCalledAE() string {
 	return string(temp)
 }
 
-func (aaac *AAssociationAC) SetCalledAE(AET string) {
+func (aaac *aassociationAC) SetCalledAE(AET string) {
 	copy(aaac.CalledAE[:], AET)
 	for index, b := range aaac.CalledAE {
 		if b == 0x00 {
@@ -89,31 +89,31 @@ func (aaac *AAssociationAC) SetCalledAE(AET string) {
 	}
 }
 
-func (aaac *AAssociationAC) AddPresContextAccept(context *PresentationContextAccept) {
+func (aaac *aassociationAC) AddPresContextAccept(context *PresentationContextAccept) {
 	aaac.PresContextAccepts = append(aaac.PresContextAccepts, context)
 }
 
-func (aaac *AAssociationAC) GetPresContextAccepts() []*PresentationContextAccept {
+func (aaac *aassociationAC) GetPresContextAccepts() []*PresentationContextAccept {
 	return aaac.PresContextAccepts
 }
 
-func (aaac *AAssociationAC) GetUserInformation() *UserInformation {
+func (aaac *aassociationAC) GetUserInformation() *UserInformation {
 	return aaac.UserInfo
 }
 
-func (aaac *AAssociationAC) SetUserInformation(UserInfo *UserInformation) {
+func (aaac *aassociationAC) SetUserInformation(UserInfo *UserInformation) {
 	aaac.UserInfo = UserInfo
 }
 
-func (aaac *AAssociationAC) GetMaxSubLength() uint32 {
+func (aaac *aassociationAC) GetMaxSubLength() uint32 {
 	return aaac.UserInfo.GetMaxSubLength().GetMaximumLength()
 }
 
-func (aaac *AAssociationAC) SetMaxSubLength(length uint32) {
+func (aaac *aassociationAC) SetMaxSubLength(length uint32) {
 	aaac.UserInfo.GetMaxSubLength().SetMaximumLength(length)
 }
 
-func (aaac *AAssociationAC) Size() uint32 {
+func (aaac *aassociationAC) Size() uint32 {
 	aaac.Length = 4 + 16 + 16 + 32
 	aaac.Length += uint32(aaac.AppContext.GetSize())
 
@@ -125,7 +125,7 @@ func (aaac *AAssociationAC) Size() uint32 {
 	return aaac.Length + 6
 }
 
-func (aaac *AAssociationAC) Write(rw *bufio.ReadWriter) error {
+func (aaac *aassociationAC) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	slog.Info("ASSOC-AC:", "CallingAE", aaac.GetCallingAE(), "CalledAE", aaac.GetCalledAE())
@@ -160,14 +160,14 @@ func (aaac *AAssociationAC) Write(rw *bufio.ReadWriter) error {
 	return aaac.UserInfo.Write(rw)
 }
 
-func (aaac *AAssociationAC) Read(ms *media.MemoryStream) (err error) {
+func (aaac *aassociationAC) Read(ms *media.MemoryStream) (err error) {
 	if aaac.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aaac.ReadDynamic(ms)
 }
 
-func (aaac *AAssociationAC) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (aaac *aassociationAC) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aaac.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
