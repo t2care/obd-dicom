@@ -50,7 +50,7 @@ type pduService struct {
 	AssocRQ                      AAssociationRQ
 	AssocAC                      *AAssociationAC
 	AssocRJ                      AAssociationRJ
-	ReleaseRQ                    AReleaseRQ
+	ReleaseRQ                    *AReleaseRQ
 	ReleaseRP                    AReleaseRP
 	AbortRQ                      *AAbortRQ
 	Pdata                        PDataTF
