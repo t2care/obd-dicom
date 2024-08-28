@@ -11,10 +11,10 @@ import (
 type PresentationContext interface {
 	GetPresentationContextID() byte
 	SetPresentationContextID(id byte)
-	GetAbstractSyntax() UIDItem
+	GetAbstractSyntax() *UIDItem
 	SetAbstractSyntax(Abst string)
 	AddTransferSyntax(Tran string)
-	GetTransferSyntaxes() []UIDItem
+	GetTransferSyntaxes() []*UIDItem
 	Size() uint16
 	Write(rw *bufio.ReadWriter) error
 	Read(ms media.MemoryStream) error
@@ -29,8 +29,8 @@ type presentationContext struct {
 	Reserved2             byte
 	Reserved3             byte
 	Reserved4             byte
-	AbsSyntax             uidItem
-	TrnSyntaxs            []UIDItem
+	AbsSyntax             UIDItem
+	TrnSyntaxs            []*UIDItem
 }
 
 // NewPresentationContext - NewPresentationContext
@@ -49,7 +49,7 @@ func (pc *presentationContext) SetPresentationContextID(id byte) {
 	pc.PresentationContextID = id
 }
 
-func (pc *presentationContext) GetAbstractSyntax() UIDItem {
+func (pc *presentationContext) GetAbstractSyntax() *UIDItem {
 	return &pc.AbsSyntax
 }
 
@@ -65,7 +65,7 @@ func (pc *presentationContext) AddTransferSyntax(Tran string) {
 	pc.TrnSyntaxs = append(pc.TrnSyntaxs, TrnSyntax)
 }
 
-func (pc *presentationContext) GetTransferSyntaxes() []UIDItem {
+func (pc *presentationContext) GetTransferSyntaxes() []*UIDItem {
 	return pc.TrnSyntaxs
 }
 
@@ -135,7 +135,7 @@ func (pc *presentationContext) ReadDynamic(ms media.MemoryStream) (err error) {
 
 	Count := pc.Length - 4 - pc.AbsSyntax.GetSize()
 	for Count > 0 {
-		var TrnSyntax uidItem
+		var TrnSyntax UIDItem
 		TrnSyntax.Read(ms)
 		Count = Count - TrnSyntax.GetSize()
 		if TrnSyntax.GetSize() > 0 {

@@ -21,7 +21,7 @@ type AAssociationRQ struct {
 	CallingAE       [16]byte // 16 bytes transfered
 	CalledAE        [16]byte // 16 bytes transfered
 	Reserved3       [32]byte
-	AppContext      UIDItem
+	AppContext      *UIDItem
 	PresContexts    []PresentationContext
 	UserInfo        UserInformation
 	ID              int64
@@ -34,7 +34,7 @@ func NewAAssociationRQ() *AAssociationRQ {
 		Reserved1:       0x00,
 		ProtocolVersion: 0x01,
 		Reserved2:       0x00,
-		AppContext: &uidItem{
+		AppContext: &UIDItem{
 			itemType:  0x10,
 			reserved1: 0x00,
 			uid:       sopclass.DICOMApplicationContext.UID,
@@ -46,11 +46,11 @@ func NewAAssociationRQ() *AAssociationRQ {
 	}
 }
 
-func (aarq *AAssociationRQ) GetAppContext() UIDItem {
+func (aarq *AAssociationRQ) GetAppContext() *UIDItem {
 	return aarq.AppContext
 }
 
-func (aarq *AAssociationRQ) SetAppContext(context UIDItem) {
+func (aarq *AAssociationRQ) SetAppContext(context *UIDItem) {
 	aarq.AppContext = context
 }
 
@@ -112,7 +112,7 @@ func (aarq *AAssociationRQ) SetMaxSubLength(length uint32) {
 	aarq.UserInfo.GetMaxSubLength().SetMaximumLength(length)
 }
 
-func (aarq *AAssociationRQ) GetImpClass() UIDItem {
+func (aarq *AAssociationRQ) GetImpClass() *UIDItem {
 	return aarq.UserInfo.GetImpClass()
 }
 

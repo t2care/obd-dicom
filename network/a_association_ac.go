@@ -20,7 +20,7 @@ type AAssociationAC struct {
 	CallingAE          [16]byte
 	CalledAE           [16]byte
 	Reserved3          [32]byte
-	AppContext         UIDItem
+	AppContext         *UIDItem
 	PresContextAccepts []PresentationContextAccept
 	UserInfo           UserInformation
 }
@@ -32,7 +32,7 @@ func NewAAssociationAC() *AAssociationAC {
 		Reserved1:       0x00,
 		ProtocolVersion: 0x01,
 		Reserved2:       0x00,
-		AppContext: &uidItem{
+		AppContext: &UIDItem{
 			itemType:  0x10,
 			reserved1: 0x00,
 			uid:       sopclass.DICOMApplicationContext.UID,
@@ -43,11 +43,11 @@ func NewAAssociationAC() *AAssociationAC {
 	}
 }
 
-func (aaac *AAssociationAC) GetAppContext() UIDItem {
+func (aaac *AAssociationAC) GetAppContext() *UIDItem {
 	return aaac.AppContext
 }
 
-func (aaac *AAssociationAC) SetAppContext(context UIDItem) {
+func (aaac *AAssociationAC) SetAppContext(context *UIDItem) {
 	aaac.AppContext = context
 }
 

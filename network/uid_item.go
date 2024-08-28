@@ -6,74 +6,58 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// UIDitem - UIDitem
-type UIDItem interface {
-	GetLength() uint16
-	GetReserved() byte
-	GetSize() uint16
-	GetType() byte
-	GetUID() string
-	SetReserved(reserve byte)
-	SetLength(length uint16)
-	SetType(itemType byte)
-	SetUID(uid string)
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
-type uidItem struct {
+type UIDItem struct {
 	itemType  byte
 	reserved1 byte
 	length    uint16
 	uid       string
 }
 
-func NewUIDItem(uid string, itemType byte) UIDItem {
-	return &uidItem{
+func NewUIDItem(uid string, itemType byte) *UIDItem {
+	return &UIDItem{
 		itemType: itemType,
 		uid:      uid,
 		length:   uint16(len(uid)),
 	}
 }
 
-func (u *uidItem) GetLength() uint16 {
+func (u *UIDItem) GetLength() uint16 {
 	return u.length
 }
 
-func (u *uidItem) GetReserved() byte {
+func (u *UIDItem) GetReserved() byte {
 	return u.reserved1
 }
 
-func (u *uidItem) GetSize() uint16 {
+func (u *UIDItem) GetSize() uint16 {
 	return u.length + 4
 }
 
-func (u *uidItem) GetType() byte {
+func (u *UIDItem) GetType() byte {
 	return u.itemType
 }
 
-func (u *uidItem) GetUID() string {
+func (u *UIDItem) GetUID() string {
 	return u.uid
 }
 
-func (u *uidItem) SetReserved(reserve byte) {
+func (u *UIDItem) SetReserved(reserve byte) {
 	u.reserved1 = reserve
 }
 
-func (u *uidItem) SetLength(length uint16) {
+func (u *UIDItem) SetLength(length uint16) {
 	u.length = length
 }
 
-func (u *uidItem) SetType(itemType byte) {
+func (u *UIDItem) SetType(itemType byte) {
 	u.itemType = itemType
 }
 
-func (u *uidItem) SetUID(uid string) {
+func (u *UIDItem) SetUID(uid string) {
 	u.uid = uid
 }
 
-func (u *uidItem) Write(rw *bufio.ReadWriter) error {
+func (u *UIDItem) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -85,14 +69,14 @@ func (u *uidItem) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (u *uidItem) Read(ms media.MemoryStream) (err error) {
+func (u *UIDItem) Read(ms media.MemoryStream) (err error) {
 	if u.itemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return u.ReadDynamic(ms)
 }
 
-func (u *uidItem) ReadDynamic(ms media.MemoryStream) (err error) {
+func (u *UIDItem) ReadDynamic(ms media.MemoryStream) (err error) {
 	if u.reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

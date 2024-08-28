@@ -16,9 +16,9 @@ type UserInformation interface {
 	GetMaxSubLength() MaximumSubLength
 	SetMaxSubLength(length MaximumSubLength)
 	Size() uint16
-	GetImpClass() UIDItem
+	GetImpClass() *UIDItem
 	SetImpClassUID(name string)
-	GetImpVersion() UIDItem
+	GetImpVersion() *UIDItem
 	SetImpVersionName(name string)
 	Write(rw *bufio.ReadWriter) (err error)
 	Read(ms media.MemoryStream) (err error)
@@ -33,8 +33,8 @@ type userInformation struct {
 	MaxSubLength    MaximumSubLength
 	AsyncOpWindow   AsyncOperationWindow
 	SCPSCURole      RoleSelect
-	ImpClass        uidItem
-	ImpVersion      uidItem
+	ImpClass        *UIDItem
+	ImpVersion      *UIDItem
 }
 
 // NewUserInformation - NewUserInformation
@@ -44,10 +44,10 @@ func NewUserInformation() UserInformation {
 		MaxSubLength:  NewMaximumSubLength(),
 		AsyncOpWindow: NewAsyncOperationWindow(),
 		SCPSCURole:    NewRoleSelect(),
-		ImpClass: uidItem{
+		ImpClass: &UIDItem{
 			itemType: 0x52,
 		},
-		ImpVersion: uidItem{
+		ImpVersion: &UIDItem{
 			itemType: 0x55,
 		},
 	}
@@ -80,8 +80,8 @@ func (ui *userInformation) Size() uint16 {
 	return ui.Length + 4
 }
 
-func (ui *userInformation) GetImpClass() UIDItem {
-	return &ui.ImpClass
+func (ui *userInformation) GetImpClass() *UIDItem {
+	return ui.ImpClass
 }
 
 func (ui *userInformation) SetImpClassUID(name string) {
@@ -91,8 +91,8 @@ func (ui *userInformation) SetImpClassUID(name string) {
 	ui.ImpClass.SetLength(uint16(len(name)))
 }
 
-func (ui *userInformation) GetImpVersion() UIDItem {
-	return &ui.ImpVersion
+func (ui *userInformation) GetImpVersion() *UIDItem {
+	return ui.ImpVersion
 }
 
 func (ui *userInformation) SetImpVersionName(name string) {

@@ -15,7 +15,7 @@ func TestNewUIDitem(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want UIDItem
+		want *UIDItem
 	}{
 		{
 			name: "Should create UIDItem",
@@ -23,7 +23,7 @@ func TestNewUIDitem(t *testing.T) {
 				uid:      sopclass.MediaStorageDirectoryStorage.UID,
 				itemType: 0x00,
 			},
-			want: &uidItem{
+			want: &UIDItem{
 				itemType:  0x00,
 				reserved1: 0x00,
 				length:    uint16(len(sopclass.MediaStorageDirectoryStorage.UID)),

@@ -15,9 +15,9 @@ type PresentationContextAccept interface {
 	SetPresentationContextID(id byte)
 	GetResult() byte
 	SetResult(result byte)
-	GetTrnSyntax() UIDItem
+	GetTrnSyntax() *UIDItem
 	Size() uint16
-	GetAbstractSyntax() UIDItem
+	GetAbstractSyntax() *UIDItem
 	SetAbstractSyntax(Abst string)
 	SetTransferSyntax(Tran string)
 	Write(rw *bufio.ReadWriter) (err error)
@@ -33,8 +33,8 @@ type presentationContextAccept struct {
 	Reserved2             byte
 	Result                byte
 	Reserved4             byte
-	AbsSyntax             uidItem
-	TrnSyntax             uidItem
+	AbsSyntax             *UIDItem
+	TrnSyntax             *UIDItem
 }
 
 // NewPresentationContextAccept creates a PresentationContextAccept
@@ -62,8 +62,8 @@ func (pc *presentationContextAccept) SetResult(result byte) {
 	pc.Result = result
 }
 
-func (pc *presentationContextAccept) GetTrnSyntax() UIDItem {
-	return &pc.TrnSyntax
+func (pc *presentationContextAccept) GetTrnSyntax() *UIDItem {
+	return pc.TrnSyntax
 }
 
 // Size gets the size of presentation
@@ -73,8 +73,8 @@ func (pc *presentationContextAccept) Size() uint16 {
 	return pc.Length + 4
 }
 
-func (pc *presentationContextAccept) GetAbstractSyntax() UIDItem {
-	return &pc.AbsSyntax
+func (pc *presentationContextAccept) GetAbstractSyntax() *UIDItem {
+	return pc.AbsSyntax
 }
 
 func (pc *presentationContextAccept) SetAbstractSyntax(Abst string) {
