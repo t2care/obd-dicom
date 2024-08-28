@@ -277,7 +277,7 @@ func Test_scu_StoreSCU(t *testing.T) {
 	}
 }
 
-func StartSCP(t testing.TB, port int) (func(t testing.TB), SCP) {
+func StartSCP(t testing.TB, port int) (func(t testing.TB), *SCP) {
 	testSCP := NewSCP(port)
 	go func() {
 		if err := testSCP.Start(); err != nil {
