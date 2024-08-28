@@ -14,30 +14,18 @@ import (
 	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
 )
 
-// SCP - Interface to scp
-type SCP interface {
-	Start() error
-	Stop() error
-	OnAssociationRequest(f func(request network.AAssociationRQ) bool)
-	OnAssociationRelease(f func(request network.AAssociationRQ))
-	OnCFindRequest(f func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16))
-	OnCMoveRequest(f func(request network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16)
-	OnCStoreRequest(f func(request network.AAssociationRQ, data media.DcmObj) uint16)
-	handleConnection(conn net.Conn)
-}
-
 type scp struct {
 	Port                 int
 	listener             net.Listener
-	onAssociationRequest func(request network.AAssociationRQ) bool
-	onAssociationRelease func(request network.AAssociationRQ)
-	onCFindRequest       func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)
-	onCMoveRequest       func(request network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16
-	onCStoreRequest      func(request network.AAssociationRQ, data media.DcmObj) uint16
+	onAssociationRequest func(request *network.AAssociationRQ) bool
+	onAssociationRelease func(request *network.AAssociationRQ)
+	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
+	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16
+	onCStoreRequest      func(request *network.AAssociationRQ, data *media.DcmObj) uint16
 }
 
 // NewSCP - Creates an interface to scu
-func NewSCP(port int) SCP {
+func NewSCP(port int) *scp {
 	media.InitDict()
 
 	return &scp{
@@ -81,7 +69,7 @@ func (s *scp) handleConnection(conn net.Conn) {
 	}
 
 	var err error
-	var dco media.DcmObj
+	var dco *media.DcmObj
 	for err == nil {
 		dco, err = pdu.NextPDU()
 		if dco == nil {
@@ -187,22 +175,22 @@ func (s *scp) handleConnection(conn net.Conn) {
 	}
 }
 
-func (s *scp) OnAssociationRequest(f func(request network.AAssociationRQ) bool) {
+func (s *scp) OnAssociationRequest(f func(request *network.AAssociationRQ) bool) {
 	s.onAssociationRequest = f
 }
 
-func (s *scp) OnAssociationRelease(f func(request network.AAssociationRQ)) {
+func (s *scp) OnAssociationRelease(f func(request *network.AAssociationRQ)) {
 	s.onAssociationRelease = f
 }
 
-func (s *scp) OnCFindRequest(f func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)) {
+func (s *scp) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
 	s.onCFindRequest = f
 }
 
-func (s *scp) OnCMoveRequest(f func(request network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16) {
+func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16) {
 	s.onCMoveRequest = f
 }
 
-func (s *scp) OnCStoreRequest(f func(request network.AAssociationRQ, data media.DcmObj) uint16) {
+func (s *scp) OnCStoreRequest(f func(request *network.AAssociationRQ, data *media.DcmObj) uint16) {
 	s.onCStoreRequest = f
 }

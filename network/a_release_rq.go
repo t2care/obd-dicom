@@ -6,14 +6,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// AReleaseRQ AReleaseRQ
-type AReleaseRQ interface {
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type areleaseRQ struct {
 	ItemType  byte // 0x05
 	Reserved1 byte
@@ -22,7 +14,7 @@ type areleaseRQ struct {
 }
 
 // NewAReleaseRQ NewAReleaseRQ
-func NewAReleaseRQ() AReleaseRQ {
+func NewAReleaseRQ() *areleaseRQ {
 	return &areleaseRQ{
 		ItemType:  0x05,
 		Reserved1: 0x00,
@@ -48,14 +40,14 @@ func (arrq *areleaseRQ) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (arrq *areleaseRQ) Read(ms media.MemoryStream) (err error) {
+func (arrq *areleaseRQ) Read(ms *media.MemoryStream) (err error) {
 	if arrq.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return arrq.ReadDynamic(ms)
 }
 
-func (arrq *areleaseRQ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (arrq *areleaseRQ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if arrq.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

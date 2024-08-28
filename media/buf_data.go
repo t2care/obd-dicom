@@ -10,97 +10,68 @@ import (
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 )
 
-// BufData - is an interface to buffer manipulation class
-type BufData interface {
-	ClearMemoryStream()
-	IsBigEndian() bool
-	SetBigEndian(isBigEndian bool)
-	GetPosition() int
-	SetPosition(position int)
-	GetSize() int
-	Read(count int) ([]byte, error)
-	ReadByte() (byte, error)
-	ReadUint16() (uint16, error)
-	ReadUint32() (uint32, error)
-	Write(data []byte, count int) (int, error)
-	WriteAETitle(aeTitle string)
-	WriteByte(value byte) error
-	WriteUint16(value uint16)
-	WriteUint32(value uint32)
-	WriteString(value string)
-	ReadTag(explicitVR bool) (*DcmTag, error)
-	WriteTag(tag *DcmTag, explicitVR bool)
-	WriteStringTag(group uint16, element uint16, vr string, content string, explicitVR bool)
-	ReadMeta() (*transfersyntax.TransferSyntax, error)
-	WriteMeta(SOPClassUID string, SOPInstanceUID string, TransferSyntax string)
-	ReadObj(obj DcmObj) error
-	WriteObj(obj DcmObj)
-	Send(rw *bufio.ReadWriter) error
-	GetAllBytes() []byte
-}
-
-type bufData struct {
+type BufData struct {
 	BigEndian bool
-	MS        MemoryStream
+	MS        *MemoryStream
 }
 
 // NewEmptyBufData -
-func NewEmptyBufData() BufData {
-	return &bufData{
+func NewEmptyBufData() *BufData {
+	return &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
 	}
 }
 
 // NewBufDataFromBytes -
-func NewBufDataFromBytes(data []byte) BufData {
-	return &bufData{
+func NewBufDataFromBytes(data []byte) *BufData {
+	return &BufData{
 		BigEndian: false,
 		MS:        NewMemoryStreamFromBytes(data),
 	}
 }
 
 // NewBufDataFromFile -
-func NewBufDataFromFile(fileName string) (BufData, error) {
+func NewBufDataFromFile(fileName string) (*BufData, error) {
 	ms, err := NewMemoryStreamFromFile(fileName)
 	if err != nil {
 		return nil, err
 	}
-	return &bufData{
+	return &BufData{
 		BigEndian: false,
 		MS:        ms,
 	}, nil
 }
 
-func (bd *bufData) ClearMemoryStream() {
+func (bd *BufData) ClearMemoryStream() {
 	bd.MS.Clear()
 }
 
-func (bd *bufData) IsBigEndian() bool {
+func (bd *BufData) IsBigEndian() bool {
 	return bd.BigEndian
 }
 
-func (bd *bufData) SetBigEndian(isBigEndian bool) {
+func (bd *BufData) SetBigEndian(isBigEndian bool) {
 	bd.BigEndian = isBigEndian
 }
 
-func (bd *bufData) GetPosition() int {
+func (bd *BufData) GetPosition() int {
 	return bd.MS.GetPosition()
 }
 
-func (bd *bufData) SetPosition(position int) {
+func (bd *BufData) SetPosition(position int) {
 	bd.MS.SetPosition(position)
 }
 
-func (bd *bufData) GetSize() int {
+func (bd *BufData) GetSize() int {
 	return bd.MS.GetSize()
 }
 
-func (bd *bufData) Read(count int) ([]byte, error) {
+func (bd *BufData) Read(count int) ([]byte, error) {
 	return bd.MS.Read(count)
 }
 
-func (bd *bufData) ReadByte() (byte, error) {
+func (bd *BufData) ReadByte() (byte, error) {
 	c, err := bd.MS.Read(1)
 	if err != nil {
 		return 0, err
@@ -108,7 +79,7 @@ func (bd *bufData) ReadByte() (byte, error) {
 	return c[0], nil
 }
 
-func (bd *bufData) ReadUint16() (uint16, error) {
+func (bd *BufData) ReadUint16() (uint16, error) {
 	c, err := bd.MS.Read(2)
 	if err != nil {
 		return 0, err
@@ -119,7 +90,7 @@ func (bd *bufData) ReadUint16() (uint16, error) {
 	return binary.LittleEndian.Uint16(c), nil
 }
 
-func (bd *bufData) ReadUint32() (uint32, error) {
+func (bd *BufData) ReadUint32() (uint32, error) {
 	c, err := bd.MS.Read(4)
 	if err != nil {
 		return 0, err
@@ -130,11 +101,11 @@ func (bd *bufData) ReadUint32() (uint32, error) {
 	return binary.LittleEndian.Uint32(c), nil
 }
 
-func (bd *bufData) Write(data []byte, count int) (int, error) {
+func (bd *BufData) Write(data []byte, count int) (int, error) {
 	return bd.MS.Write(data, count)
 }
 
-func (bd *bufData) WriteAETitle(aeTitle string) {
+func (bd *BufData) WriteAETitle(aeTitle string) {
 	endPos := bd.GetPosition() + 16
 	bd.WriteString(aeTitle)
 	for bd.GetPosition() < endPos {
@@ -143,13 +114,13 @@ func (bd *bufData) WriteAETitle(aeTitle string) {
 }
 
 // WriteByte writes a byte
-func (bd *bufData) WriteByte(value byte) error {
+func (bd *BufData) WriteByte(value byte) error {
 	_, err := bd.MS.Write([]byte{value}, 1)
 	return err
 }
 
 // WriteUint16 writes an unsigned int
-func (bd *bufData) WriteUint16(value uint16) {
+func (bd *BufData) WriteUint16(value uint16) {
 	c := make([]byte, 2)
 	if bd.BigEndian {
 		binary.BigEndian.PutUint16(c, value)
@@ -160,7 +131,7 @@ func (bd *bufData) WriteUint16(value uint16) {
 }
 
 // WriteUint32 writes an unsigned int
-func (bd *bufData) WriteUint32(value uint32) {
+func (bd *BufData) WriteUint32(value uint32) {
 	c := make([]byte, 4)
 	if bd.BigEndian {
 		binary.BigEndian.PutUint32(c, value)
@@ -170,12 +141,12 @@ func (bd *bufData) WriteUint32(value uint32) {
 	bd.MS.Write(c, 4)
 }
 
-func (bd *bufData) WriteString(value string) {
+func (bd *BufData) WriteString(value string) {
 	bd.MS.Write([]byte(value), len(value))
 }
 
 // ReadTag - read a single tag from the Stream
-func (bd *bufData) ReadTag(explicitVR bool) (*DcmTag, error) {
+func (bd *BufData) ReadTag(explicitVR bool) (*DcmTag, error) {
 	group, err := bd.ReadUint16()
 	if err != nil {
 		return nil, err
@@ -239,7 +210,7 @@ func (bd *bufData) ReadTag(explicitVR bool) (*DcmTag, error) {
 }
 
 // WriteTag - Write a single tag to stream
-func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
+func (bd *BufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	bd.WriteUint16(tag.Group)
 	bd.WriteUint16(tag.Element)
 	// If the byte length is not even, append 1 padding byte to make it even.
@@ -273,7 +244,7 @@ func (bd *bufData) WriteTag(tag *DcmTag, explicitVR bool) {
 }
 
 // WriteStringTag - Writes a String to a DICOM tag
-func (bd *bufData) WriteStringTag(group uint16, element uint16, vr string, content string, explicitVR bool) {
+func (bd *BufData) WriteStringTag(group uint16, element uint16, vr string, content string, explicitVR bool) {
 	data := []byte(content)
 	length := uint32(len(data))
 	if length%2 == 1 {
@@ -296,7 +267,7 @@ func (bd *bufData) WriteStringTag(group uint16, element uint16, vr string, conte
 }
 
 // ReadMeta - Read Meta Header
-func (bd *bufData) ReadMeta() (*transfersyntax.TransferSyntax, error) {
+func (bd *BufData) ReadMeta() (*transfersyntax.TransferSyntax, error) {
 	var TransferSyntax *transfersyntax.TransferSyntax
 	pos := 0
 
@@ -324,7 +295,7 @@ func (bd *bufData) ReadMeta() (*transfersyntax.TransferSyntax, error) {
 }
 
 // WriteMeta - Write Meta Header
-func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, TransferSyntax string) {
+func (bd *BufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, TransferSyntax string) {
 	explicitVR := true
 	buffer := make([]byte, 128)
 	var largo uint32
@@ -368,7 +339,7 @@ func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 }
 
 // ReadObj - Read a DICOM Object from a BufData
-func (bd *bufData) ReadObj(obj DcmObj) error {
+func (bd *BufData) ReadObj(obj *DcmObj) error {
 	isExplicitVR := obj.IsExplicitVR()
 	for bd.GetPosition() < bd.GetSize() {
 		tag, err := bd.ReadTag(isExplicitVR)
@@ -387,7 +358,7 @@ func (bd *bufData) ReadObj(obj DcmObj) error {
 }
 
 // WriteObj - Write a DICOM Object to a BufData
-func (bd *bufData) WriteObj(obj DcmObj) {
+func (bd *BufData) WriteObj(obj *DcmObj) {
 	//	bd.BigEndian = BigEndian
 	// Si lo limpio elimino el meta!!
 	//	bd.MS.Clear()
@@ -397,7 +368,7 @@ func (bd *bufData) WriteObj(obj DcmObj) {
 	}
 }
 
-func (bd *bufData) Send(rw *bufio.ReadWriter) error {
+func (bd *BufData) Send(rw *bufio.ReadWriter) error {
 	bd.SetPosition(0)
 	buffer, _ := bd.MS.Read(bd.GetSize())
 	bd.MS.Clear()
@@ -410,11 +381,11 @@ func (bd *bufData) Send(rw *bufio.ReadWriter) error {
 	return nil
 }
 
-func (bd *bufData) GetAllBytes() []byte {
+func (bd *BufData) GetAllBytes() []byte {
 	return bd.MS.GetData()
 }
 
-func (bd *bufData) readString(length int) string {
+func (bd *BufData) readString(length int) string {
 	temp, _ := bd.MS.Read(length)
 	return string(temp)
 }

@@ -6,15 +6,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// AAbortRQ - AAbortRQ
-type AAbortRQ interface {
-	GetReason() string
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type aabortRQ struct {
 	ItemType  byte // 0x07
 	Reserved1 byte
@@ -26,7 +17,7 @@ type aabortRQ struct {
 }
 
 // NewAAbortRQ - NewAAbortRQ
-func NewAAbortRQ() AAbortRQ {
+func NewAAbortRQ() *aabortRQ {
 	return &aabortRQ{
 		ItemType:  0x07,
 		Reserved1: 0x00,
@@ -62,14 +53,14 @@ func (aarq *aabortRQ) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (aarq *aabortRQ) Read(ms media.MemoryStream) (err error) {
+func (aarq *aabortRQ) Read(ms *media.MemoryStream) (err error) {
 	if aarq.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarq.ReadDynamic(ms)
 }
 
-func (aarq *aabortRQ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aarq *aabortRQ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aarq.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

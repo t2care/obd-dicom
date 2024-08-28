@@ -6,14 +6,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// RoleSelect - RoleSelect
-type RoleSelect interface {
-	Size() uint16
-	Write(rw *bufio.ReadWriter) bool
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type roleSelect struct {
 	ItemType  byte //0x54
 	Reserved1 byte
@@ -24,7 +16,7 @@ type roleSelect struct {
 }
 
 // NewRoleSelect - NewRoleSelect
-func NewRoleSelect() RoleSelect {
+func NewRoleSelect() *roleSelect {
 	return &roleSelect{
 		ItemType: 0x54,
 	}
@@ -52,14 +44,14 @@ func (scpscu *roleSelect) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (scpscu *roleSelect) Read(ms media.MemoryStream) (err error) {
+func (scpscu *roleSelect) Read(ms *media.MemoryStream) (err error) {
 	if scpscu.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return scpscu.ReadDynamic(ms)
 }
 
-func (scpscu *roleSelect) ReadDynamic(ms media.MemoryStream) (err error) {
+func (scpscu *roleSelect) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if scpscu.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

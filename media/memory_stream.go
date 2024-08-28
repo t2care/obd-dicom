@@ -8,35 +8,15 @@ import (
 	"os"
 )
 
-// MemoryStream - is an inteface to a memory stream
-type MemoryStream interface {
-	GetData() []byte
-	Get() (int, error)
-	GetByte() (byte, error)
-	GetUint16() (uint16, error)
-	GetUint32() (uint32, error)
-	GetInt() (int, error)
-	GetPosition() int
-	SetPosition(position int)
-	GetSize() int
-	SetSize(size int)
-	Append(data []byte) (int, error)
-	ReadData(input []byte) error
-	Read(count int) ([]byte, error)
-	ReadFully(rw *bufio.ReadWriter, length int) error
-	Write(buffer []byte, count int) (int, error)
-	Clear()
-}
-
-type memoryStream struct {
+type MemoryStream struct {
 	Data     []byte
 	Position int
 	Size     int
 }
 
 // NewEmptyMemoryStream - Creates an inteface to a new empty memoryStream
-func NewEmptyMemoryStream() MemoryStream {
-	return &memoryStream{
+func NewEmptyMemoryStream() *MemoryStream {
+	return &MemoryStream{
 		Data:     make([]byte, 0),
 		Position: 0,
 		Size:     0,
@@ -44,8 +24,8 @@ func NewEmptyMemoryStream() MemoryStream {
 }
 
 // NewMemoryStreamFromBytes - Creates an interface to a new memoryStream from bytes
-func NewMemoryStreamFromBytes(data []byte) MemoryStream {
-	return &memoryStream{
+func NewMemoryStreamFromBytes(data []byte) *MemoryStream {
+	return &MemoryStream{
 		Data:     data,
 		Position: 0,
 		Size:     len(data),
@@ -53,20 +33,20 @@ func NewMemoryStreamFromBytes(data []byte) MemoryStream {
 }
 
 // NewMemoryStreamFromFile - Creates an interface to a new memoryStream from file
-func NewMemoryStreamFromFile(fileName string) (MemoryStream, error) {
+func NewMemoryStreamFromFile(fileName string) (*MemoryStream, error) {
 	data, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
 
-	return &memoryStream{
+	return &MemoryStream{
 		Data:     data,
 		Position: 0,
 		Size:     len(data),
 	}, nil
 }
 
-func (ms *memoryStream) GetByte() (byte, error) {
+func (ms *MemoryStream) GetByte() (byte, error) {
 	if ms.Position >= ms.Size {
 		return 0, errors.New("no more data to read")
 	}
@@ -75,7 +55,7 @@ func (ms *memoryStream) GetByte() (byte, error) {
 	return b, nil
 }
 
-func (ms *memoryStream) GetUint16() (uint16, error) {
+func (ms *MemoryStream) GetUint16() (uint16, error) {
 	if ms.Position+1 >= ms.Size {
 		return 0, errors.New("no more data to read")
 	}
@@ -85,7 +65,7 @@ func (ms *memoryStream) GetUint16() (uint16, error) {
 	return binary.BigEndian.Uint16(b), nil
 }
 
-func (ms *memoryStream) GetUint32() (uint32, error) {
+func (ms *MemoryStream) GetUint32() (uint32, error) {
 	if ms.Position+3 >= ms.Size {
 		return 0, errors.New("no more data to read")
 	}
@@ -95,7 +75,7 @@ func (ms *memoryStream) GetUint32() (uint32, error) {
 	return binary.BigEndian.Uint32(b), nil
 }
 
-func (ms *memoryStream) Get() (int, error) {
+func (ms *MemoryStream) Get() (int, error) {
 	if ms.Position >= ms.Size {
 		return 0, errors.New("no more data to read")
 	}
@@ -104,7 +84,7 @@ func (ms *memoryStream) Get() (int, error) {
 	return int(b), nil
 }
 
-func (ms *memoryStream) GetInt() (int, error) {
+func (ms *MemoryStream) GetInt() (int, error) {
 	if ms.Position+3 >= ms.Size {
 		return 0, errors.New("no more data to read")
 	}
@@ -113,7 +93,7 @@ func (ms *memoryStream) GetInt() (int, error) {
 	return int(binary.BigEndian.Uint32(b)), nil
 }
 
-func (ms *memoryStream) ReadData(dst []byte) error {
+func (ms *MemoryStream) ReadData(dst []byte) error {
 	if ms.Position+len(dst) > ms.Size {
 		return errors.New("no more data to read")
 	}
@@ -122,7 +102,7 @@ func (ms *memoryStream) ReadData(dst []byte) error {
 	return nil
 }
 
-func (ms *memoryStream) ReadFully(rw *bufio.ReadWriter, length int) error {
+func (ms *MemoryStream) ReadFully(rw *bufio.ReadWriter, length int) error {
 	data := make([]byte, length)
 	if _, err := io.ReadFull(rw, data); err != nil {
 		return err
@@ -133,28 +113,28 @@ func (ms *memoryStream) ReadFully(rw *bufio.ReadWriter, length int) error {
 	return nil
 }
 
-func (ms *memoryStream) GetData() []byte {
+func (ms *MemoryStream) GetData() []byte {
 	return ms.Data
 }
 
-func (ms *memoryStream) GetPosition() int {
+func (ms *MemoryStream) GetPosition() int {
 	return ms.Position
 }
 
-func (ms *memoryStream) SetPosition(position int) {
+func (ms *MemoryStream) SetPosition(position int) {
 	ms.Position = position
 }
 
-func (ms *memoryStream) GetSize() int {
+func (ms *MemoryStream) GetSize() int {
 	return ms.Size
 }
 
-func (ms *memoryStream) SetSize(size int) {
+func (ms *MemoryStream) SetSize(size int) {
 	ms.Size = size
 }
 
 // Read - Read from MemoryStream into Buffer count bytes
-func (ms *memoryStream) Read(count int) ([]byte, error) {
+func (ms *MemoryStream) Read(count int) ([]byte, error) {
 	buffer := make([]byte, count)
 	if count+ms.Position > ms.Size {
 		return nil, errors.New("MemoryStream::Read, count+ms.Position > ms.Size")
@@ -164,7 +144,7 @@ func (ms *memoryStream) Read(count int) ([]byte, error) {
 	return buffer, nil
 }
 
-func (ms *memoryStream) Append(data []byte) (int, error) {
+func (ms *MemoryStream) Append(data []byte) (int, error) {
 	count := len(data)
 	if count == 0 {
 		return -1, errors.New("MemoryStream::Append, nothing to write")
@@ -180,7 +160,7 @@ func (ms *memoryStream) Append(data []byte) (int, error) {
 }
 
 // Write - Write from Buffer into MemoryStream count bytes
-func (ms *memoryStream) Write(buffer []byte, count int) (int, error) {
+func (ms *MemoryStream) Write(buffer []byte, count int) (int, error) {
 	if len(buffer) == 0 {
 		return -1, errors.New("MemoryStream::Write, nothing to write")
 	}
@@ -203,7 +183,7 @@ func (ms *memoryStream) Write(buffer []byte, count int) (int, error) {
 }
 
 // Clear - Clears the memoryStream
-func (ms *memoryStream) Clear() {
+func (ms *MemoryStream) Clear() {
 	ms.Data = ms.Data[:0]
 	ms.Position = 0
 	ms.Size = 0

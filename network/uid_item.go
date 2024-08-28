@@ -6,22 +6,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// UIDitem - UIDitem
-type UIDItem interface {
-	GetLength() uint16
-	GetReserved() byte
-	GetSize() uint16
-	GetType() byte
-	GetUID() string
-	SetReserved(reserve byte)
-	SetLength(length uint16)
-	SetType(itemType byte)
-	SetUID(uid string)
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type uidItem struct {
 	itemType  byte
 	reserved1 byte
@@ -29,7 +13,7 @@ type uidItem struct {
 	uid       string
 }
 
-func NewUIDItem(uid string, itemType byte) UIDItem {
+func NewUIDItem(uid string, itemType byte) *uidItem {
 	return &uidItem{
 		itemType: itemType,
 		uid:      uid,
@@ -85,14 +69,14 @@ func (u *uidItem) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (u *uidItem) Read(ms media.MemoryStream) (err error) {
+func (u *uidItem) Read(ms *media.MemoryStream) (err error) {
 	if u.itemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return u.ReadDynamic(ms)
 }
 
-func (u *uidItem) ReadDynamic(ms media.MemoryStream) (err error) {
+func (u *uidItem) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if u.reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

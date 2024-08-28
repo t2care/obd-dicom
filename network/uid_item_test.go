@@ -15,7 +15,7 @@ func TestNewUIDitem(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want UIDItem
+		want *uidItem
 	}{
 		{
 			name: "Should create UIDItem",

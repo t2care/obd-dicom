@@ -23,16 +23,6 @@ var TransientRejectReasons map[byte]string = map[byte]string{
 	2: "Local limit exceeded",
 }
 
-// AAssociationRJ association reject struct
-type AAssociationRJ interface {
-	GetReason() string
-	Set(result byte, reason byte)
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type aassociationRJ struct {
 	ItemType  byte // 0x03
 	Reserved1 byte
@@ -44,7 +34,7 @@ type aassociationRJ struct {
 }
 
 // NewAAssociationRJ creates an association reject
-func NewAAssociationRJ() AAssociationRJ {
+func NewAAssociationRJ() *aassociationRJ {
 	return &aassociationRJ{
 		ItemType:  0x03,
 		Reserved1: 0x00,
@@ -94,14 +84,14 @@ func (aarj *aassociationRJ) Set(result byte, reason byte) {
 	aarj.Reason = reason
 }
 
-func (aarj *aassociationRJ) Read(ms media.MemoryStream) (err error) {
+func (aarj *aassociationRJ) Read(ms *media.MemoryStream) (err error) {
 	if aarj.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarj.ReadDynamic(ms)
 }
 
-func (aarj *aassociationRJ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aarj *aassociationRJ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aarj.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

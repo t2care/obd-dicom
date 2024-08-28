@@ -1,18 +1,13 @@
 package imp
 
-type Implementation interface {
-	GetClassUID() string
-	GetVersion() string
-}
-
 type implementation struct {
 	classUID string
 	version  string
 }
 
-var imp Implementation
+var imp *implementation
 
-func SetDefaultImplementation() Implementation {
+func SetDefaultImplementation() *implementation {
 	imp = &implementation{
 		classUID: "1.2.826.0.1.3680043.10.90.999",
 		version:  "OBD-Dicom",
@@ -20,7 +15,7 @@ func SetDefaultImplementation() Implementation {
 	return imp
 }
 
-func SetImplementation(classUID string, version string) Implementation {
+func SetImplementation(classUID string, version string) *implementation {
 	imp = &implementation{
 		classUID: classUID,
 		version:  version,

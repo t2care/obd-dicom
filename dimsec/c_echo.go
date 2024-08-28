@@ -11,12 +11,12 @@ import (
 )
 
 // CEchoReadRQ CEcho request read
-func CEchoReadRQ(DCO media.DcmObj) bool {
+func CEchoReadRQ(DCO *media.DcmObj) bool {
 	return DCO.GetUShort(tags.CommandField) == dicomcommand.CEchoRequest
 }
 
 // CEchoWriteRQ CEcho request write
-func CEchoWriteRQ(pdu network.PDUService) error {
+func CEchoWriteRQ(pdu *network.PDUService) error {
 	DCO := media.NewEmptyDCMObj()
 
 	sopClassUID := ""
@@ -40,7 +40,7 @@ func CEchoWriteRQ(pdu network.PDUService) error {
 }
 
 // CEchoReadRSP CEcho response read
-func CEchoReadRSP(pdu network.PDUService) error {
+func CEchoReadRSP(pdu *network.PDUService) error {
 	dco, err := pdu.NextPDU()
 	if err != nil {
 		return errors.New("CEchoReadRSP, failed pdu.Read(&DCO)")
@@ -54,7 +54,7 @@ func CEchoReadRSP(pdu network.PDUService) error {
 }
 
 // CEchoWriteRSP CEcho response write
-func CEchoWriteRSP(pdu network.PDUService, DCO media.DcmObj) error {
+func CEchoWriteRSP(pdu *network.PDUService, DCO *media.DcmObj) error {
 	DCOR := media.NewEmptyDCMObj()
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())

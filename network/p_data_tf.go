@@ -12,7 +12,7 @@ type PDataTF struct {
 	ItemType              byte
 	Reserved1             byte
 	Length                uint32
-	Buffer                media.BufData
+	Buffer                *media.BufData
 	BlockSize             uint32
 	MsgStatus             uint32
 	Endian                uint32
@@ -22,7 +22,7 @@ type PDataTF struct {
 }
 
 // ReadDynamic - ReadDynamic
-func (pd *PDataTF) ReadDynamic(ms media.MemoryStream) (err error) {
+func (pd *PDataTF) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pd.Length == 0 {
 		if pd.Reserved1, err = ms.GetByte(); err != nil {
 			return

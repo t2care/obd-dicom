@@ -12,12 +12,12 @@ import (
 )
 
 // CFindReadRQ CFind request read
-func CFindReadRQ(pdu network.PDUService) (media.DcmObj, error) {
+func CFindReadRQ(pdu *network.PDUService) (*media.DcmObj, error) {
 	return pdu.NextPDU()
 }
 
 // CFindWriteRQ CFind request write
-func CFindWriteRQ(pdu network.PDUService, DDO media.DcmObj) error {
+func CFindWriteRQ(pdu *network.PDUService, DDO *media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()
 
 	sopClassUID := ""
@@ -45,7 +45,7 @@ func CFindWriteRQ(pdu network.PDUService, DDO media.DcmObj) error {
 }
 
 // CFindReadRSP CFind response read
-func CFindReadRSP(pdu network.PDUService) (media.DcmObj, uint16, error) {
+func CFindReadRSP(pdu *network.PDUService) (*media.DcmObj, uint16, error) {
 	dco, err := pdu.NextPDU()
 	if err != nil {
 		return nil, dicomstatus.FailureUnableToProcess, err
@@ -66,7 +66,7 @@ func CFindReadRSP(pdu network.PDUService) (media.DcmObj, uint16, error) {
 }
 
 // CFindWriteRSP CFind response write
-func CFindWriteRSP(pdu network.PDUService, DCO media.DcmObj, DDO media.DcmObj, status uint16) error {
+func CFindWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, DDO *media.DcmObj, status uint16) error {
 	DCOR := media.NewEmptyDCMObj()
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())

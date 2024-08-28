@@ -56,8 +56,8 @@ func (tag *DcmTag) getString() string {
 }
 
 // writeSeq - Create an SQ tag from a DICOM Object
-func (tag *DcmTag) writeSeq(group uint16, element uint16, seq DcmObj) {
-	bufdata := &bufData{
+func (tag *DcmTag) writeSeq(group uint16, element uint16, seq *DcmObj) {
+	bufdata := &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
 	}
@@ -88,16 +88,16 @@ func (tag *DcmTag) writeSeq(group uint16, element uint16, seq DcmObj) {
 }
 
 // ReadSeq - reads a dicom sequence
-func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
+func (tag *DcmTag) ReadSeq(ExplicitVR bool) (*DcmObj, error) {
 	seq := NewEmptyDCMObj()
-	bufdata := &bufData{
+	bufdata := &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
 	}
 
 	bufdata.Write(tag.Data, int(tag.Length))
 	bufdata.MS.SetPosition(0)
-	var tempTags *dcmObj
+	var tempTags *DcmObj
 	haveItem := false
 	for bufdata.MS.GetPosition() < bufdata.MS.GetSize() {
 		temptag, err := bufdata.ReadTag(ExplicitVR)
@@ -115,7 +115,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 				continue
 			}
 			haveItem = true
-			tempTags = new(dcmObj)
+			tempTags = new(DcmObj)
 		case 0xE00D:
 			item := new(DcmTag)
 			item.writeItem(tempTags)
@@ -131,12 +131,12 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 	return seq, nil
 }
 
-func (tag *DcmTag) writeItem(obj DcmObj) {
+func (tag *DcmTag) writeItem(obj *DcmObj) {
 	tag.writeSeq(0xFFFE, 0xE000, obj)
 }
 
 func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
-	seq := new(dcmObj)
+	seq := new(DcmObj)
 	seq.SetTransferSyntax(outTS)
 	if (explicitVR != seq.IsExplicitVR()) && tag.isSequence() {
 		seq, err := tag.ReadSeq(explicitVR)

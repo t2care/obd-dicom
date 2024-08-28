@@ -6,16 +6,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// MaximumSubLength - MaximumSubLength
-type MaximumSubLength interface {
-	GetMaximumLength() uint32
-	SetMaximumLength(length uint32)
-	Size() uint16
-	Write(rw *bufio.ReadWriter) bool
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type maximumSubLength struct {
 	ItemType      byte //0x51
 	Reserved1     byte
@@ -24,7 +14,7 @@ type maximumSubLength struct {
 }
 
 // NewMaximumSubLength - NewMaximumSubLength
-func NewMaximumSubLength() MaximumSubLength {
+func NewMaximumSubLength() *maximumSubLength {
 	return &maximumSubLength{
 		ItemType: 0x51,
 		Length:   4,
@@ -58,14 +48,14 @@ func (maxim *maximumSubLength) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (maxim *maximumSubLength) Read(ms media.MemoryStream) (err error) {
+func (maxim *maximumSubLength) Read(ms *media.MemoryStream) (err error) {
 	if maxim.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return maxim.ReadDynamic(ms)
 }
 
-func (maxim *maximumSubLength) ReadDynamic(ms media.MemoryStream) (err error) {
+func (maxim *maximumSubLength) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if maxim.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

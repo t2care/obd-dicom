@@ -9,22 +9,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// PresentationContextAccept accepted presentation context
-type PresentationContextAccept interface {
-	GetPresentationContextID() byte
-	SetPresentationContextID(id byte)
-	GetResult() byte
-	SetResult(result byte)
-	GetTrnSyntax() UIDItem
-	Size() uint16
-	GetAbstractSyntax() UIDItem
-	SetAbstractSyntax(Abst string)
-	SetTransferSyntax(Tran string)
-	Write(rw *bufio.ReadWriter) (err error)
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type presentationContextAccept struct {
 	ItemType              byte //0x21
 	Reserved1             byte
@@ -38,7 +22,7 @@ type presentationContextAccept struct {
 }
 
 // NewPresentationContextAccept creates a PresentationContextAccept
-func NewPresentationContextAccept() PresentationContextAccept {
+func NewPresentationContextAccept() *presentationContextAccept {
 	return &presentationContextAccept{
 		ItemType:              0x21,
 		PresentationContextID: Uniq8(),
@@ -62,7 +46,7 @@ func (pc *presentationContextAccept) SetResult(result byte) {
 	pc.Result = result
 }
 
-func (pc *presentationContextAccept) GetTrnSyntax() UIDItem {
+func (pc *presentationContextAccept) GetTrnSyntax() *uidItem {
 	return &pc.TrnSyntax
 }
 
@@ -73,7 +57,7 @@ func (pc *presentationContextAccept) Size() uint16 {
 	return pc.Length + 4
 }
 
-func (pc *presentationContextAccept) GetAbstractSyntax() UIDItem {
+func (pc *presentationContextAccept) GetAbstractSyntax() *uidItem {
 	return &pc.AbsSyntax
 }
 
@@ -122,14 +106,14 @@ func (pc *presentationContextAccept) Write(rw *bufio.ReadWriter) (err error) {
 	return
 }
 
-func (pc *presentationContextAccept) Read(ms media.MemoryStream) (err error) {
+func (pc *presentationContextAccept) Read(ms *media.MemoryStream) (err error) {
 	if pc.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return pc.ReadDynamic(ms)
 }
 
-func (pc *presentationContextAccept) ReadDynamic(ms media.MemoryStream) (err error) {
+func (pc *presentationContextAccept) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pc.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

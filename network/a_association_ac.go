@@ -11,26 +11,6 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// AAssociationAC AAssociationAC
-type AAssociationAC interface {
-	GetAppContext() UIDItem
-	SetAppContext(context UIDItem)
-	GetCallingAE() string
-	SetCallingAE(AET string)
-	GetCalledAE() string
-	SetCalledAE(AET string)
-	AddPresContextAccept(context PresentationContextAccept)
-	GetPresContextAccepts() []PresentationContextAccept
-	GetUserInformation() UserInformation
-	SetUserInformation(UserInfo UserInformation)
-	GetMaxSubLength() uint32
-	SetMaxSubLength(length uint32)
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
 type aassociationAC struct {
 	ItemType           byte
 	Reserved1          byte
@@ -40,13 +20,13 @@ type aassociationAC struct {
 	CallingAE          [16]byte
 	CalledAE           [16]byte
 	Reserved3          [32]byte
-	AppContext         UIDItem
-	PresContextAccepts []PresentationContextAccept
-	UserInfo           UserInformation
+	AppContext         *uidItem
+	PresContextAccepts []*presentationContextAccept
+	UserInfo           *userInformation
 }
 
 // NewAAssociationAC NewAAssociationAC
-func NewAAssociationAC() AAssociationAC {
+func NewAAssociationAC() *aassociationAC {
 	return &aassociationAC{
 		ItemType:        0x02,
 		Reserved1:       0x00,
@@ -58,16 +38,16 @@ func NewAAssociationAC() AAssociationAC {
 			uid:       sopclass.DICOMApplicationContext.UID,
 			length:    uint16(len(sopclass.DICOMApplicationContext.UID)),
 		},
-		PresContextAccepts: make([]PresentationContextAccept, 0),
+		PresContextAccepts: make([]*presentationContextAccept, 0),
 		UserInfo:           NewUserInformation(),
 	}
 }
 
-func (aaac *aassociationAC) GetAppContext() UIDItem {
+func (aaac *aassociationAC) GetAppContext() *uidItem {
 	return aaac.AppContext
 }
 
-func (aaac *aassociationAC) SetAppContext(context UIDItem) {
+func (aaac *aassociationAC) SetAppContext(context *uidItem) {
 	aaac.AppContext = context
 }
 
@@ -109,19 +89,19 @@ func (aaac *aassociationAC) SetCalledAE(AET string) {
 	}
 }
 
-func (aaac *aassociationAC) AddPresContextAccept(context PresentationContextAccept) {
+func (aaac *aassociationAC) AddPresContextAccept(context *presentationContextAccept) {
 	aaac.PresContextAccepts = append(aaac.PresContextAccepts, context)
 }
 
-func (aaac *aassociationAC) GetPresContextAccepts() []PresentationContextAccept {
+func (aaac *aassociationAC) GetPresContextAccepts() []*presentationContextAccept {
 	return aaac.PresContextAccepts
 }
 
-func (aaac *aassociationAC) GetUserInformation() UserInformation {
+func (aaac *aassociationAC) GetUserInformation() *userInformation {
 	return aaac.UserInfo
 }
 
-func (aaac *aassociationAC) SetUserInformation(UserInfo UserInformation) {
+func (aaac *aassociationAC) SetUserInformation(UserInfo *userInformation) {
 	aaac.UserInfo = UserInfo
 }
 
@@ -180,14 +160,14 @@ func (aaac *aassociationAC) Write(rw *bufio.ReadWriter) error {
 	return aaac.UserInfo.Write(rw)
 }
 
-func (aaac *aassociationAC) Read(ms media.MemoryStream) (err error) {
+func (aaac *aassociationAC) Read(ms *media.MemoryStream) (err error) {
 	if aaac.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aaac.ReadDynamic(ms)
 }
 
-func (aaac *aassociationAC) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aaac *aassociationAC) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aaac.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

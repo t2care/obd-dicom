@@ -15,18 +15,6 @@ import (
 	"time"
 )
 
-// HTTPClient interface
-type HTTPClient interface {
-	Delete() ([]byte, error)
-	Get() ([]byte, error)
-	Patch(body io.Reader) ([]byte, error)
-	Post(body io.Reader) ([]byte, error)
-	PostDicom(fieldName string, fileName string, content io.Reader) ([]byte, error)
-	PostMulti(fieldName string, fileName string, content io.Reader) ([]byte, error)
-	PostMultiContent(fieldName string, fileName string, contentType string, content io.Reader) ([]byte, error)
-	Put(body io.Reader) ([]byte, error)
-}
-
 type hTTPClient struct {
 	Params HTTPParams
 }
@@ -50,7 +38,7 @@ type HTTPParams struct {
 }
 
 // NewHTTPClient returns a new http client
-func NewHTTPClient(params HTTPParams) HTTPClient {
+func NewHTTPClient(params HTTPParams) *hTTPClient {
 	return &hTTPClient{
 		Params: params,
 	}

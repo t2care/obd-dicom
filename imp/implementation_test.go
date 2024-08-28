@@ -8,7 +8,7 @@ import (
 func TestSetDefaultImplementation(t *testing.T) {
 	tests := []struct {
 		name string
-		want Implementation
+		want *implementation
 	}{
 		{
 			name: "Should set default implementation",
@@ -35,7 +35,7 @@ func TestSetImplementation(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want Implementation
+		want *implementation
 	}{
 		{
 			name: "Should set implementation",
