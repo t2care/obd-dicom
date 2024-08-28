@@ -9,7 +9,7 @@ import (
 )
 
 // DefaultCFindRequest - Creates a default C-Find request
-func DefaultCFindRequest() media.DcmObj {
+func DefaultCFindRequest() *media.DcmObj {
 	query := media.NewEmptyDCMObj()
 	query.WriteString(tags.StudyDate, "")
 	query.WriteString(tags.StudyTime, "")
@@ -29,7 +29,7 @@ func DefaultCFindRequest() media.DcmObj {
 }
 
 // DefaultCMoveRequest - Creates a default C-Move request
-func DefaultCMoveRequest(studyUID string) media.DcmObj {
+func DefaultCMoveRequest(studyUID string) *media.DcmObj {
 	query := media.NewEmptyDCMObj()
 	query.WriteString(tags.StudyDate, "")
 	query.WriteString(tags.StudyTime, "")
@@ -46,7 +46,7 @@ func DefaultCMoveRequest(studyUID string) media.DcmObj {
 }
 
 // GenerateCFindRequest - Generates C-Find request
-func GenerateCFindRequest() media.DcmObj {
+func GenerateCFindRequest() *media.DcmObj {
 	studyUID := uuids.CreateStudyUID("FAKE^PATIENT", "123456789", "AC1234", time.Now().Format("20060102"))
 	query := media.NewEmptyDCMObj()
 	query.WriteDate(tags.StudyDate, time.Now())

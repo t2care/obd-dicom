@@ -141,7 +141,7 @@ func (pdu *PDUService) Close() {
 	pdu.ReleaseRP.Read(pdu.ms)
 }
 
-func (pdu *PDUService) NextPDU() (command media.DcmObj, err error) {
+func (pdu *PDUService) NextPDU() (command *media.DcmObj, err error) {
 	if pdu.Pdata.Buffer != nil {
 		pdu.Pdata.Buffer.ClearMemoryStream()
 	} else {
@@ -272,7 +272,7 @@ func (pdu *PDUService) SetOnAssociationRelease(f func(request *AAssociationRQ)) 
 	pdu.OnAssociationRelease = f
 }
 
-func (pdu *PDUService) Write(DCO media.DcmObj, ItemType byte) error {
+func (pdu *PDUService) Write(DCO *media.DcmObj, ItemType byte) error {
 	if pdu.Pdata.Buffer != nil {
 		pdu.Pdata.Buffer.ClearMemoryStream()
 	} else {
@@ -389,12 +389,12 @@ func (pdu *PDUService) interogateAAssociateRQ(rw *bufio.ReadWriter) error {
 	return pdu.AssocRJ.Write(rw)
 }
 
-func (pdu *PDUService) parseDCMIntoRaw(DCO media.DcmObj) bool {
+func (pdu *PDUService) parseDCMIntoRaw(DCO *media.DcmObj) bool {
 	pdu.Pdata.Buffer.WriteObj(DCO)
 	return true
 }
 
-func (pdu *PDUService) parseRawVRIntoDCM(DCO media.DcmObj) bool {
+func (pdu *PDUService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
 	TrnSyntax := pdu.GetTransferSyntax(pdu.Pdata.PresentationContextID)
 	if TrnSyntax == nil {
 		slog.Info("pduservice::ParseRawVRIntoDCM - Transfer syntax length is 0")

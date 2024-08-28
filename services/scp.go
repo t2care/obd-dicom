@@ -19,9 +19,9 @@ type SCP struct {
 	listener             net.Listener
 	onAssociationRequest func(request *network.AAssociationRQ) bool
 	onAssociationRelease func(request *network.AAssociationRQ)
-	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)
-	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16
-	onCStoreRequest      func(request *network.AAssociationRQ, data media.DcmObj) uint16
+	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
+	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16
+	onCStoreRequest      func(request *network.AAssociationRQ, data *media.DcmObj) uint16
 }
 
 // NewSCP - Creates an interface to scu
@@ -69,7 +69,7 @@ func (s *SCP) handleConnection(conn net.Conn) {
 	}
 
 	var err error
-	var dco media.DcmObj
+	var dco *media.DcmObj
 	for err == nil {
 		dco, err = pdu.NextPDU()
 		if dco == nil {
@@ -183,14 +183,14 @@ func (s *SCP) OnAssociationRelease(f func(request *network.AAssociationRQ)) {
 	s.onAssociationRelease = f
 }
 
-func (s *SCP) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16)) {
+func (s *SCP) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
 	s.onCFindRequest = f
 }
 
-func (s *SCP) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data media.DcmObj) uint16) {
+func (s *SCP) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16) {
 	s.onCMoveRequest = f
 }
 
-func (s *SCP) OnCStoreRequest(f func(request *network.AAssociationRQ, data media.DcmObj) uint16) {
+func (s *SCP) OnCStoreRequest(f func(request *network.AAssociationRQ, data *media.DcmObj) uint16) {
 	s.onCStoreRequest = f
 }

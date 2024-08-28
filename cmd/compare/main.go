@@ -41,7 +41,7 @@ func main() {
 	compare(srcDicom, dstDicom)
 }
 
-func compare(source media.DcmObj, destination media.DcmObj) {
+func compare(source *media.DcmObj, destination *media.DcmObj) {
 	for _, st := range source.GetTags() {
 		found := false
 		if st.VR == "SQ" {
@@ -81,7 +81,7 @@ func compare(source media.DcmObj, destination media.DcmObj) {
 	}
 }
 
-func compareSeq(indent int, source media.DcmObj, destination media.DcmObj) {
+func compareSeq(indent int, source *media.DcmObj, destination *media.DcmObj) {
 	tabs := "\t"
 	for i := 0; i < indent; i++ {
 		tabs += "\t"

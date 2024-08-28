@@ -16,54 +16,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media/transcoder/jpeglib"
 )
 
-// DcmObj - DICOM Object structure
-type DcmObj interface {
-	Add(tag *DcmTag)
-	AddConceptNameSeq(group uint16, element uint16, CodeValue string, CodeMeaning string)
-	AddSRText(text string)
-	DumpTags() error
-	IsExplicitVR() bool
-	SetExplicitVR(explicit bool)
-	IsBigEndian() bool
-	SetBigEndian(bigEndian bool)
-	GetDate(tag *tags.Tag) time.Time
-	GetPixelData(frame int) ([]byte, error)
-	GetTagAt(i int) *DcmTag
-	GetTag(tag *tags.Tag) *DcmTag
-	GetTagGE(group uint16, element uint16) *DcmTag
-	SetTag(i int, tag *DcmTag)
-	InsertTag(i int, tag *DcmTag)
-	DelTag(i int)
-	GetTags() []*DcmTag
-	GetUShort(tag *tags.Tag) uint16
-	GetUInt(tag *tags.Tag) uint32
-	GetString(tag *tags.Tag) string
-	getUShortGE(group uint16, element uint16) uint16
-	GetUIntGE(group uint16, element uint16) uint32
-	GetStringGE(group uint16, element uint16) string
-	WriteDate(tag *tags.Tag, date time.Time)
-	WriteDateRange(tag *tags.Tag, startDate time.Time, endDate time.Time)
-	WriteTime(tag *tags.Tag, date time.Time)
-	WriteUint16(tag *tags.Tag, val uint16)
-	WriteUint32(tag *tags.Tag, val uint32)
-	WriteString(tag *tags.Tag, content string)
-	WriteUint16GE(group uint16, element uint16, vr string, val uint16)
-	WriteUint32GE(group uint16, element uint16, vr string, val uint32)
-	WriteStringGE(group uint16, element uint16, vr string, content string)
-	GetTransferSyntax() *transfersyntax.TransferSyntax
-	SetTransferSyntax(ts *transfersyntax.TransferSyntax)
-	ChangeTransferSynx(ts *transfersyntax.TransferSyntax) error
-	TagCount() int
-	CreateSR(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string)
-	CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string, fileName string)
-	WriteToBytes() []byte
-	WriteToFile(fileName string) error
-	dumpSeq(indent int) error
-	compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, pixelrep uint16, planar uint16, frames uint32, outTS string) error
-	uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error
-}
-
-type dcmObj struct {
+type DcmObj struct {
 	Tags           []*DcmTag
 	TransferSyntax *transfersyntax.TransferSyntax
 	ExplicitVR     bool
@@ -72,8 +25,8 @@ type dcmObj struct {
 }
 
 // NewEmptyDCMObj - Create as an interface to a new empty dcmObj
-func NewEmptyDCMObj() DcmObj {
-	return &dcmObj{
+func NewEmptyDCMObj() *DcmObj {
+	return &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
@@ -83,7 +36,7 @@ func NewEmptyDCMObj() DcmObj {
 }
 
 // NewDCMObjFromFile - Read from a DICOM file into a DICOM Object
-func NewDCMObjFromFile(fileName string) (DcmObj, error) {
+func NewDCMObjFromFile(fileName string) (*DcmObj, error) {
 	if _, err := os.Stat(fileName); err != nil {
 		if os.IsNotExist(err) {
 			return nil, errors.New("DcmObj::Read, file does not exist")
@@ -100,11 +53,11 @@ func NewDCMObjFromFile(fileName string) (DcmObj, error) {
 }
 
 // NewDCMObjFromBytes - Read from a DICOM bytes into a DICOM Object
-func NewDCMObjFromBytes(data []byte) (DcmObj, error) {
+func NewDCMObjFromBytes(data []byte) (*DcmObj, error) {
 	return parseBufData(NewBufDataFromBytes(data))
 }
 
-func parseBufData(bufdata *BufData) (DcmObj, error) {
+func parseBufData(bufdata *BufData) (*DcmObj, error) {
 	BigEndian := false
 
 	transferSyntax, err := bufdata.ReadMeta()
@@ -112,7 +65,7 @@ func parseBufData(bufdata *BufData) (DcmObj, error) {
 		return nil, err
 	}
 
-	obj := &dcmObj{
+	obj := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: transferSyntax,
 		ExplicitVR:     false,
@@ -141,33 +94,33 @@ func parseBufData(bufdata *BufData) (DcmObj, error) {
 	return obj, nil
 }
 
-func (obj *dcmObj) IsExplicitVR() bool {
+func (obj *DcmObj) IsExplicitVR() bool {
 	return obj.ExplicitVR
 }
 
-func (obj *dcmObj) SetExplicitVR(explicit bool) {
+func (obj *DcmObj) SetExplicitVR(explicit bool) {
 	obj.ExplicitVR = explicit
 }
 
-func (obj *dcmObj) IsBigEndian() bool {
+func (obj *DcmObj) IsBigEndian() bool {
 	return obj.BigEndian
 }
 
-func (obj *dcmObj) SetBigEndian(bigEndian bool) {
+func (obj *DcmObj) SetBigEndian(bigEndian bool) {
 	obj.BigEndian = bigEndian
 }
 
 // TagCount - return the Tags number
-func (obj *dcmObj) TagCount() int {
+func (obj *DcmObj) TagCount() int {
 	return len(obj.Tags)
 }
 
 // GetTagAt - return the Tag at position i
-func (obj *dcmObj) GetTagAt(i int) *DcmTag {
+func (obj *DcmObj) GetTagAt(i int) *DcmTag {
 	return obj.Tags[i]
 }
 
-func (obj *dcmObj) GetTag(tag *tags.Tag) *DcmTag {
+func (obj *DcmObj) GetTag(tag *tags.Tag) *DcmTag {
 	for _, t := range obj.Tags {
 		if t.Group == tag.Group && t.Element == tag.Element {
 			return t
@@ -176,7 +129,7 @@ func (obj *dcmObj) GetTag(tag *tags.Tag) *DcmTag {
 	return nil
 }
 
-func (obj *dcmObj) GetTagGE(group uint16, element uint16) *DcmTag {
+func (obj *DcmObj) GetTagGE(group uint16, element uint16) *DcmTag {
 	for _, t := range obj.Tags {
 		if t.Group == group && t.Element == element {
 			return t
@@ -185,28 +138,28 @@ func (obj *dcmObj) GetTagGE(group uint16, element uint16) *DcmTag {
 	return nil
 }
 
-func (obj *dcmObj) SetTag(i int, tag *DcmTag) {
+func (obj *DcmObj) SetTag(i int, tag *DcmTag) {
 	FillTag(tag)
 	if i <= obj.TagCount() {
 		obj.Tags[i] = tag
 	}
 }
 
-func (obj *dcmObj) InsertTag(index int, tag *DcmTag) {
+func (obj *DcmObj) InsertTag(index int, tag *DcmTag) {
 	FillTag(tag)
 	obj.Tags = append(obj.Tags[:index+1], obj.Tags[index:]...)
 	obj.Tags[index] = tag
 }
 
-func (obj *dcmObj) GetTags() []*DcmTag {
+func (obj *DcmObj) GetTags() []*DcmTag {
 	return obj.Tags
 }
 
-func (obj *dcmObj) DelTag(i int) {
+func (obj *DcmObj) DelTag(i int) {
 	obj.Tags = append(obj.Tags[:i], obj.Tags[i+1:]...)
 }
 
-func (obj *dcmObj) DumpTags() error {
+func (obj *DcmObj) DumpTags() error {
 	for _, tag := range obj.Tags {
 		if tag.VR == "SQ" {
 			fmt.Printf("\t(%04X,%04X) %s - %s\n", tag.Group, tag.Element, tag.VR, tag.Description)
@@ -232,7 +185,7 @@ func (obj *dcmObj) DumpTags() error {
 	return nil
 }
 
-func (obj *dcmObj) dumpSeq(indent int) error {
+func (obj *DcmObj) dumpSeq(indent int) error {
 	tabs := "\t"
 	for i := 0; i < indent; i++ {
 		tabs += "\t"
@@ -262,18 +215,18 @@ func (obj *dcmObj) dumpSeq(indent int) error {
 	return nil
 }
 
-func (obj *dcmObj) GetDate(tag *tags.Tag) time.Time {
+func (obj *DcmObj) GetDate(tag *tags.Tag) time.Time {
 	date := obj.GetString(tag)
 	data, _ := time.Parse("20060102", date)
 	return data
 }
 
-func (obj *dcmObj) GetUShort(tag *tags.Tag) uint16 {
+func (obj *DcmObj) GetUShort(tag *tags.Tag) uint16 {
 	return obj.getUShortGE(tag.Group, tag.Element)
 }
 
 // GetUShortGE - return the Uint16 for this group & element
-func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
+func (obj *DcmObj) getUShortGE(group uint16, element uint16) uint16 {
 	var i int
 	var tag *DcmTag
 	sq := 0
@@ -297,12 +250,12 @@ func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
 	return 0
 }
 
-func (obj *dcmObj) GetUInt(tag *tags.Tag) uint32 {
+func (obj *DcmObj) GetUInt(tag *tags.Tag) uint32 {
 	return obj.GetUIntGE(tag.Group, tag.Element)
 }
 
 // GetUIntGE - return the Uint32 for this group & element
-func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
+func (obj *DcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 	var i int
 	var tag *DcmTag
 	sq := 0
@@ -326,12 +279,12 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 	return 0
 }
 
-func (obj *dcmObj) GetString(tag *tags.Tag) string {
+func (obj *DcmObj) GetString(tag *tags.Tag) string {
 	return obj.GetStringGE(tag.Group, tag.Element)
 }
 
 // GetStringGE - return the String for this group & element
-func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
+func (obj *DcmObj) GetStringGE(group uint16, element uint16) string {
 	var i int
 	var tag *DcmTag
 	sq := 0
@@ -356,11 +309,11 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 }
 
 // Add - add a new DICOM Tag to a DICOM Object
-func (obj *dcmObj) Add(tag *DcmTag) {
+func (obj *DcmObj) Add(tag *DcmTag) {
 	obj.Tags = append(obj.Tags, tag)
 }
 
-func (obj *dcmObj) WriteToBytes() []byte {
+func (obj *DcmObj) WriteToBytes() []byte {
 	bufdata := NewEmptyBufData()
 	SOPClassUID := obj.GetStringGE(0x08, 0x16)
 	SOPInstanceUID := obj.GetStringGE(0x08, 0x18)
@@ -375,37 +328,37 @@ func (obj *dcmObj) WriteToBytes() []byte {
 }
 
 // Wrote - Write a DICOM Object to a DICOM File
-func (obj *dcmObj) WriteToFile(fileName string) error {
+func (obj *DcmObj) WriteToFile(fileName string) error {
 	data := obj.WriteToBytes()
 	return os.WriteFile(fileName, data, 0644)
 }
 
-func (obj *dcmObj) WriteDate(tag *tags.Tag, date time.Time) {
+func (obj *DcmObj) WriteDate(tag *tags.Tag, date time.Time) {
 	obj.WriteString(tag, date.Format("20060102"))
 }
 
-func (obj *dcmObj) WriteDateRange(tag *tags.Tag, startDate time.Time, endDate time.Time) {
+func (obj *DcmObj) WriteDateRange(tag *tags.Tag, startDate time.Time, endDate time.Time) {
 	obj.WriteString(tag, fmt.Sprintf("%s-%s", startDate.Format("20060102"), endDate.Format("20060102")))
 }
 
-func (obj *dcmObj) WriteTime(tag *tags.Tag, date time.Time) {
+func (obj *DcmObj) WriteTime(tag *tags.Tag, date time.Time) {
 	obj.WriteString(tag, date.Format("150405"))
 }
 
-func (obj *dcmObj) WriteUint16(tag *tags.Tag, val uint16) {
+func (obj *DcmObj) WriteUint16(tag *tags.Tag, val uint16) {
 	obj.WriteUint16GE(tag.Group, tag.Element, tag.VR, val)
 }
 
-func (obj *dcmObj) WriteUint32(tag *tags.Tag, val uint32) {
+func (obj *DcmObj) WriteUint32(tag *tags.Tag, val uint32) {
 	obj.WriteUint32GE(tag.Group, tag.Element, tag.VR, val)
 }
 
-func (obj *dcmObj) WriteString(tag *tags.Tag, content string) {
+func (obj *DcmObj) WriteString(tag *tags.Tag, content string) {
 	obj.WriteStringGE(tag.Group, tag.Element, tag.VR, content)
 }
 
 // WriteUint16GE - Writes a Uint16 to a DICOM tag
-func (obj *dcmObj) WriteUint16GE(group uint16, element uint16, vr string, val uint16) {
+func (obj *DcmObj) WriteUint16GE(group uint16, element uint16, vr string, val uint16) {
 	c := make([]byte, 2)
 	if obj.BigEndian {
 		binary.BigEndian.PutUint16(c, val)
@@ -426,7 +379,7 @@ func (obj *dcmObj) WriteUint16GE(group uint16, element uint16, vr string, val ui
 }
 
 // WriteUint32GE - Writes a Uint32 to a DICOM tag
-func (obj *dcmObj) WriteUint32GE(group uint16, element uint16, vr string, val uint32) {
+func (obj *DcmObj) WriteUint32GE(group uint16, element uint16, vr string, val uint32) {
 	c := make([]byte, 4)
 	if obj.BigEndian {
 		binary.BigEndian.PutUint32(c, val)
@@ -447,7 +400,7 @@ func (obj *dcmObj) WriteUint32GE(group uint16, element uint16, vr string, val ui
 }
 
 // WriteStringGE - Writes a String to a DICOM tag
-func (obj *dcmObj) WriteStringGE(group uint16, element uint16, vr string, content string) {
+func (obj *DcmObj) WriteStringGE(group uint16, element uint16, vr string, content string) {
 	data := []byte(content)
 	length := len(data)
 	if length%2 == 1 {
@@ -470,11 +423,11 @@ func (obj *dcmObj) WriteStringGE(group uint16, element uint16, vr string, conten
 	obj.Tags = append(obj.Tags, tag)
 }
 
-func (obj *dcmObj) GetTransferSyntax() *transfersyntax.TransferSyntax {
+func (obj *DcmObj) GetTransferSyntax() *transfersyntax.TransferSyntax {
 	return obj.TransferSyntax
 }
 
-func (obj *dcmObj) SetTransferSyntax(ts *transfersyntax.TransferSyntax) {
+func (obj *DcmObj) SetTransferSyntax(ts *transfersyntax.TransferSyntax) {
 	obj.TransferSyntax = ts
 	switch ts {
 	case transfersyntax.ImplicitVRLittleEndian:
@@ -489,7 +442,7 @@ func (obj *dcmObj) SetTransferSyntax(ts *transfersyntax.TransferSyntax) {
 	}
 }
 
-func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
+func (obj *DcmObj) GetPixelData(frame int) ([]byte, error) {
 	var i int
 	var rows, cols, bitsa, planar uint16
 	var PhotoInt string
@@ -588,7 +541,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 	return nil, fmt.Errorf("there was an error getting pixel data")
 }
 
-func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) error {
+func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) error {
 	flag := false
 
 	var i int
@@ -706,15 +659,15 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 }
 
 // AddConceptNameSeq - Concept Name Sequence for DICOM SR
-func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue string, CodeMeaning string) {
-	item := &dcmObj{
+func (obj *DcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue string, CodeMeaning string) {
+	item := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
 		SQtag:          new(DcmTag),
 	}
-	seq := &dcmObj{
+	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
@@ -739,15 +692,15 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 }
 
 // AddSRText - add Text to SR
-func (obj *dcmObj) AddSRText(text string) {
-	item := &dcmObj{
+func (obj *DcmObj) AddSRText(text string) {
+	item := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
 		SQtag:          new(DcmTag),
 	}
-	seq := &dcmObj{
+	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
@@ -772,7 +725,7 @@ func (obj *dcmObj) AddSRText(text string) {
 }
 
 // CreateSR - Create a DICOM SR object
-func (obj *dcmObj) CreateSR(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string) {
+func (obj *DcmObj) CreateSR(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string) {
 	obj.WriteString(tags.InstanceCreationDate, time.Now().Format("20060102"))
 	obj.WriteString(tags.InstanceCreationTime, time.Now().Format("150405"))
 	obj.WriteString(tags.SOPClassUID, sopclass.BasicTextSRStorage.UID)
@@ -801,7 +754,7 @@ func (obj *dcmObj) CreateSR(study DCMStudy, SeriesInstanceUID string, SOPInstanc
 }
 
 // CreatePDF - Create a DICOM SR object
-func (obj *dcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string, fileName string) {
+func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstanceUID string, fileName string) {
 	obj.WriteString(tags.InstanceCreationDate, time.Now().Format("20060102"))
 	obj.WriteString(tags.InstanceCreationTime, time.Now().Format("150405"))
 	obj.WriteString(tags.SOPClassUID, sopclass.EncapsulatedPDFStorage.UID)
@@ -840,7 +793,7 @@ func (obj *dcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 	obj.WriteString(tags.MIMETypeOfEncapsulatedDocument, "application/pdf")
 }
 
-func (obj *dcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, pixelrep uint16, planar uint16, frames uint32, outTS string) error {
+func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, pixelrep uint16, planar uint16, frames uint32, outTS string) error {
 	var offset, size, jpeg_size, j uint32
 	var JPEGData []byte
 	var JPEGBytes, index int
@@ -1145,7 +1098,7 @@ func (obj *dcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 	return nil
 }
 
-func (obj *dcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error {
+func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error {
 	var j, offset, single uint32
 	single = size / frames
 

@@ -16,8 +16,8 @@ import (
 
 type SCU struct {
 	destination   *network.Destination
-	onCFindResult func(result media.DcmObj)
-	onCMoveResult func(result media.DcmObj)
+	onCFindResult func(result *media.DcmObj)
+	onCMoveResult func(result *media.DcmObj)
 }
 
 // NewSCU - Creates an interface to scu
@@ -42,7 +42,7 @@ func (d *SCU) EchoSCU(timeout int) error {
 	return nil
 }
 
-func (d *SCU) FindSCU(Query media.DcmObj, timeout int) (int, uint16, error) {
+func (d *SCU) FindSCU(Query *media.DcmObj, timeout int) (int, uint16, error) {
 	results := 0
 	status := dicomstatus.Warning
 
@@ -73,7 +73,7 @@ func (d *SCU) FindSCU(Query media.DcmObj, timeout int) (int, uint16, error) {
 	return results, status, nil
 }
 
-func (d *SCU) MoveSCU(destAET string, Query media.DcmObj, timeout int) (uint16, error) {
+func (d *SCU) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16, error) {
 	var pending int
 	status := dicomstatus.Pending
 
@@ -141,11 +141,11 @@ func (d *SCU) cstore(pdu *network.PDUService, FileName string) error {
 	return nil
 }
 
-func (d *SCU) SetOnCFindResult(f func(result media.DcmObj)) {
+func (d *SCU) SetOnCFindResult(f func(result *media.DcmObj)) {
 	d.onCFindResult = f
 }
 
-func (d *SCU) SetOnCMoveResult(f func(result media.DcmObj)) {
+func (d *SCU) SetOnCMoveResult(f func(result *media.DcmObj)) {
 	d.onCMoveResult = f
 }
 
@@ -167,7 +167,7 @@ func (d *SCU) openAssociation(pdu *network.PDUService, abstractSyntaxes []*sopcl
 	return pdu.Connect(d.destination.HostName, strconv.Itoa(d.destination.Port))
 }
 
-func (d *SCU) writeStoreRQ(pdu *network.PDUService, DDO media.DcmObj) (uint16, error) {
+func (d *SCU) writeStoreRQ(pdu *network.PDUService, DDO *media.DcmObj) (uint16, error) {
 	status := dicomstatus.FailureUnableToProcess
 
 	PCID := pdu.GetPresentationContextID()

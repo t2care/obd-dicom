@@ -339,7 +339,7 @@ func (bd *BufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 }
 
 // ReadObj - Read a DICOM Object from a BufData
-func (bd *BufData) ReadObj(obj DcmObj) error {
+func (bd *BufData) ReadObj(obj *DcmObj) error {
 	isExplicitVR := obj.IsExplicitVR()
 	for bd.GetPosition() < bd.GetSize() {
 		tag, err := bd.ReadTag(isExplicitVR)
@@ -358,7 +358,7 @@ func (bd *BufData) ReadObj(obj DcmObj) error {
 }
 
 // WriteObj - Write a DICOM Object to a BufData
-func (bd *BufData) WriteObj(obj DcmObj) {
+func (bd *BufData) WriteObj(obj *DcmObj) {
 	//	bd.BigEndian = BigEndian
 	// Si lo limpio elimino el meta!!
 	//	bd.MS.Clear()

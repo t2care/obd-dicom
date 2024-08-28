@@ -91,8 +91,8 @@ func Test_scu_FindSCU(t *testing.T) {
 		return request.GetCalledAE() == "TEST_SCP"
 	})
 
-	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16) {
-		return make([]media.DcmObj, 0), dicomstatus.Success
+	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16) {
+		return make([]*media.DcmObj, 0), dicomstatus.Success
 	})
 
 	media.InitDict()
@@ -101,7 +101,7 @@ func Test_scu_FindSCU(t *testing.T) {
 		destination *network.Destination
 	}
 	type args struct {
-		Query   media.DcmObj
+		Query   *media.DcmObj
 		timeout int
 	}
 	tests := []struct {
@@ -137,7 +137,7 @@ func Test_scu_FindSCU(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.Query.WriteString(tags.StudyDate, "20150617")
 			d := NewSCU(tt.fields.destination)
-			d.SetOnCFindResult(func(result media.DcmObj) {
+			d.SetOnCFindResult(func(result *media.DcmObj) {
 				result.DumpTags()
 			})
 
@@ -160,7 +160,7 @@ func Test_scu_StoreSCU(t *testing.T) {
 		return request.GetCalledAE() == "TEST_SCP"
 	})
 
-	testSCP.OnCStoreRequest(func(request *network.AAssociationRQ, data media.DcmObj) uint16 {
+	testSCP.OnCStoreRequest(func(request *network.AAssociationRQ, data *media.DcmObj) uint16 {
 		data.DumpTags()
 		return dicomstatus.Success
 	})
