@@ -57,7 +57,7 @@ func (tag *DcmTag) getString() string {
 
 // writeSeq - Create an SQ tag from a DICOM Object
 func (tag *DcmTag) writeSeq(group uint16, element uint16, seq DcmObj) {
-	bufdata := &bufData{
+	bufdata := &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
 	}
@@ -90,7 +90,7 @@ func (tag *DcmTag) writeSeq(group uint16, element uint16, seq DcmObj) {
 // ReadSeq - reads a dicom sequence
 func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 	seq := NewEmptyDCMObj()
-	bufdata := &bufData{
+	bufdata := &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
 	}

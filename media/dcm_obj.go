@@ -104,7 +104,7 @@ func NewDCMObjFromBytes(data []byte) (DcmObj, error) {
 	return parseBufData(NewBufDataFromBytes(data))
 }
 
-func parseBufData(bufdata BufData) (DcmObj, error) {
+func parseBufData(bufdata *BufData) (DcmObj, error) {
 	BigEndian := false
 
 	transferSyntax, err := bufdata.ReadMeta()

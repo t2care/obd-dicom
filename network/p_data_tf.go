@@ -12,7 +12,7 @@ type PDataTF struct {
 	ItemType              byte
 	Reserved1             byte
 	Length                uint32
-	Buffer                media.BufData
+	Buffer                *media.BufData
 	BlockSize             uint32
 	MsgStatus             uint32
 	Endian                uint32
