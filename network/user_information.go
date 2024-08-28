@@ -15,7 +15,7 @@ type UserInformation struct {
 	UserInfoBaggage uint32
 	MaxSubLength    MaximumSubLength
 	AsyncOpWindow   AsyncOperationWindow
-	SCPSCURole      RoleSelect
+	SCPSCURole      *RoleSelect
 	ImpClass        *UIDItem
 	ImpVersion      *UIDItem
 }
