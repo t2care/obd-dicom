@@ -48,7 +48,7 @@ type pduService struct {
 	pdutype                      int
 	pdulength                    uint32
 	AssocRQ                      AAssociationRQ
-	AssocAC                      AAssociationAC
+	AssocAC                      *AAssociationAC
 	AssocRJ                      AAssociationRJ
 	ReleaseRQ                    AReleaseRQ
 	ReleaseRP                    AReleaseRP
