@@ -8,11 +8,11 @@ import (
 func TestNewUserInformation(t *testing.T) {
 	tests := []struct {
 		name string
-		want *UserInformation
+		want *userInformation
 	}{
 		{
 			name: "Should get UserInformation",
-			want: &UserInformation{
+			want: &userInformation{
 				ItemType:      0x50,
 				MaxSubLength:  NewMaximumSubLength(),
 				AsyncOpWindow: NewAsyncOperationWindow(),

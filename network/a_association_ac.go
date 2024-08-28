@@ -22,7 +22,7 @@ type aassociationAC struct {
 	Reserved3          [32]byte
 	AppContext         *uidItem
 	PresContextAccepts []*presentationContextAccept
-	UserInfo           *UserInformation
+	UserInfo           *userInformation
 }
 
 // NewAAssociationAC NewAAssociationAC
@@ -97,11 +97,11 @@ func (aaac *aassociationAC) GetPresContextAccepts() []*presentationContextAccept
 	return aaac.PresContextAccepts
 }
 
-func (aaac *aassociationAC) GetUserInformation() *UserInformation {
+func (aaac *aassociationAC) GetUserInformation() *userInformation {
 	return aaac.UserInfo
 }
 
-func (aaac *aassociationAC) SetUserInformation(UserInfo *UserInformation) {
+func (aaac *aassociationAC) SetUserInformation(UserInfo *userInformation) {
 	aaac.UserInfo = UserInfo
 }
 
