@@ -38,7 +38,7 @@ type DcmObj interface {
 	GetUShort(tag *tags.Tag) uint16
 	GetUInt(tag *tags.Tag) uint32
 	GetString(tag *tags.Tag) string
-	GetUShortGE(group uint16, element uint16) uint16
+	getUShortGE(group uint16, element uint16) uint16
 	GetUIntGE(group uint16, element uint16) uint32
 	GetStringGE(group uint16, element uint16) string
 	WriteDate(tag *tags.Tag, date time.Time)
@@ -239,7 +239,7 @@ func (obj *dcmObj) dumpSeq(indent int) error {
 	}
 
 	for _, tag := range obj.Tags {
-		if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
+		if tag.isSequence() {
 			fmt.Printf("%s(%04X,%04X) %s - %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
@@ -269,17 +269,17 @@ func (obj *dcmObj) GetDate(tag *tags.Tag) time.Time {
 }
 
 func (obj *dcmObj) GetUShort(tag *tags.Tag) uint16 {
-	return obj.GetUShortGE(tag.Group, tag.Element)
+	return obj.getUShortGE(tag.Group, tag.Element)
 }
 
 // GetUShortGE - return the Uint16 for this group & element
-func (obj *dcmObj) GetUShortGE(group uint16, element uint16) uint16 {
+func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
 	var i int
 	var tag *DcmTag
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -287,12 +287,12 @@ func (obj *dcmObj) GetUShortGE(group uint16, element uint16) uint16 {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetUShort()
+		return tag.getUShort()
 	}
 	return 0
 }
@@ -308,7 +308,7 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -316,12 +316,12 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetUInt()
+		return tag.getUInt()
 	}
 	return 0
 }
@@ -337,7 +337,7 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -345,12 +345,12 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetString()
+		return tag.getString()
 	}
 	return ""
 }
@@ -504,32 +504,32 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 
 	for i = 0; i < len(obj.Tags); i++ {
 		tag := obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if sq == 0 {
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.GetString()
+					PhotoInt = tag.getString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.GetUShort()
+					planar = tag.getUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.GetString())
+					uframes, err := strconv.Atoi(tag.getString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.GetUShort()
+					rows = tag.getUShort()
 				case 0x11:
-					cols = tag.GetUShort()
+					cols = tag.getUShort()
 				case 0x0100:
-					bitsa = tag.GetUShort()
+					bitsa = tag.getUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -581,7 +581,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 				}
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -609,11 +609,11 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 
 	for i = 0; i < len(obj.Tags); i++ {
 		tag := obj.GetTagAt(i)
-		if tag.VR == "SQ" || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000)) {
+		if tag.isSequence() {
 			if tag.Length == 0xFFFFFFFF {
 				sq++
 			} else {
-				if err := tag.Convert(obj.IsExplicitVR(), outTS); err != nil {
+				if err := tag.transcode(obj.IsExplicitVR(), outTS); err != nil {
 					return err
 				}
 				flag = true
@@ -623,29 +623,29 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.GetString()
+					PhotoInt = tag.getString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.GetUShort()
+					planar = tag.getUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.GetString())
+					uframes, err := strconv.Atoi(tag.getString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.GetUShort()
+					rows = tag.getUShort()
 				case 0x11:
-					cols = tag.GetUShort()
+					cols = tag.getUShort()
 				case 0x0100:
-					bitsa = tag.GetUShort()
+					bitsa = tag.getUShort()
 				case 0x0101:
-					bitss = tag.GetUShort()
+					bitss = tag.getUShort()
 				case 0x0103:
-					pixelrep = tag.GetUShort()
+					pixelrep = tag.getUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -694,7 +694,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				}
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -731,10 +731,10 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	item.WriteString(tags.CodeValue, CodeValue)
 	item.WriteString(tags.CodingSchemeDesignator, "odb")
 	item.WriteString(tags.CodeMeaning, CodeMeaning)
-	tag.WriteSeq(0xFFFE, 0xE000, item)
+	tag.writeItem(item)
 	seq.Add(tag)
 	tag = new(DcmTag)
-	tag.WriteSeq(group, element, seq)
+	tag.writeSeq(group, element, seq)
 	obj.Add(tag)
 }
 
@@ -765,9 +765,9 @@ func (obj *dcmObj) AddSRText(text string) {
 	item.WriteString(tags.ValueType, "TEXT")
 	item.AddConceptNameSeq(0x40, 0xA043, "2222", "Report Text")
 	item.WriteString(tags.TextValue, text)
-	tag.WriteSeq(0xFFFE, 0xE000, item)
+	tag.writeSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
-	tag.WriteSeq(0x40, 0xA730, seq)
+	tag.writeSeq(0x40, 0xA730, seq)
 	obj.Add(tag)
 }
 
