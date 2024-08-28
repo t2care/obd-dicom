@@ -613,7 +613,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 			if tag.Length == 0xFFFFFFFF {
 				sq++
 			} else {
-				if err := tag.Convert(obj.IsExplicitVR(), outTS); err != nil {
+				if err := tag.transcode(obj.IsExplicitVR(), outTS); err != nil {
 					return err
 				}
 				flag = true
@@ -731,10 +731,10 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	item.WriteString(tags.CodeValue, CodeValue)
 	item.WriteString(tags.CodingSchemeDesignator, "odb")
 	item.WriteString(tags.CodeMeaning, CodeMeaning)
-	tag.WriteSeq(0xFFFE, 0xE000, item)
+	tag.writeSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
 	tag = new(DcmTag)
-	tag.WriteSeq(group, element, seq)
+	tag.writeSeq(group, element, seq)
 	obj.Add(tag)
 }
 
@@ -765,9 +765,9 @@ func (obj *dcmObj) AddSRText(text string) {
 	item.WriteString(tags.ValueType, "TEXT")
 	item.AddConceptNameSeq(0x40, 0xA043, "2222", "Report Text")
 	item.WriteString(tags.TextValue, text)
-	tag.WriteSeq(0xFFFE, 0xE000, item)
+	tag.writeSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
-	tag.WriteSeq(0x40, 0xA730, seq)
+	tag.writeSeq(0x40, 0xA730, seq)
 	obj.Add(tag)
 }
 

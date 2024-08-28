@@ -65,8 +65,8 @@ func (tag *DcmTag) GetFloat() float32 {
 	return 0.0
 }
 
-// WriteSeq - Create an SQ tag from a DICOM Object
-func (tag *DcmTag) WriteSeq(group uint16, element uint16, seq DcmObj) {
+// writeSeq - Create an SQ tag from a DICOM Object
+func (tag *DcmTag) writeSeq(group uint16, element uint16, seq DcmObj) {
 	bufdata := &bufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
@@ -128,7 +128,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 			tempTags = new(dcmObj)
 		case 0xE00D:
 			item := new(DcmTag)
-			item.WriteItem(tempTags)
+			item.writeItem(tempTags)
 			seq.Add(item)
 		default:
 			if haveItem {
@@ -141,11 +141,11 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 	return seq, nil
 }
 
-func (tag *DcmTag) WriteItem(obj DcmObj) {
-	tag.WriteSeq(0xFFFE, 0xE000, obj)
+func (tag *DcmTag) writeItem(obj DcmObj) {
+	tag.writeSeq(0xFFFE, 0xE000, obj)
 }
 
-func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
+func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
 	seq := new(dcmObj)
 	seq.SetTransferSyntax(outTS)
 	if (explicitVR != seq.IsExplicitVR()) && tag.isSequence() {
@@ -154,10 +154,10 @@ func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax
 			return err
 		}
 		for _, item := range seq.GetTags() {
-			item.Convert(explicitVR, outTS)
+			item.transcode(explicitVR, outTS)
 		}
 		seq.SetTransferSyntax(outTS)
-		tag.WriteSeq(tag.Group, tag.Element, seq)
+		tag.writeSeq(tag.Group, tag.Element, seq)
 	}
 	return nil
 }
