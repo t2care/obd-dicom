@@ -239,7 +239,7 @@ func (obj *dcmObj) dumpSeq(indent int) error {
 	}
 
 	for _, tag := range obj.Tags {
-		if tag.VR == "SQ" {
+		if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
 			fmt.Printf("%s(%04X,%04X) %s - %s\n", tabs, tag.Group, tag.Element, tag.VR, tag.Description)
 			seq, err := tag.ReadSeq(obj.IsExplicitVR())
 			if err != nil {
@@ -609,8 +609,15 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 
 	for i = 0; i < len(obj.Tags); i++ {
 		tag := obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
-			sq++
+		if tag.VR == "SQ" || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000)) {
+			if tag.Length == 0xFFFFFFFF {
+				sq++
+			} else {
+				if err := tag.Convert(obj.IsExplicitVR(), outTS); err != nil {
+					return err
+				}
+				flag = true
+			}
 		}
 		if sq == 0 {
 			if (tag.Group == 0x0028) && (!icon) {
@@ -726,6 +733,7 @@ func (obj *dcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	item.WriteString(tags.CodeMeaning, CodeMeaning)
 	tag.WriteSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
+	tag = new(DcmTag)
 	tag.WriteSeq(group, element, seq)
 	obj.Add(tag)
 }

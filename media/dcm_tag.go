@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 )
 
 // DcmTag DICOM tag structure
@@ -118,6 +120,10 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 		}
 		switch temptag.Element {
 		case 0xE000:
+			if temptag.Length != 0xFFFFFFFF {
+				seq.Add(temptag)
+				continue
+			}
 			haveItem = true
 			tempTags = new(dcmObj)
 		case 0xE00D:
@@ -137,5 +143,21 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (DcmObj, error) {
 
 func (tag *DcmTag) WriteItem(obj DcmObj) {
 	tag.WriteSeq(0xFFFE, 0xE000, obj)
-	tag.VR = "SQ"
+}
+
+func (tag *DcmTag) Convert(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
+	seq := new(dcmObj)
+	seq.SetTransferSyntax(outTS)
+	if (explicitVR != seq.IsExplicitVR()) && (tag.VR == "SQ" || (tag.Group == 0xFFFE)) {
+		seq, err := tag.ReadSeq(explicitVR)
+		if err != nil {
+			return err
+		}
+		for _, item := range seq.GetTags() {
+			item.Convert(explicitVR, outTS)
+		}
+		seq.SetTransferSyntax(outTS)
+		tag.WriteSeq(tag.Group, tag.Element, seq)
+	}
+	return nil
 }

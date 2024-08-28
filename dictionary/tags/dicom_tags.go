@@ -870,6 +870,16 @@ var NumberOfReferences = &Tag{
 	Description: "Number of References",
 }
 
+// GenericGroupLength - (0008,0000) Generic Group Length
+var GenericGroupLength = &Tag{
+	Group:       0x0008,
+	Element:     0x0000,
+	VR:          "UL",
+	VM:          "1",
+	Name:        "GenericGroupLength",
+	Description: "Generic Group Length",
+}
+
 // LengthToEnd - (0008,0001) Length to End
 var LengthToEnd = &Tag{
 	Group:       0x0008,
@@ -50429,6 +50439,7 @@ var tags = []*Tag{
 	ReferencedRelatedGeneralSOPClassUIDInFile,
 	NumberOfReferences,
 	LengthToEnd,
+	GenericGroupLength,
 	SpecificCharacterSet,
 	LanguageCodeSequence,
 	ImageType,

@@ -110,6 +110,12 @@ func Test_dcmObj_ChangeTransferSynx(t *testing.T) {
 			args:     args{transfersyntax.ExplicitVRLittleEndian},
 			wantErr:  false,
 		},
+		{
+			name:     "Should change transfer synxtax from JPEGLosslessSV1 to ImplicitVRLittleEndian",
+			fileName: "../samples/test-losslessSV1.dcm",
+			args:     args{transfersyntax.ImplicitVRLittleEndian},
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,7 +134,7 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 	if err = dcmObj.ChangeTransferSynx(ts); err != nil {
 		return
 	}
-	if err = dcmObj.DumpTags(); err != nil{
+	if err = dcmObj.DumpTags(); err != nil {
 		return
 	}
 	_, err = NewDCMObjFromBytes(dcmObj.WriteToBytes())
