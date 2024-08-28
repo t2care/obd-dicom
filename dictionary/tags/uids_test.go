@@ -34,7 +34,7 @@ func TestGetTagFromName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetTagFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got := getTagFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetTagFromName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -71,7 +71,7 @@ func TestGetTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetTag(tt.args.group, tt.args.element); !reflect.DeepEqual(got, tt.want) {
+			if got := getTag(tt.args.group, tt.args.element); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetTagFromUID() = %v, want %v", got, tt.want)
 			}
 		})
