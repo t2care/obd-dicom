@@ -15,19 +15,7 @@ import (
 	"time"
 )
 
-// HTTPClient interface
-type HTTPClient interface {
-	Delete() ([]byte, error)
-	Get() ([]byte, error)
-	Patch(body io.Reader) ([]byte, error)
-	Post(body io.Reader) ([]byte, error)
-	PostDicom(fieldName string, fileName string, content io.Reader) ([]byte, error)
-	PostMulti(fieldName string, fileName string, content io.Reader) ([]byte, error)
-	PostMultiContent(fieldName string, fileName string, contentType string, content io.Reader) ([]byte, error)
-	Put(body io.Reader) ([]byte, error)
-}
-
-type hTTPClient struct {
+type HTTPClient struct {
 	Params HTTPParams
 }
 
@@ -50,8 +38,8 @@ type HTTPParams struct {
 }
 
 // NewHTTPClient returns a new http client
-func NewHTTPClient(params HTTPParams) HTTPClient {
-	return &hTTPClient{
+func NewHTTPClient(params HTTPParams) *HTTPClient {
+	return &HTTPClient{
 		Params: params,
 	}
 }
@@ -80,7 +68,7 @@ func GetOAuthToken(tokenURL string, form url.Values) (map[string]string, error) 
 }
 
 // Delete sends DELETE request
-func (h *hTTPClient) Delete() ([]byte, error) {
+func (h *HTTPClient) Delete() ([]byte, error) {
 	request, err := http.NewRequest("DELETE", h.Params.URL, nil)
 	if err != nil {
 		return nil, err
@@ -90,7 +78,7 @@ func (h *hTTPClient) Delete() ([]byte, error) {
 }
 
 // Get sends GET request
-func (h *hTTPClient) Get() ([]byte, error) {
+func (h *HTTPClient) Get() ([]byte, error) {
 	request, err := http.NewRequest("GET", h.Params.URL, nil)
 	if err != nil {
 		return nil, err
@@ -100,7 +88,7 @@ func (h *hTTPClient) Get() ([]byte, error) {
 }
 
 // Patch sends PATCH request
-func (h *hTTPClient) Patch(body io.Reader) ([]byte, error) {
+func (h *HTTPClient) Patch(body io.Reader) ([]byte, error) {
 	request, err := http.NewRequest("PATCH", h.Params.URL, body)
 	if err != nil {
 		return nil, err
@@ -109,7 +97,7 @@ func (h *hTTPClient) Patch(body io.Reader) ([]byte, error) {
 }
 
 // Post sends POST request
-func (h *hTTPClient) Post(body io.Reader) ([]byte, error) {
+func (h *HTTPClient) Post(body io.Reader) ([]byte, error) {
 	request, err := http.NewRequest("POST", h.Params.URL, body)
 	if err != nil {
 		return nil, err
@@ -118,12 +106,12 @@ func (h *hTTPClient) Post(body io.Reader) ([]byte, error) {
 }
 
 // PostDicom - sends a multipart post
-func (h *hTTPClient) PostDicom(fieldName string, fileName string, content io.Reader) ([]byte, error) {
+func (h *HTTPClient) PostDicom(fieldName string, fileName string, content io.Reader) ([]byte, error) {
 	return h.PostMultiContent(fieldName, fileName, "application/dicom", content)
 }
 
 // PostMulti - sends a multipart post
-func (h *hTTPClient) PostMulti(fieldName string, fileName string, content io.Reader) ([]byte, error) {
+func (h *HTTPClient) PostMulti(fieldName string, fileName string, content io.Reader) ([]byte, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile(fieldName, fieldName)
@@ -153,7 +141,7 @@ func (h *hTTPClient) PostMulti(fieldName string, fileName string, content io.Rea
 }
 
 // PostMultiContent - sends a multipart post
-func (h *hTTPClient) PostMultiContent(fieldName string, fileName string, contentType string, content io.Reader) ([]byte, error) {
+func (h *HTTPClient) PostMultiContent(fieldName string, fileName string, contentType string, content io.Reader) ([]byte, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
@@ -184,7 +172,7 @@ func (h *hTTPClient) PostMultiContent(fieldName string, fileName string, content
 }
 
 // Put sends PUT request
-func (h *hTTPClient) Put(body io.Reader) ([]byte, error) {
+func (h *HTTPClient) Put(body io.Reader) ([]byte, error) {
 	request, err := http.NewRequest("PUT", h.Params.URL, body)
 	if err != nil {
 		return nil, err
@@ -192,7 +180,7 @@ func (h *hTTPClient) Put(body io.Reader) ([]byte, error) {
 	return h.sendRequest(request)
 }
 
-func (h *hTTPClient) setupRequest(request *http.Request) {
+func (h *HTTPClient) setupRequest(request *http.Request) {
 	if h.Params.ContentType != "" {
 		request.Header.Set("Content-Type", h.Params.ContentType)
 	}
@@ -231,7 +219,7 @@ func (h *hTTPClient) setupRequest(request *http.Request) {
 	request.URL.RawQuery = q.Encode()
 }
 
-func (h *hTTPClient) sendRequest(request *http.Request) ([]byte, error) {
+func (h *HTTPClient) sendRequest(request *http.Request) ([]byte, error) {
 	h.setupRequest(request)
 
 	var client *http.Client
