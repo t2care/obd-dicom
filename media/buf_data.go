@@ -369,12 +369,13 @@ func (bd *bufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 
 // ReadObj - Read a DICOM Object from a BufData
 func (bd *bufData) ReadObj(obj DcmObj) error {
+	isExplicitVR := obj.IsExplicitVR()
 	for bd.GetPosition() < bd.GetSize() {
-		tag, err := bd.ReadTag(obj.IsExplicitVR())
+		tag, err := bd.ReadTag(isExplicitVR)
 		if err != nil {
 			return err
 		}
-		if !obj.IsExplicitVR() {
+		if !isExplicitVR {
 			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
 		}
 		if tag.Length%2 != 0 && tag.VR != "SQ" && tag.Length != 0xffffffff {

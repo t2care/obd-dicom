@@ -38,7 +38,7 @@ type DcmObj interface {
 	GetUShort(tag *tags.Tag) uint16
 	GetUInt(tag *tags.Tag) uint32
 	GetString(tag *tags.Tag) string
-	GetUShortGE(group uint16, element uint16) uint16
+	getUShortGE(group uint16, element uint16) uint16
 	GetUIntGE(group uint16, element uint16) uint32
 	GetStringGE(group uint16, element uint16) string
 	WriteDate(tag *tags.Tag, date time.Time)
@@ -269,11 +269,11 @@ func (obj *dcmObj) GetDate(tag *tags.Tag) time.Time {
 }
 
 func (obj *dcmObj) GetUShort(tag *tags.Tag) uint16 {
-	return obj.GetUShortGE(tag.Group, tag.Element)
+	return obj.getUShortGE(tag.Group, tag.Element)
 }
 
 // GetUShortGE - return the Uint16 for this group & element
-func (obj *dcmObj) GetUShortGE(group uint16, element uint16) uint16 {
+func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
 	var i int
 	var tag *DcmTag
 	sq := 0
