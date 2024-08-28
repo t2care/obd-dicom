@@ -1,22 +1,22 @@
 package imp
 
-type Implementation struct {
+type implementation struct {
 	classUID string
 	version  string
 }
 
-var imp *Implementation
+var imp *implementation
 
-func SetDefaultImplementation() *Implementation {
-	imp = &Implementation{
+func SetDefaultImplementation() *implementation {
+	imp = &implementation{
 		classUID: "1.2.826.0.1.3680043.10.90.999",
 		version:  "OBD-Dicom",
 	}
 	return imp
 }
 
-func SetImplementation(classUID string, version string) *Implementation {
-	imp = &Implementation{
+func SetImplementation(classUID string, version string) *implementation {
+	imp = &implementation{
 		classUID: classUID,
 		version:  version,
 	}
@@ -37,7 +37,7 @@ func GetImpVersion() string {
 	return imp.GetVersion()
 }
 
-func (i *Implementation) GetClassUID() string {
+func (i *implementation) GetClassUID() string {
 	if i.classUID == "" {
 		imp := SetDefaultImplementation()
 		i.classUID = imp.GetClassUID()
@@ -46,7 +46,7 @@ func (i *Implementation) GetClassUID() string {
 	return i.classUID
 }
 
-func (i *Implementation) GetVersion() string {
+func (i *implementation) GetVersion() string {
 	if i.classUID == "" {
 		imp := SetDefaultImplementation()
 		i.classUID = imp.GetClassUID()

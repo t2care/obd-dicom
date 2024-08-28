@@ -27,7 +27,7 @@ type PDUService struct {
 	AssocRJ                      *AAssociationRJ
 	ReleaseRQ                    *AReleaseRQ
 	ReleaseRP                    *AReleaseRP
-	AbortRQ                      *AAbortRQ
+	AbortRQ                      *aabortRQ
 	Pdata                        PDataTF
 	Timeout                      int
 	OnAssociationRequest         func(request *AAssociationRQ) bool

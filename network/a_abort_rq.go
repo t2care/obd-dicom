@@ -6,7 +6,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-type AAbortRQ struct {
+type aabortRQ struct {
 	ItemType  byte // 0x07
 	Reserved1 byte
 	Length    uint32
@@ -17,8 +17,8 @@ type AAbortRQ struct {
 }
 
 // NewAAbortRQ - NewAAbortRQ
-func NewAAbortRQ() *AAbortRQ {
-	return &AAbortRQ{
+func NewAAbortRQ() *aabortRQ {
+	return &aabortRQ{
 		ItemType:  0x07,
 		Reserved1: 0x00,
 		Reserved2: 0x00,
@@ -28,16 +28,16 @@ func NewAAbortRQ() *AAbortRQ {
 	}
 }
 
-func (aarq *AAbortRQ) GetReason() string {
+func (aarq *aabortRQ) GetReason() string {
 	return PermanentRejectReasons[aarq.Reason]
 }
 
-func (aarq *AAbortRQ) Size() uint32 {
+func (aarq *aabortRQ) Size() uint32 {
 	aarq.Length = 4
 	return aarq.Length + 6
 }
 
-func (aarq *AAbortRQ) Write(rw *bufio.ReadWriter) error {
+func (aarq *aabortRQ) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -53,14 +53,14 @@ func (aarq *AAbortRQ) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (aarq *AAbortRQ) Read(ms *media.MemoryStream) (err error) {
+func (aarq *aabortRQ) Read(ms *media.MemoryStream) (err error) {
 	if aarq.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarq.ReadDynamic(ms)
 }
 
-func (aarq *AAbortRQ) ReadDynamic(ms *media.MemoryStream) (err error) {
+func (aarq *aabortRQ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aarq.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
