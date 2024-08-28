@@ -22,11 +22,11 @@ type xmlTag struct {
 	Description string `xml:",chardata"`
 }
 
-var codes []*tags.Tag
+var codes map[uint16]*tags.Tag
 
 // FillTag - Populates with data from dictionary
 func FillTag(tag *DcmTag) {
-	dt := GetDictionaryTag(tag.Group, tag.Element)
+	dt := getDictionaryTag(tag.Group, tag.Element)
 	if tag.Name == "" {
 		tag.Name = dt.Name
 	}
@@ -41,15 +41,13 @@ func FillTag(tag *DcmTag) {
 	}
 }
 
-// GetDictionaryTag - get tag from Dictionary
-func GetDictionaryTag(group uint16, element uint16) *tags.Tag {
+// getDictionaryTag - get tag from Dictionary
+func getDictionaryTag(group uint16, element uint16) *tags.Tag {
 	if codes == nil {
 		InitDict()
 	}
-	for i := 0; i < len(codes); i++ {
-		if (group == codes[i].Group) && (element == codes[i].Element) {
-			return codes[i]
-		}
+	if t, ok := codes[group+element]; ok {
+		return t
 	}
 	return &tags.Tag{
 		Group:       0,
@@ -61,15 +59,13 @@ func GetDictionaryTag(group uint16, element uint16) *tags.Tag {
 	}
 }
 
-// GetDictionaryVR - get info from Dictionary
-func GetDictionaryVR(group uint16, element uint16) string {
+// getDictionaryVR - get info from Dictionary
+func getDictionaryVR(group uint16, element uint16) string {
 	if codes == nil {
 		InitDict()
 	}
-	for i := 0; i < len(codes); i++ {
-		if (group == codes[i].Group) && (element == codes[i].Element) {
-			return codes[i].VR
-		}
+	if t, ok := codes[group+element]; ok {
+		return t.VR
 	}
 	return "UN"
 }
@@ -96,20 +92,25 @@ func loadPrivateDictionary() {
 		if err != nil {
 			continue
 		}
-
-		codes = append(codes, &tags.Tag{
-			Group:       uint16(g),
-			Element:     uint16(e),
+		group := uint16(g)
+		element := uint16(e)
+		codes[group+element] = &tags.Tag{
+			Group:       group,
+			Element:     element,
 			Name:        t.Name,
 			Description: t.Description,
 			VR:          t.VR,
 			VM:          t.VM,
-		})
+		}
 	}
 }
 
 // InitDict Initialize Dictionary
 func InitDict() {
-	codes = tags.GetTags()
+	tagList := tags.GetTags()
+	codes = make(map[uint16]*tags.Tag, len(tagList))
+	for _, t := range tagList {
+		codes[t.Group+t.Element] = t
+	}
 	loadPrivateDictionary()
 }

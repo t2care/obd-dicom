@@ -189,7 +189,7 @@ func (bd *BufData) ReadTag(explicitVR bool) (*DcmTag, error) {
 		}
 	} else {
 		if !internalVR {
-			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
+			tag.VR = getDictionaryVR(tag.Group, tag.Element)
 		}
 		length, err := bd.ReadUint32()
 		if err != nil {
@@ -222,7 +222,7 @@ func (bd *BufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	}
 	if (tag.Group != 0x0000) && (tag.Group != 0xfffe) && (explicitVR) {
 		if tag.VR == "" { // In case converting from illicit
-			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
+			tag.VR = getDictionaryVR(tag.Group, tag.Element)
 		}
 		bd.MS.Write([]byte(tag.VR), 2)
 		if (tag.VR == "OB") || (tag.VR == "OW") || (tag.VR == "SQ") || (tag.VR == "UN") || (tag.VR == "UT") {
@@ -347,7 +347,7 @@ func (bd *BufData) ReadObj(obj *DcmObj) error {
 			return err
 		}
 		if !isExplicitVR {
-			tag.VR = GetDictionaryVR(tag.Group, tag.Element)
+			tag.VR = getDictionaryVR(tag.Group, tag.Element)
 		}
 		if tag.Length%2 != 0 && tag.VR != "SQ" && tag.Length != 0xffffffff {
 			return fmt.Errorf("%s is odd", tag.Name)

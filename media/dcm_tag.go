@@ -106,7 +106,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (*DcmObj, error) {
 		}
 
 		if !ExplicitVR {
-			temptag.VR = GetDictionaryVR(tag.Group, tag.Element)
+			temptag.VR = getDictionaryVR(tag.Group, tag.Element)
 		}
 		switch temptag.Element {
 		case 0xE000:
