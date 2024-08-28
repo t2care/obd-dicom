@@ -8,11 +8,11 @@ import (
 func TestSetDefaultImplementation(t *testing.T) {
 	tests := []struct {
 		name string
-		want Implementation
+		want *Implementation
 	}{
 		{
 			name: "Should set default implementation",
-			want: &implementation{
+			want: &Implementation{
 				classUID: "1.2.826.0.1.3680043.10.90.999",
 				version:  "OBD-Dicom",
 			},
@@ -35,7 +35,7 @@ func TestSetImplementation(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want Implementation
+		want *Implementation
 	}{
 		{
 			name: "Should set implementation",
@@ -43,7 +43,7 @@ func TestSetImplementation(t *testing.T) {
 				classUID: "1.2.826.0.1.3680043.10.90.999",
 				version:  "One-Byte-Data",
 			},
-			want: &implementation{
+			want: &Implementation{
 				classUID: "1.2.826.0.1.3680043.10.90.999",
 				version:  "One-Byte-Data",
 			},
@@ -125,7 +125,7 @@ func Test_implementation_GetClassUID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := &implementation{
+			i := &Implementation{
 				classUID: tt.fields.classUID,
 				version:  tt.fields.version,
 			}
@@ -165,7 +165,7 @@ func Test_implementation_GetVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := &implementation{
+			i := &Implementation{
 				classUID: tt.fields.classUID,
 				version:  tt.fields.version,
 			}
