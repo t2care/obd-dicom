@@ -51,7 +51,7 @@ type pduService struct {
 	AssocAC                      *AAssociationAC
 	AssocRJ                      AAssociationRJ
 	ReleaseRQ                    *AReleaseRQ
-	ReleaseRP                    AReleaseRP
+	ReleaseRP                    *AReleaseRP
 	AbortRQ                      *AAbortRQ
 	Pdata                        PDataTF
 	Timeout                      int
