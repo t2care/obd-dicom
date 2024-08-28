@@ -2,16 +2,7 @@ package network
 
 import "github.com/one-byte-data/obd-dicom/media"
 
-// AsyncOperationWindow - AsyncOperationWindow
-type AsyncOperationWindow interface {
-	GetMaxNumberOperationsInvoked() uint16
-	GetMaxNumberOperationsPerformed() uint16
-	Size() uint16
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
-type asyncOperationWindow struct {
+type AsyncOperationWindow struct {
 	ItemType                     byte //0x53
 	Reserved1                    byte
 	Length                       uint16
@@ -20,32 +11,32 @@ type asyncOperationWindow struct {
 }
 
 // NewAsyncOperationWindow - NewAsyncOperationWindow
-func NewAsyncOperationWindow() AsyncOperationWindow {
-	return &asyncOperationWindow{
+func NewAsyncOperationWindow() *AsyncOperationWindow {
+	return &AsyncOperationWindow{
 		ItemType: 0x53,
 	}
 }
 
-func (async *asyncOperationWindow) GetMaxNumberOperationsInvoked() uint16 {
+func (async *AsyncOperationWindow) GetMaxNumberOperationsInvoked() uint16 {
 	return async.MaxNumberOperationsInvoked
 }
 
-func (async *asyncOperationWindow) GetMaxNumberOperationsPerformed() uint16 {
+func (async *AsyncOperationWindow) GetMaxNumberOperationsPerformed() uint16 {
 	return async.MaxNumberOperationsPerformed
 }
 
-func (async *asyncOperationWindow) Size() uint16 {
+func (async *AsyncOperationWindow) Size() uint16 {
 	return async.Length + 4
 }
 
-func (async *asyncOperationWindow) Read(ms media.MemoryStream) (err error) {
+func (async *AsyncOperationWindow) Read(ms media.MemoryStream) (err error) {
 	if async.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return async.ReadDynamic(ms)
 }
 
-func (async *asyncOperationWindow) ReadDynamic(ms media.MemoryStream) (err error) {
+func (async *AsyncOperationWindow) ReadDynamic(ms media.MemoryStream) (err error) {
 	if async.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
