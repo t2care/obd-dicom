@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
@@ -23,8 +22,8 @@ type DcmTag struct {
 	BigEndian   bool
 }
 
-// GetUShort convert tag.Data to uint16
-func (tag *DcmTag) GetUShort() uint16 {
+// getUShort convert tag.Data to uint16
+func (tag *DcmTag) getUShort() uint16 {
 	if tag.Length == 2 {
 		if tag.BigEndian {
 			return binary.BigEndian.Uint16(tag.Data)
@@ -34,8 +33,8 @@ func (tag *DcmTag) GetUShort() uint16 {
 	return 0
 }
 
-// GetUInt convert tag.Data to uint32
-func (tag *DcmTag) GetUInt() uint32 {
+// getUInt convert tag.Data to uint32
+func (tag *DcmTag) getUInt() uint32 {
 	var val uint32
 	if tag.Length == 4 {
 		if tag.BigEndian {
@@ -47,22 +46,13 @@ func (tag *DcmTag) GetUInt() uint32 {
 	return val
 }
 
-// GetString convert tag.Data to string
-func (tag *DcmTag) GetString() string {
+// getString convert tag.Data to string
+func (tag *DcmTag) getString() string {
 	n := bytes.IndexByte(tag.Data, 0)
 	if n == -1 {
 		n = int(tag.Length)
 	}
 	return strings.TrimSpace(string(tag.Data[:n]))
-}
-
-// GetFloat convert tag.Data to float32
-func (tag *DcmTag) GetFloat() float32 {
-	val := tag.GetString()
-	if s, err := strconv.ParseFloat(val, 32); err == nil {
-		return float32(s)
-	}
-	return 0.0
 }
 
 // writeSeq - Create an SQ tag from a DICOM Object

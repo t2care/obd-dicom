@@ -28,35 +28,35 @@ func (study *DCMStudy) GetStudy(obj DcmObj) {
 		case 0x08:
 			switch tag.Element {
 			case 0x20:
-				study.StudyDate = tag.GetString()
+				study.StudyDate = tag.getString()
 			case 0x30:
-				study.StudyTime = tag.GetString()
+				study.StudyTime = tag.getString()
 			case 0x50:
-				study.AccessionNumber = tag.GetString()
+				study.AccessionNumber = tag.getString()
 			case 0x60:
-				study.Modality = tag.GetString()
+				study.Modality = tag.getString()
 			case 0x80:
-				study.InstitutionName = tag.GetString()
+				study.InstitutionName = tag.getString()
 			case 0x90:
-				study.ReferringPhysician = tag.GetString()
+				study.ReferringPhysician = tag.getString()
 			case 0x1030:
-				study.Description = tag.GetString()
+				study.Description = tag.getString()
 			}
 		case 0x10:
 			switch tag.Element {
 			case 0x0010:
-				study.PatientName = tag.GetString()
+				study.PatientName = tag.getString()
 			case 0x0020:
-				study.PatientID = tag.GetString()
+				study.PatientID = tag.getString()
 			case 0x0030: //Patient Birth Date
-				study.PatientBD = tag.GetString()
+				study.PatientBD = tag.getString()
 			case 0x0040:
-				study.PatientSex = tag.GetString()
+				study.PatientSex = tag.getString()
 			}
 		case 0x20:
 			switch tag.Element {
 			case 0x000D:
-				study.StudyInstanceUID = tag.GetString()
+				study.StudyInstanceUID = tag.getString()
 			}
 		}
 	}

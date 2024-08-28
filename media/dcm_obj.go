@@ -292,7 +292,7 @@ func (obj *dcmObj) GetUShortGE(group uint16, element uint16) uint16 {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetUShort()
+		return tag.getUShort()
 	}
 	return 0
 }
@@ -321,7 +321,7 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetUInt()
+		return tag.getUInt()
 	}
 	return 0
 }
@@ -350,7 +350,7 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.GetString()
+		return tag.getString()
 	}
 	return ""
 }
@@ -511,25 +511,25 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.GetString()
+					PhotoInt = tag.getString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.GetUShort()
+					planar = tag.getUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.GetString())
+					uframes, err := strconv.Atoi(tag.getString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.GetUShort()
+					rows = tag.getUShort()
 				case 0x11:
-					cols = tag.GetUShort()
+					cols = tag.getUShort()
 				case 0x0100:
-					bitsa = tag.GetUShort()
+					bitsa = tag.getUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -623,29 +623,29 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.GetString()
+					PhotoInt = tag.getString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.GetUShort()
+					planar = tag.getUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.GetString())
+					uframes, err := strconv.Atoi(tag.getString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.GetUShort()
+					rows = tag.getUShort()
 				case 0x11:
-					cols = tag.GetUShort()
+					cols = tag.getUShort()
 				case 0x0100:
-					bitsa = tag.GetUShort()
+					bitsa = tag.getUShort()
 				case 0x0101:
-					bitss = tag.GetUShort()
+					bitss = tag.getUShort()
 				case 0x0103:
-					pixelrep = tag.GetUShort()
+					pixelrep = tag.getUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
