@@ -14,13 +14,13 @@ func TestTranscodeSeq(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Should change transfer synxtax to ExplicitVRLittleEndian",
+			name:    "Should transcode seq from ImplicitVRLittleEndian to ExplicitVRLittleEndian",
 			inTS:    transfersyntax.ImplicitVRLittleEndian,
 			outTS:   transfersyntax.ExplicitVRLittleEndian,
 			wantErr: false,
 		},
 		{
-			name:    "Should change transfer synxtax to ImplicitVRLittleEndian",
+			name:    "Should transcode seq from ExplicitVRLittleEndian to ImplicitVRLittleEndian",
 			inTS:    transfersyntax.ExplicitVRLittleEndian,
 			outTS:   transfersyntax.ImplicitVRLittleEndian,
 			wantErr: false,
