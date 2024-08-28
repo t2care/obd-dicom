@@ -23,7 +23,7 @@ type AAssociationRQ struct {
 	Reserved3       [32]byte
 	AppContext      *UIDItem
 	PresContexts    []PresentationContext
-	UserInfo        UserInformation
+	UserInfo        *UserInformation
 	ID              int64
 }
 
@@ -96,11 +96,11 @@ func (aarq *AAssociationRQ) GetPresContexts() []PresentationContext {
 	return aarq.PresContexts
 }
 
-func (aarq *AAssociationRQ) GetUserInformation() UserInformation {
+func (aarq *AAssociationRQ) GetUserInformation() *UserInformation {
 	return aarq.UserInfo
 }
 
-func (aarq *AAssociationRQ) SetUserInformation(userInfo UserInformation) {
+func (aarq *AAssociationRQ) SetUserInformation(userInfo *UserInformation) {
 	aarq.UserInfo = userInfo
 }
 

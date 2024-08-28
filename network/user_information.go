@@ -8,24 +8,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// UserInformation - UserInformation
-type UserInformation interface {
-	GetItemType() byte
-	SetItemType(t byte)
-	GetAsyncOperationWindow() AsyncOperationWindow
-	GetMaxSubLength() MaximumSubLength
-	SetMaxSubLength(length MaximumSubLength)
-	Size() uint16
-	GetImpClass() *UIDItem
-	SetImpClassUID(name string)
-	GetImpVersion() *UIDItem
-	SetImpVersionName(name string)
-	Write(rw *bufio.ReadWriter) (err error)
-	Read(ms media.MemoryStream) (err error)
-	ReadDynamic(ms media.MemoryStream) (err error)
-}
-
-type userInformation struct {
+type UserInformation struct {
 	ItemType        byte //0x50
 	Reserved1       byte
 	Length          uint16
@@ -38,8 +21,8 @@ type userInformation struct {
 }
 
 // NewUserInformation - NewUserInformation
-func NewUserInformation() UserInformation {
-	return &userInformation{
+func NewUserInformation() *UserInformation {
+	return &UserInformation{
 		ItemType:      0x50,
 		MaxSubLength:  NewMaximumSubLength(),
 		AsyncOpWindow: NewAsyncOperationWindow(),
@@ -53,56 +36,56 @@ func NewUserInformation() UserInformation {
 	}
 }
 
-func (ui *userInformation) GetItemType() byte {
+func (ui *UserInformation) GetItemType() byte {
 	return ui.ItemType
 }
 
-func (ui *userInformation) SetItemType(t byte) {
+func (ui *UserInformation) SetItemType(t byte) {
 	ui.ItemType = t
 }
 
-func (ui *userInformation) GetMaxSubLength() MaximumSubLength {
+func (ui *UserInformation) GetMaxSubLength() MaximumSubLength {
 	return ui.MaxSubLength
 }
 
-func (ui *userInformation) GetAsyncOperationWindow() AsyncOperationWindow {
+func (ui *UserInformation) GetAsyncOperationWindow() AsyncOperationWindow {
 	return ui.AsyncOpWindow
 }
 
-func (ui *userInformation) SetMaxSubLength(length MaximumSubLength) {
+func (ui *UserInformation) SetMaxSubLength(length MaximumSubLength) {
 	ui.MaxSubLength = length
 }
 
-func (ui *userInformation) Size() uint16 {
+func (ui *UserInformation) Size() uint16 {
 	ui.Length = ui.MaxSubLength.Size()
 	ui.Length += ui.ImpClass.GetSize()
 	ui.Length += ui.ImpVersion.GetSize()
 	return ui.Length + 4
 }
 
-func (ui *userInformation) GetImpClass() *UIDItem {
+func (ui *UserInformation) GetImpClass() *UIDItem {
 	return ui.ImpClass
 }
 
-func (ui *userInformation) SetImpClassUID(name string) {
+func (ui *UserInformation) SetImpClassUID(name string) {
 	ui.ImpClass.SetType(0x52)
 	ui.ImpClass.SetReserved(0x00)
 	ui.ImpClass.SetUID(name)
 	ui.ImpClass.SetLength(uint16(len(name)))
 }
 
-func (ui *userInformation) GetImpVersion() *UIDItem {
+func (ui *UserInformation) GetImpVersion() *UIDItem {
 	return ui.ImpVersion
 }
 
-func (ui *userInformation) SetImpVersionName(name string) {
+func (ui *UserInformation) SetImpVersionName(name string) {
 	ui.ImpVersion.SetType(0x55)
 	ui.ImpVersion.SetReserved(0x00)
 	ui.ImpVersion.SetUID(name)
 	ui.ImpVersion.SetLength(uint16(len(name)))
 }
 
-func (ui *userInformation) Write(rw *bufio.ReadWriter) (err error) {
+func (ui *UserInformation) Write(rw *bufio.ReadWriter) (err error) {
 	bd := media.NewEmptyBufData()
 
 	bd.SetBigEndian(true)
@@ -122,14 +105,14 @@ func (ui *userInformation) Write(rw *bufio.ReadWriter) (err error) {
 	return
 }
 
-func (ui *userInformation) Read(ms media.MemoryStream) (err error) {
+func (ui *UserInformation) Read(ms media.MemoryStream) (err error) {
 	if ui.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return ui.ReadDynamic(ms)
 }
 
-func (ui *userInformation) ReadDynamic(ms media.MemoryStream) (err error) {
+func (ui *UserInformation) ReadDynamic(ms media.MemoryStream) (err error) {
 	if ui.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
