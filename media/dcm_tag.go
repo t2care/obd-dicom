@@ -153,8 +153,14 @@ func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSynt
 }
 
 func (tag *DcmTag) isSequence() bool {
-	if tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000) {
-		return true
-	}
-	return false
+	return tag.VR == "SQ" || (tag.Group == 0xFFFE && tag.Element == 0xE000)
+}
+
+// Length is undefined 0xFFFFFFFF
+func (tag *DcmTag) isSequenceUndefined() bool {
+	return tag.isSequence() && tag.Length == 0xFFFFFFFF
+}
+
+func (tag *DcmTag) isSequenceEnd() bool {
+	return (tag.Group == 0xFFFE && tag.Element == 0xE00D) || (tag.Group == 0xFFFE && tag.Element == 0xE0DD)
 }

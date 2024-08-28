@@ -279,7 +279,7 @@ func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -287,7 +287,7 @@ func (obj *dcmObj) getUShortGE(group uint16, element uint16) uint16 {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -308,7 +308,7 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -316,7 +316,7 @@ func (obj *dcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -337,7 +337,7 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 	sq := 0
 	for i = 0; i < obj.TagCount(); i++ {
 		tag = obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
@@ -345,7 +345,7 @@ func (obj *dcmObj) GetStringGE(group uint16, element uint16) string {
 				break
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -504,7 +504,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 
 	for i = 0; i < len(obj.Tags); i++ {
 		tag := obj.GetTagAt(i)
-		if ((tag.VR == "SQ") && (tag.Length == 0xFFFFFFFF)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE000) && (tag.Length == 0xFFFFFFFF)) {
+		if tag.isSequenceUndefined() {
 			sq++
 		}
 		if sq == 0 {
@@ -581,7 +581,7 @@ func (obj *dcmObj) GetPixelData(frame int) ([]byte, error) {
 				}
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
@@ -694,7 +694,7 @@ func (obj *dcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				}
 			}
 		}
-		if ((tag.Group == 0xFFFE) && (tag.Element == 0xE00D)) || ((tag.Group == 0xFFFE) && (tag.Element == 0xE0DD)) {
+		if tag.isSequenceEnd() {
 			sq--
 		}
 	}
