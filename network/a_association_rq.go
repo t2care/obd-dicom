@@ -22,7 +22,7 @@ type AAssociationRQ struct {
 	CalledAE        [16]byte // 16 bytes transfered
 	Reserved3       [32]byte
 	AppContext      *UIDItem
-	PresContexts    []PresentationContext
+	PresContexts    []*PresentationContext
 	UserInfo        *UserInformation
 	ID              int64
 }
@@ -40,7 +40,7 @@ func NewAAssociationRQ() *AAssociationRQ {
 			uid:       sopclass.DICOMApplicationContext.UID,
 			length:    uint16(len(sopclass.DICOMApplicationContext.UID)),
 		},
-		PresContexts: make([]PresentationContext, 0),
+		PresContexts: make([]*PresentationContext, 0),
 		UserInfo:     NewUserInformation(),
 		ID:           time.Now().UnixNano(),
 	}
@@ -92,7 +92,7 @@ func (aarq *AAssociationRQ) SetCalledAE(AET string) {
 	}
 }
 
-func (aarq *AAssociationRQ) GetPresContexts() []PresentationContext {
+func (aarq *AAssociationRQ) GetPresContexts() []*PresentationContext {
 	return aarq.PresContexts
 }
 
@@ -222,7 +222,7 @@ func (aarq *AAssociationRQ) Read(ms media.MemoryStream) (err error) {
 	return errors.New("aarq::ReadDynamic, Count is not zero")
 }
 
-func (aarq *AAssociationRQ) AddPresContexts(presentationContext PresentationContext) {
+func (aarq *AAssociationRQ) AddPresContexts(presentationContext *PresentationContext) {
 	aarq.PresContexts = append(aarq.PresContexts, presentationContext)
 }
 

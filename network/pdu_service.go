@@ -256,7 +256,7 @@ func (pdu *PDUService) SetCallingAE(callingAE string) {
 	pdu.AssocRQ.SetCallingAE(callingAE)
 }
 
-func (pdu *PDUService) AddPresContexts(presentationContext PresentationContext) {
+func (pdu *PDUService) AddPresContexts(presentationContext *PresentationContext) {
 	pdu.AssocRQ.AddPresContexts(presentationContext)
 }
 
