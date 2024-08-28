@@ -12,7 +12,7 @@ import (
 
 type BufData struct {
 	BigEndian bool
-	MS        MemoryStream
+	MS        *MemoryStream
 }
 
 // NewEmptyBufData -

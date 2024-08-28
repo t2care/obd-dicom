@@ -40,14 +40,14 @@ func (arrp *AReleaseRP) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (arrp *AReleaseRP) Read(ms media.MemoryStream) (err error) {
+func (arrp *AReleaseRP) Read(ms *media.MemoryStream) (err error) {
 	if arrp.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return arrp.ReadDynamic(ms)
 }
 
-func (arrp *AReleaseRP) ReadDynamic(ms media.MemoryStream) (err error) {
+func (arrp *AReleaseRP) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if arrp.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

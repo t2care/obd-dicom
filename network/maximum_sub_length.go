@@ -48,14 +48,14 @@ func (maxim *MaximumSubLength) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (maxim *MaximumSubLength) Read(ms media.MemoryStream) (err error) {
+func (maxim *MaximumSubLength) Read(ms *media.MemoryStream) (err error) {
 	if maxim.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return maxim.ReadDynamic(ms)
 }
 
-func (maxim *MaximumSubLength) ReadDynamic(ms media.MemoryStream) (err error) {
+func (maxim *MaximumSubLength) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if maxim.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

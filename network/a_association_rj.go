@@ -84,14 +84,14 @@ func (aarj *AAssociationRJ) Set(result byte, reason byte) {
 	aarj.Reason = reason
 }
 
-func (aarj *AAssociationRJ) Read(ms media.MemoryStream) (err error) {
+func (aarj *AAssociationRJ) Read(ms *media.MemoryStream) (err error) {
 	if aarj.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarj.ReadDynamic(ms)
 }
 
-func (aarj *AAssociationRJ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aarj *AAssociationRJ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aarj.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

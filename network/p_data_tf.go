@@ -22,7 +22,7 @@ type PDataTF struct {
 }
 
 // ReadDynamic - ReadDynamic
-func (pd *PDataTF) ReadDynamic(ms media.MemoryStream) (err error) {
+func (pd *PDataTF) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pd.Length == 0 {
 		if pd.Reserved1, err = ms.GetByte(); err != nil {
 			return

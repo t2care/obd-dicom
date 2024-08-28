@@ -29,14 +29,14 @@ func (async *AsyncOperationWindow) Size() uint16 {
 	return async.Length + 4
 }
 
-func (async *AsyncOperationWindow) Read(ms media.MemoryStream) (err error) {
+func (async *AsyncOperationWindow) Read(ms *media.MemoryStream) (err error) {
 	if async.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return async.ReadDynamic(ms)
 }
 
-func (async *AsyncOperationWindow) ReadDynamic(ms media.MemoryStream) (err error) {
+func (async *AsyncOperationWindow) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if async.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

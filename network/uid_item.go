@@ -69,14 +69,14 @@ func (u *UIDItem) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (u *UIDItem) Read(ms media.MemoryStream) (err error) {
+func (u *UIDItem) Read(ms *media.MemoryStream) (err error) {
 	if u.itemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return u.ReadDynamic(ms)
 }
 
-func (u *UIDItem) ReadDynamic(ms media.MemoryStream) (err error) {
+func (u *UIDItem) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if u.reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

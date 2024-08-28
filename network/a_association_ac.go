@@ -160,14 +160,14 @@ func (aaac *AAssociationAC) Write(rw *bufio.ReadWriter) error {
 	return aaac.UserInfo.Write(rw)
 }
 
-func (aaac *AAssociationAC) Read(ms media.MemoryStream) (err error) {
+func (aaac *AAssociationAC) Read(ms *media.MemoryStream) (err error) {
 	if aaac.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aaac.ReadDynamic(ms)
 }
 
-func (aaac *AAssociationAC) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aaac *AAssociationAC) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aaac.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

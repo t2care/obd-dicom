@@ -44,14 +44,14 @@ func (scpscu *RoleSelect) Write(rw *bufio.ReadWriter) bool {
 	return true
 }
 
-func (scpscu *RoleSelect) Read(ms media.MemoryStream) (err error) {
+func (scpscu *RoleSelect) Read(ms *media.MemoryStream) (err error) {
 	if scpscu.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return scpscu.ReadDynamic(ms)
 }
 
-func (scpscu *RoleSelect) ReadDynamic(ms media.MemoryStream) (err error) {
+func (scpscu *RoleSelect) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if scpscu.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

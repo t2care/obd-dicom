@@ -53,14 +53,14 @@ func (aarq *AAbortRQ) Write(rw *bufio.ReadWriter) error {
 	return bd.Send(rw)
 }
 
-func (aarq *AAbortRQ) Read(ms media.MemoryStream) (err error) {
+func (aarq *AAbortRQ) Read(ms *media.MemoryStream) (err error) {
 	if aarq.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return aarq.ReadDynamic(ms)
 }
 
-func (aarq *AAbortRQ) ReadDynamic(ms media.MemoryStream) (err error) {
+func (aarq *AAbortRQ) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if aarq.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

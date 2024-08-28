@@ -19,7 +19,7 @@ import (
 type PDUService struct {
 	AcceptedPresentationContexts []*PresentationContextAccept
 	readWriter                   *bufio.ReadWriter
-	ms                           media.MemoryStream
+	ms                           *media.MemoryStream
 	pdutype                      int
 	pdulength                    uint32
 	AssocRQ                      *AAssociationRQ

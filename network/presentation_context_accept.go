@@ -106,14 +106,14 @@ func (pc *PresentationContextAccept) Write(rw *bufio.ReadWriter) (err error) {
 	return
 }
 
-func (pc *PresentationContextAccept) Read(ms media.MemoryStream) (err error) {
+func (pc *PresentationContextAccept) Read(ms *media.MemoryStream) (err error) {
 	if pc.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return pc.ReadDynamic(ms)
 }
 
-func (pc *PresentationContextAccept) ReadDynamic(ms media.MemoryStream) (err error) {
+func (pc *PresentationContextAccept) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pc.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

@@ -105,14 +105,14 @@ func (ui *UserInformation) Write(rw *bufio.ReadWriter) (err error) {
 	return
 }
 
-func (ui *UserInformation) Read(ms media.MemoryStream) (err error) {
+func (ui *UserInformation) Read(ms *media.MemoryStream) (err error) {
 	if ui.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return ui.ReadDynamic(ms)
 }
 
-func (ui *UserInformation) ReadDynamic(ms media.MemoryStream) (err error) {
+func (ui *UserInformation) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if ui.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}

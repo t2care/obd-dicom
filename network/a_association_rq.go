@@ -177,7 +177,7 @@ func (aarq *AAssociationRQ) Write(rw *bufio.ReadWriter) error {
 	return aarq.UserInfo.Write(rw)
 }
 
-func (aarq *AAssociationRQ) Read(ms media.MemoryStream) (err error) {
+func (aarq *AAssociationRQ) Read(ms *media.MemoryStream) (err error) {
 	if aarq.ProtocolVersion, err = ms.GetUint16(); err != nil {
 		return err
 	}

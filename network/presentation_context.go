@@ -89,14 +89,14 @@ func (pc *PresentationContext) Write(rw *bufio.ReadWriter) error {
 	return nil
 }
 
-func (pc *PresentationContext) Read(ms media.MemoryStream) (err error) {
+func (pc *PresentationContext) Read(ms *media.MemoryStream) (err error) {
 	if pc.ItemType, err = ms.GetByte(); err != nil {
 		return err
 	}
 	return pc.ReadDynamic(ms)
 }
 
-func (pc *PresentationContext) ReadDynamic(ms media.MemoryStream) (err error) {
+func (pc *PresentationContext) ReadDynamic(ms *media.MemoryStream) (err error) {
 	if pc.Reserved1, err = ms.GetByte(); err != nil {
 		return err
 	}
