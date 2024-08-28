@@ -12,30 +12,7 @@ import (
 	"github.com/one-byte-data/obd-dicom/media"
 )
 
-// AAssociationRQ - AAssociationRQ
-type AAssociationRQ interface {
-	GetAppContext() UIDItem
-	SetAppContext(context UIDItem)
-	GetCallingAE() string
-	SetCallingAE(AET string)
-	GetCalledAE() string
-	SetCalledAE(AET string)
-	GetPresContexts() []PresentationContext
-	GetUserInformation() UserInformation
-	SetUserInformation(userInfo UserInformation)
-	GetMaxSubLength() uint32
-	SetMaxSubLength(length uint32)
-	GetImpClass() UIDItem
-	SetImpClassUID(uid string)
-	SetImpVersionName(name string)
-	Size() uint32
-	Write(rw *bufio.ReadWriter) error
-	Read(ms media.MemoryStream) error
-	AddPresContexts(presentationContext PresentationContext)
-	GetID() int64
-}
-
-type aassociationRQ struct {
+type AAssociationRQ struct {
 	ItemType        byte // 0x01
 	Reserved1       byte
 	Length          uint32
@@ -51,8 +28,8 @@ type aassociationRQ struct {
 }
 
 // NewAAssociationRQ - NewAAssociationRQ
-func NewAAssociationRQ() AAssociationRQ {
-	return &aassociationRQ{
+func NewAAssociationRQ() *AAssociationRQ {
+	return &AAssociationRQ{
 		ItemType:        0x01,
 		Reserved1:       0x00,
 		ProtocolVersion: 0x01,
@@ -69,15 +46,15 @@ func NewAAssociationRQ() AAssociationRQ {
 	}
 }
 
-func (aarq *aassociationRQ) GetAppContext() UIDItem {
+func (aarq *AAssociationRQ) GetAppContext() UIDItem {
 	return aarq.AppContext
 }
 
-func (aarq *aassociationRQ) SetAppContext(context UIDItem) {
+func (aarq *AAssociationRQ) SetAppContext(context UIDItem) {
 	aarq.AppContext = context
 }
 
-func (aarq *aassociationRQ) GetCallingAE() string {
+func (aarq *AAssociationRQ) GetCallingAE() string {
 	temp := []byte{}
 	for _, b := range aarq.CallingAE {
 		if b != 0x00 && b != 0x20 {
@@ -87,7 +64,7 @@ func (aarq *aassociationRQ) GetCallingAE() string {
 	return string(temp)
 }
 
-func (aarq *aassociationRQ) SetCallingAE(AET string) {
+func (aarq *AAssociationRQ) SetCallingAE(AET string) {
 	copy(aarq.CallingAE[:], AET)
 	for index, b := range aarq.CallingAE {
 		if b == 0x00 {
@@ -96,7 +73,7 @@ func (aarq *aassociationRQ) SetCallingAE(AET string) {
 	}
 }
 
-func (aarq *aassociationRQ) GetCalledAE() string {
+func (aarq *AAssociationRQ) GetCalledAE() string {
 	temp := []byte{}
 	for _, b := range aarq.CalledAE {
 		if b != 0x00 && b != 0x20 {
@@ -106,7 +83,7 @@ func (aarq *aassociationRQ) GetCalledAE() string {
 	return string(temp)
 }
 
-func (aarq *aassociationRQ) SetCalledAE(AET string) {
+func (aarq *AAssociationRQ) SetCalledAE(AET string) {
 	copy(aarq.CalledAE[:], AET)
 	for index, b := range aarq.CalledAE {
 		if b == 0x00 {
@@ -115,39 +92,39 @@ func (aarq *aassociationRQ) SetCalledAE(AET string) {
 	}
 }
 
-func (aarq *aassociationRQ) GetPresContexts() []PresentationContext {
+func (aarq *AAssociationRQ) GetPresContexts() []PresentationContext {
 	return aarq.PresContexts
 }
 
-func (aarq *aassociationRQ) GetUserInformation() UserInformation {
+func (aarq *AAssociationRQ) GetUserInformation() UserInformation {
 	return aarq.UserInfo
 }
 
-func (aarq *aassociationRQ) SetUserInformation(userInfo UserInformation) {
+func (aarq *AAssociationRQ) SetUserInformation(userInfo UserInformation) {
 	aarq.UserInfo = userInfo
 }
 
-func (aarq *aassociationRQ) GetMaxSubLength() uint32 {
+func (aarq *AAssociationRQ) GetMaxSubLength() uint32 {
 	return aarq.UserInfo.GetMaxSubLength().GetMaximumLength()
 }
 
-func (aarq *aassociationRQ) SetMaxSubLength(length uint32) {
+func (aarq *AAssociationRQ) SetMaxSubLength(length uint32) {
 	aarq.UserInfo.GetMaxSubLength().SetMaximumLength(length)
 }
 
-func (aarq *aassociationRQ) GetImpClass() UIDItem {
+func (aarq *AAssociationRQ) GetImpClass() UIDItem {
 	return aarq.UserInfo.GetImpClass()
 }
 
-func (aarq *aassociationRQ) SetImpClassUID(uid string) {
+func (aarq *AAssociationRQ) SetImpClassUID(uid string) {
 	aarq.UserInfo.SetImpClassUID(uid)
 }
 
-func (aarq *aassociationRQ) SetImpVersionName(name string) {
+func (aarq *AAssociationRQ) SetImpVersionName(name string) {
 	aarq.UserInfo.SetImpVersionName(name)
 }
 
-func (aarq *aassociationRQ) Size() uint32 {
+func (aarq *AAssociationRQ) Size() uint32 {
 	aarq.Length = 4 + 16 + 16 + 32
 	aarq.Length += uint32(aarq.AppContext.GetSize())
 
@@ -159,7 +136,7 @@ func (aarq *aassociationRQ) Size() uint32 {
 	return aarq.Length + 6
 }
 
-func (aarq *aassociationRQ) Write(rw *bufio.ReadWriter) error {
+func (aarq *AAssociationRQ) Write(rw *bufio.ReadWriter) error {
 	bd := media.NewEmptyBufData()
 
 	slog.Info("ASSOC-RQ:", "CallingAE", aarq.GetCallingAE(), "CalledAE", aarq.GetCalledAE())
@@ -200,7 +177,7 @@ func (aarq *aassociationRQ) Write(rw *bufio.ReadWriter) error {
 	return aarq.UserInfo.Write(rw)
 }
 
-func (aarq *aassociationRQ) Read(ms media.MemoryStream) (err error) {
+func (aarq *AAssociationRQ) Read(ms media.MemoryStream) (err error) {
 	if aarq.ProtocolVersion, err = ms.GetUint16(); err != nil {
 		return err
 	}
@@ -245,10 +222,10 @@ func (aarq *aassociationRQ) Read(ms media.MemoryStream) (err error) {
 	return errors.New("aarq::ReadDynamic, Count is not zero")
 }
 
-func (aarq *aassociationRQ) AddPresContexts(presentationContext PresentationContext) {
+func (aarq *AAssociationRQ) AddPresContexts(presentationContext PresentationContext) {
 	aarq.PresContexts = append(aarq.PresContexts, presentationContext)
 }
 
-func (aarq *aassociationRQ) GetID() int64 {
+func (aarq *AAssociationRQ) GetID() int64 {
 	return aarq.ID
 }

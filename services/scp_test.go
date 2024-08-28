@@ -11,11 +11,11 @@ func Test_Association_ID(t *testing.T) {
 	_, testSCP := StartSCP(t, 1043)
 	var onAssociationRequestID int64
 	var onAssociationReleaseID int64
-	testSCP.OnAssociationRequest(func(request network.AAssociationRQ) bool {
+	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 		onAssociationRequestID = request.GetID()
 		return true
 	})
-	testSCP.OnAssociationRelease(func(request network.AAssociationRQ) {
+	testSCP.OnAssociationRelease(func(request *network.AAssociationRQ) {
 		onAssociationReleaseID = request.GetID()
 	})
 	tests := []struct {

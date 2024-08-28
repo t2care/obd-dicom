@@ -59,12 +59,12 @@ func main() {
 		}
 		scp := services.NewSCP(*port)
 
-		scp.OnAssociationRequest(func(request network.AAssociationRQ) bool {
+		scp.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 			called := request.GetCalledAE()
 			return *calledAE == called
 		})
 
-		scp.OnCFindRequest(func(request network.AAssociationRQ, queryLevel string, query media.DcmObj) ([]media.DcmObj, uint16) {
+		scp.OnCFindRequest(func(request *network.AAssociationRQ, queryLevel string, query media.DcmObj) ([]media.DcmObj, uint16) {
 			query.DumpTags()
 			results := make([]media.DcmObj, 0)
 			for i := 0; i < 10; i++ {
@@ -73,12 +73,12 @@ func main() {
 			return results, dicomstatus.Success
 		})
 
-		scp.OnCMoveRequest(func(request network.AAssociationRQ, moveLevel string, query media.DcmObj) uint16 {
+		scp.OnCMoveRequest(func(request *network.AAssociationRQ, moveLevel string, query media.DcmObj) uint16 {
 			query.DumpTags()
 			return dicomstatus.Success
 		})
 
-		scp.OnCStoreRequest(func(request network.AAssociationRQ, data media.DcmObj) uint16 {
+		scp.OnCStoreRequest(func(request *network.AAssociationRQ, data media.DcmObj) uint16 {
 			log.Printf("INFO, C-Store recieved %s", data.GetString(tags.SOPInstanceUID))
 			directory := filepath.Join(*datastore, data.GetString(tags.PatientID), data.GetString(tags.StudyInstanceUID), data.GetString(tags.SeriesInstanceUID))
 			os.MkdirAll(directory, 0755)

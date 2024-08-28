@@ -15,7 +15,7 @@ import (
 func Test_scu_EchoSCU(t *testing.T) {
 	_, testSCP := StartSCP(t, 1040)
 
-	testSCP.OnAssociationRequest(func(request network.AAssociationRQ) bool {
+	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 		return request.GetCalledAE() == "TEST_SCP"
 	})
 
@@ -87,11 +87,11 @@ func Test_scu_EchoSCU(t *testing.T) {
 func Test_scu_FindSCU(t *testing.T) {
 	_, testSCP := StartSCP(t, 1041)
 
-	testSCP.OnAssociationRequest(func(request network.AAssociationRQ) bool {
+	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 		return request.GetCalledAE() == "TEST_SCP"
 	})
 
-	testSCP.OnCFindRequest(func(request network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16) {
+	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, findLevel string, data media.DcmObj) ([]media.DcmObj, uint16) {
 		return make([]media.DcmObj, 0), dicomstatus.Success
 	})
 
@@ -156,11 +156,11 @@ func Test_scu_FindSCU(t *testing.T) {
 func Test_scu_StoreSCU(t *testing.T) {
 	_, testSCP := StartSCP(t, 1042)
 
-	testSCP.OnAssociationRequest(func(request network.AAssociationRQ) bool {
+	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 		return request.GetCalledAE() == "TEST_SCP"
 	})
 
-	testSCP.OnCStoreRequest(func(request network.AAssociationRQ, data media.DcmObj) uint16 {
+	testSCP.OnCStoreRequest(func(request *network.AAssociationRQ, data media.DcmObj) uint16 {
 		data.DumpTags()
 		return dicomstatus.Success
 	})

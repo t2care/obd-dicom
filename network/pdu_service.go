@@ -22,7 +22,7 @@ type PDUService interface {
 	SetTimeout(timeout int)
 	Connect(IP string, Port string) error
 	Close()
-	GetAAssociationRQ() AAssociationRQ
+	GetAAssociationRQ() *AAssociationRQ
 	GetCalledAE() string
 	GetCallingAE() string
 	SetCalledAE(calledAE string)
@@ -31,8 +31,8 @@ type PDUService interface {
 	NextPDU() (media.DcmObj, error)
 	AddPresContexts(presentationContext PresentationContext)
 	GetPresentationContextID() byte
-	SetOnAssociationRequest(f func(request AAssociationRQ) bool)
-	SetOnAssociationRelease(f func(request AAssociationRQ))
+	SetOnAssociationRequest(f func(request *AAssociationRQ) bool)
+	SetOnAssociationRelease(f func(request *AAssociationRQ))
 	Write(DCO media.DcmObj, ItemType byte) error
 	interogateAAssociateAC() bool
 	interogateAAssociateRQ(rw *bufio.ReadWriter) error
@@ -47,7 +47,7 @@ type pduService struct {
 	ms                           media.MemoryStream
 	pdutype                      int
 	pdulength                    uint32
-	AssocRQ                      AAssociationRQ
+	AssocRQ                      *AAssociationRQ
 	AssocAC                      *AAssociationAC
 	AssocRJ                      *AAssociationRJ
 	ReleaseRQ                    *AReleaseRQ
@@ -55,8 +55,8 @@ type pduService struct {
 	AbortRQ                      *AAbortRQ
 	Pdata                        PDataTF
 	Timeout                      int
-	OnAssociationRequest         func(request AAssociationRQ) bool
-	OnAssociationRelease         func(request AAssociationRQ)
+	OnAssociationRequest         func(request *AAssociationRQ) bool
+	OnAssociationRelease         func(request *AAssociationRQ)
 }
 
 // NewPDUService - creates a pointer to PDUService
@@ -261,7 +261,7 @@ func (pdu *pduService) NextPDU() (command media.DcmObj, err error) {
 	}
 }
 
-func (pdu *pduService) GetAAssociationRQ() AAssociationRQ {
+func (pdu *pduService) GetAAssociationRQ() *AAssociationRQ {
 	return pdu.AssocRQ
 }
 
@@ -289,11 +289,11 @@ func (pdu *pduService) GetPresentationContextID() byte {
 	return pdu.Pdata.PresentationContextID
 }
 
-func (pdu *pduService) SetOnAssociationRequest(f func(request AAssociationRQ) bool) {
+func (pdu *pduService) SetOnAssociationRequest(f func(request *AAssociationRQ) bool) {
 	pdu.OnAssociationRequest = f
 }
 
-func (pdu *pduService) SetOnAssociationRelease(f func(request AAssociationRQ)) {
+func (pdu *pduService) SetOnAssociationRelease(f func(request *AAssociationRQ)) {
 	pdu.OnAssociationRelease = f
 }
 
