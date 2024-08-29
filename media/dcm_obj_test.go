@@ -140,3 +140,8 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 	_, err = NewDCMObjFromBytes(dcmObj.WriteToBytes())
 	return
 }
+func BenchmarkOBD(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		NewDCMObjFromFile("../samples/test.dcm")
+	}
+}

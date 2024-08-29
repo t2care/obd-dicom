@@ -10,7 +10,7 @@ type Tag struct {
 	Description string
 }
 
-func GetTagFromName(name string) *Tag {
+func getTagFromName(name string) *Tag {
 	for _, tag := range tags {
 		if tag.Name == name {
 			return tag
@@ -19,8 +19,8 @@ func GetTagFromName(name string) *Tag {
 	return &Tag{}
 }
 
-// GetTag - Get tag from group and element
-func GetTag(group uint16, element uint16) *Tag {
+// getTag - Get tag from group and element
+func getTag(group uint16, element uint16) *Tag {
 	for _, tag := range tags {
 		if tag.Group == group && tag.Element == element {
 			return tag
@@ -32,13 +32,4 @@ func GetTag(group uint16, element uint16) *Tag {
 // GetTags - Get all tags
 func GetTags() []*Tag {
 	return tags
-}
-
-func GetGroupElement(Name string) (group uint16, element uint16) {
-	for _, tag := range tags {
-		if tag.Name == Name {
-			return tag.Group, tag.Element
-		}
-	}
-  return 0, 0
 }
