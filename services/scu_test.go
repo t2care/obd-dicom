@@ -161,7 +161,6 @@ func Test_scu_StoreSCU(t *testing.T) {
 	})
 
 	testSCP.OnCStoreRequest(func(request *network.AAssociationRQ, data *media.DcmObj) uint16 {
-		data.DumpTags()
 		return dicomstatus.Success
 	})
 

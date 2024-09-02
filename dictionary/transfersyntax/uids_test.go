@@ -32,7 +32,7 @@ func TestGetTransferSyntaxFromName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetTransferSyntaxFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got := getTransferSyntaxFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetTransferSyntaxFromName() = %v, want %v", got, tt.want)
 			}
 		})

@@ -17,7 +17,16 @@ var supportedTransferSyntaxes = []*TransferSyntax{
 	JPEGExtended12Bit,
 }
 
-func GetTransferSyntaxFromName(name string) *TransferSyntax {
+var tsMap map[string]*TransferSyntax
+
+func init() {
+	tsMap = make(map[string]*TransferSyntax, len(transferSyntaxes))
+	for _, ts := range transferSyntaxes {
+		tsMap[ts.UID] = ts
+	}
+}
+
+func getTransferSyntaxFromName(name string) *TransferSyntax {
 	for _, ts := range transferSyntaxes {
 		if ts.Name == name {
 			return ts
@@ -27,10 +36,8 @@ func GetTransferSyntaxFromName(name string) *TransferSyntax {
 }
 
 func GetTransferSyntaxFromUID(uid string) *TransferSyntax {
-	for _, ts := range transferSyntaxes {
-		if ts.UID == uid {
-			return ts
-		}
+	if ts, ok := tsMap[uid]; ok {
+		return ts
 	}
 	// Extra loop to fix old bug
 	uid = string([]rune(uid)[:len(uid)-1])
