@@ -21,8 +21,12 @@ type xmlTag struct {
 	VM          string `xml:"vm,attr"`
 	Description string `xml:",chardata"`
 }
+type tagKey struct {
+	group   uint16
+	element uint16
+}
 
-var codes map[uint16]*tags.Tag
+var codes map[tagKey]*tags.Tag
 
 // FillTag - Populates with data from dictionary
 func FillTag(tag *DcmTag) {
@@ -46,7 +50,7 @@ func getDictionaryTag(group uint16, element uint16) *tags.Tag {
 	if codes == nil {
 		InitDict()
 	}
-	if t, ok := codes[group+element]; ok {
+	if t, ok := codes[tagKey{group: group, element: element}]; ok {
 		return t
 	}
 	return &tags.Tag{
@@ -64,7 +68,7 @@ func getDictionaryVR(group uint16, element uint16) string {
 	if codes == nil {
 		InitDict()
 	}
-	if t, ok := codes[group+element]; ok {
+	if t, ok := codes[tagKey{group: group, element: element}]; ok {
 		return t.VR
 	}
 	return "UN"
@@ -94,7 +98,7 @@ func loadPrivateDictionary() {
 		}
 		group := uint16(g)
 		element := uint16(e)
-		codes[group+element] = &tags.Tag{
+		codes[tagKey{group: group, element: element}] = &tags.Tag{
 			Group:       group,
 			Element:     element,
 			Name:        t.Name,
@@ -108,9 +112,9 @@ func loadPrivateDictionary() {
 // InitDict Initialize Dictionary
 func InitDict() {
 	tagList := tags.GetTags()
-	codes = make(map[uint16]*tags.Tag, len(tagList))
+	codes = make(map[tagKey]*tags.Tag, len(tagList))
 	for _, t := range tagList {
-		codes[t.Group+t.Element] = t
+		codes[tagKey{group: t.Group, element: t.Element}] = t
 	}
 	loadPrivateDictionary()
 }
