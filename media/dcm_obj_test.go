@@ -149,27 +149,27 @@ func BenchmarkOBD(b *testing.B) {
 func TestParseOptions(t *testing.T) {
 	tests := []struct {
 		name     string
-		opt      ParseOption
+		opt      ParseOptions
 		tagCount int
 	}{
 		{
 			name:     "No options",
-			opt:      ParseOption{},
+			opt:      ParseOptions{},
 			tagCount: 99,
 		},
 		{
 			name:     "Skip pixel",
-			opt:      ParseOption{SkipPixelData: true},
+			opt:      ParseOptions{SkipPixelData: true},
 			tagCount: 98,
 		},
 		{
 			name:     "Only meta header",
-			opt:      ParseOption{OnlyMetaHeader: true},
+			opt:      ParseOptions{OnlyMetaHeader: true},
 			tagCount: 0,
 		},
 		{
 			name:     "Until patient tags",
-			opt:      ParseOption{UntilPatientTag: true},
+			opt:      ParseOptions{UntilPatientTag: true},
 			tagCount: 30,
 		},
 	}

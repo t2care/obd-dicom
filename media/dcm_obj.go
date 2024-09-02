@@ -24,7 +24,7 @@ type DcmObj struct {
 	SQtag          *DcmTag
 }
 
-type ParseOption struct {
+type ParseOptions struct {
 	OnlyMetaHeader  bool // Group 0x0002
 	UntilPatientTag bool // Until group 0x0010
 	SkipPixelData   bool
@@ -42,7 +42,7 @@ func NewEmptyDCMObj() *DcmObj {
 }
 
 // NewDCMObjFromFile - Read from a DICOM file into a DICOM Object
-func NewDCMObjFromFile(fileName string, opt ...ParseOption) (*DcmObj, error) {
+func NewDCMObjFromFile(fileName string, opt ...ParseOptions) (*DcmObj, error) {
 	if _, err := os.Stat(fileName); err != nil {
 		if os.IsNotExist(err) {
 			return nil, errors.New("DcmObj::Read, file does not exist")
@@ -63,7 +63,7 @@ func NewDCMObjFromBytes(data []byte) (*DcmObj, error) {
 	return parseBufData(NewBufDataFromBytes(data))
 }
 
-func parseBufData(bufdata *BufData, opt ...ParseOption) (*DcmObj, error) {
+func parseBufData(bufdata *BufData, opt ...ParseOptions) (*DcmObj, error) {
 	BigEndian := false
 
 	transferSyntax, err := bufdata.ReadMeta()
