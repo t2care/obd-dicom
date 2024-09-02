@@ -145,3 +145,40 @@ func BenchmarkOBD(b *testing.B) {
 		NewDCMObjFromFile("../samples/test.dcm")
 	}
 }
+
+func TestParseOptions(t *testing.T) {
+	tests := []struct {
+		name     string
+		opt      ParseOption
+		tagCount int
+	}{
+		{
+			name:     "No options",
+			opt:      ParseOption{},
+			tagCount: 99,
+		},
+		{
+			name:     "Skip pixel",
+			opt:      ParseOption{SkipPixelData: true},
+			tagCount: 98,
+		},
+		{
+			name:     "Only meta header",
+			opt:      ParseOption{OnlyMetaHeader: true},
+			tagCount: 0,
+		},
+		{
+			name:     "Until patient tags",
+			opt:      ParseOption{UntilPatientTag: true},
+			tagCount: 30,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o, _ := NewDCMObjFromFile("../samples/test.dcm", tt.opt)
+			if len(o.GetTags()) != tt.tagCount {
+				t.Errorf("TestParseOptions() count = %v, want %v", len(o.GetTags()), tt.tagCount)
+			}
+		})
+	}
+}
