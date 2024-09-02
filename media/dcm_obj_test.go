@@ -3,6 +3,7 @@ package media
 import (
 	"testing"
 
+	"github.com/one-byte-data/obd-dicom/dictionary/tags"
 	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
 )
 
@@ -142,35 +143,46 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 }
 func BenchmarkOBD(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		NewDCMObjFromFile("../samples/test.dcm")
+		NewDCMObjFromFile("../samples/test.dcm", ParseOptions{UntilPatientTag: true, SkipFillTag: true})
 	}
 }
 
 func TestParseOptions(t *testing.T) {
 	tests := []struct {
-		name     string
-		opt      ParseOptions
-		tagCount int
+		name         string
+		opt          ParseOptions
+		tagCount     int
+		protocolName string
 	}{
 		{
-			name:     "No options",
-			opt:      ParseOptions{},
-			tagCount: 99,
+			name:         "No options",
+			opt:          ParseOptions{},
+			tagCount:     99,
+			protocolName: "SAG T1 ACR",
 		},
 		{
-			name:     "Skip pixel",
-			opt:      ParseOptions{SkipPixelData: true},
-			tagCount: 98,
+			name:         "Skip pixel",
+			opt:          ParseOptions{SkipPixelData: true},
+			tagCount:     98,
+			protocolName: "SAG T1 ACR",
 		},
 		{
-			name:     "Only meta header",
-			opt:      ParseOptions{OnlyMetaHeader: true},
-			tagCount: 0,
+			name:         "Only meta header",
+			opt:          ParseOptions{OnlyMetaHeader: true},
+			tagCount:     0,
+			protocolName: "",
 		},
 		{
-			name:     "Until patient tags",
-			opt:      ParseOptions{UntilPatientTag: true},
-			tagCount: 30,
+			name:         "Until patient tags",
+			opt:          ParseOptions{UntilPatientTag: true},
+			tagCount:     30,
+			protocolName: "",
+		},
+		{
+			name:         "Skip FillTag",
+			opt:          ParseOptions{SkipPixelData: true, SkipFillTag: true},
+			tagCount:     98,
+			protocolName: "SAG T1 ACR",
 		},
 	}
 	for _, tt := range tests {
@@ -178,6 +190,9 @@ func TestParseOptions(t *testing.T) {
 			o, _ := NewDCMObjFromFile("../samples/test.dcm", tt.opt)
 			if len(o.GetTags()) != tt.tagCount {
 				t.Errorf("TestParseOptions() count = %v, want %v", len(o.GetTags()), tt.tagCount)
+			}
+			if pn := o.GetString(tags.ProtocolName); pn != tt.protocolName {
+				t.Errorf("TestParseOptions() syntax = %v, want %v", pn, tt.protocolName)
 			}
 		})
 	}
