@@ -143,44 +143,44 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 }
 func BenchmarkOBD(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		NewDCMObjFromFile("../samples/test.dcm", ParseOptions{UntilPatientTag: true, SkipFillTag: true})
+		NewDCMObjFromFile("../samples/test.dcm")
 	}
 }
 
 func TestParseOptions(t *testing.T) {
 	tests := []struct {
 		name         string
-		opt          ParseOptions
+		opt          *ParseOptions
 		tagCount     int
 		protocolName string
 	}{
 		{
 			name:         "No options",
-			opt:          ParseOptions{},
+			opt:          &ParseOptions{},
 			tagCount:     99,
 			protocolName: "SAG T1 ACR",
 		},
 		{
 			name:         "Skip pixel",
-			opt:          ParseOptions{SkipPixelData: true},
+			opt:          &ParseOptions{SkipPixelData: true},
 			tagCount:     98,
 			protocolName: "SAG T1 ACR",
 		},
 		{
 			name:         "Only meta header",
-			opt:          ParseOptions{OnlyMetaHeader: true},
+			opt:          &ParseOptions{OnlyMetaHeader: true},
 			tagCount:     0,
 			protocolName: "",
 		},
 		{
 			name:         "Until patient tags",
-			opt:          ParseOptions{UntilPatientTag: true},
+			opt:          &ParseOptions{UntilPatientTag: true},
 			tagCount:     30,
 			protocolName: "",
 		},
 		{
 			name:         "Skip FillTag",
-			opt:          ParseOptions{SkipPixelData: true, SkipFillTag: true},
+			opt:          &ParseOptions{SkipPixelData: true, SkipFillTag: true},
 			tagCount:     98,
 			protocolName: "SAG T1 ACR",
 		},

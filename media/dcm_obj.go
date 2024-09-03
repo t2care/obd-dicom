@@ -43,7 +43,7 @@ func NewEmptyDCMObj() *DcmObj {
 }
 
 // NewDCMObjFromFile - Read from a DICOM file into a DICOM Object
-func NewDCMObjFromFile(fileName string, opt ...ParseOptions) (*DcmObj, error) {
+func NewDCMObjFromFile(fileName string, opt ...*ParseOptions) (*DcmObj, error) {
 	if _, err := os.Stat(fileName); err != nil {
 		if os.IsNotExist(err) {
 			return nil, errors.New("DcmObj::Read, file does not exist")
@@ -64,7 +64,7 @@ func NewDCMObjFromBytes(data []byte) (*DcmObj, error) {
 	return parseBufData(NewBufDataFromBytes(data))
 }
 
-func parseBufData(bufdata *BufData, opt ...ParseOptions) (*DcmObj, error) {
+func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 	BigEndian := false
 
 	transferSyntax, err := bufdata.ReadMeta()

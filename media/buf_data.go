@@ -146,7 +146,7 @@ func (bd *BufData) WriteString(value string) {
 }
 
 // ReadTag - read a single tag from the Stream
-func (bd *BufData) ReadTag(explicitVR bool, opt ...ParseOptions) (*DcmTag, error) {
+func (bd *BufData) ReadTag(explicitVR bool, opt ...*ParseOptions) (*DcmTag, error) {
 	group, err := bd.ReadUint16()
 	if err != nil {
 		return nil, err
@@ -357,7 +357,7 @@ func (bd *BufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 }
 
 // ReadObj - Read a DICOM Object from a BufData
-func (bd *BufData) ReadObj(obj *DcmObj, opt ...ParseOptions) error {
+func (bd *BufData) ReadObj(obj *DcmObj, opt ...*ParseOptions) error {
 	isExplicitVR := obj.IsExplicitVR()
 	for bd.GetPosition() < bd.GetSize() {
 		tag, err := bd.ReadTag(isExplicitVR, opt...)
