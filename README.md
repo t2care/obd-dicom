@@ -23,7 +23,7 @@ go build -tags jpeg2000 ...
 ### Load DICOM File
 
 ```golang
-obj, err := media.NewDCMObjFromFile(fileName)
+obj, err := media.NewDCMObjFromFile(fileName, &ParseOptions{SkipPixelData: true})
 if err != nil {
   log.Panicln(err)
 }
