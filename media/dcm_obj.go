@@ -24,6 +24,13 @@ type DcmObj struct {
 	SQtag          *DcmTag
 }
 
+type ParseOptions struct {
+	OnlyMetaHeader  bool // Group 0x0002. Useful for storeSCU for exemple
+	UntilPatientTag bool // Until group 0x0010
+	SkipPixelData   bool
+	SkipFillTag     bool // Increase perf by skipping FillTag. Filltag is only useful for dumpTags
+}
+
 // NewEmptyDCMObj - Create as an interface to a new empty dcmObj
 func NewEmptyDCMObj() *DcmObj {
 	return &DcmObj{
@@ -36,7 +43,7 @@ func NewEmptyDCMObj() *DcmObj {
 }
 
 // NewDCMObjFromFile - Read from a DICOM file into a DICOM Object
-func NewDCMObjFromFile(fileName string) (*DcmObj, error) {
+func NewDCMObjFromFile(fileName string, opt ...*ParseOptions) (*DcmObj, error) {
 	if _, err := os.Stat(fileName); err != nil {
 		if os.IsNotExist(err) {
 			return nil, errors.New("DcmObj::Read, file does not exist")
@@ -49,7 +56,7 @@ func NewDCMObjFromFile(fileName string) (*DcmObj, error) {
 		return nil, err
 	}
 
-	return parseBufData(bufdata)
+	return parseBufData(bufdata, opt...)
 }
 
 // NewDCMObjFromBytes - Read from a DICOM bytes into a DICOM Object
@@ -57,7 +64,7 @@ func NewDCMObjFromBytes(data []byte) (*DcmObj, error) {
 	return parseBufData(NewBufDataFromBytes(data))
 }
 
-func parseBufData(bufdata *BufData) (*DcmObj, error) {
+func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 	BigEndian := false
 
 	transferSyntax, err := bufdata.ReadMeta()
@@ -87,7 +94,7 @@ func parseBufData(bufdata *BufData) (*DcmObj, error) {
 	}
 	bufdata.SetBigEndian(BigEndian)
 
-	if err := bufdata.ReadObj(obj); err != nil {
+	if err := bufdata.ReadObj(obj, opt...); err != nil {
 		return nil, err
 	}
 

@@ -146,10 +146,26 @@ func (bd *BufData) WriteString(value string) {
 }
 
 // ReadTag - read a single tag from the Stream
-func (bd *BufData) ReadTag(explicitVR bool) (*DcmTag, error) {
+func (bd *BufData) ReadTag(explicitVR bool, opt ...*ParseOptions) (*DcmTag, error) {
 	group, err := bd.ReadUint16()
 	if err != nil {
 		return nil, err
+	}
+	if len(opt) > 0 {
+		stop := false
+		switch group {
+		case 0x0002:
+		case 0x0008:
+			stop = opt[0].OnlyMetaHeader
+		case 0x0010:
+		case 0x7FE0:
+			stop = opt[0].SkipPixelData
+		default:
+			stop = opt[0].UntilPatientTag
+		}
+		if stop {
+			return nil, nil
+		}
 	}
 	element, err := bd.ReadUint16()
 	if err != nil {
@@ -205,7 +221,9 @@ func (bd *BufData) ReadTag(explicitVR bool) (*DcmTag, error) {
 			return nil, err
 		}
 	}
-	FillTag(tag)
+	if len(opt) > 1 && opt[0].SkipFillTag {
+		FillTag(tag)
+	}
 	return tag, nil
 }
 
@@ -339,12 +357,15 @@ func (bd *BufData) WriteMeta(SOPClassUID string, SOPInstanceUID string, Transfer
 }
 
 // ReadObj - Read a DICOM Object from a BufData
-func (bd *BufData) ReadObj(obj *DcmObj) error {
+func (bd *BufData) ReadObj(obj *DcmObj, opt ...*ParseOptions) error {
 	isExplicitVR := obj.IsExplicitVR()
 	for bd.GetPosition() < bd.GetSize() {
-		tag, err := bd.ReadTag(isExplicitVR)
+		tag, err := bd.ReadTag(isExplicitVR, opt...)
 		if err != nil {
 			return err
+		}
+		if tag == nil {
+			return nil
 		}
 		if !isExplicitVR {
 			tag.VR = getDictionaryVR(tag.Group, tag.Element)
