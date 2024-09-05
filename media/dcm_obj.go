@@ -234,54 +234,10 @@ func (obj *DcmObj) GetUShort(tag *tags.Tag) uint16 {
 
 // GetUShortGE - return the Uint16 for this group & element
 func (obj *DcmObj) getUShortGE(group uint16, element uint16) uint16 {
-	var i int
-	var tag *DcmTag
-	sq := 0
-	for i = 0; i < obj.TagCount(); i++ {
-		tag = obj.GetTagAt(i)
-		if tag.isSequenceUndefined() {
-			sq++
+	for _, tag := range obj.GetTags() {
+		if (tag.Group == group) && (tag.Element == element) {
+			return tag.getUShort()
 		}
-		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
-			if (tag.Group == group) && (tag.Element == element) {
-				break
-			}
-		}
-		if tag.isSequenceEnd() {
-			sq--
-		}
-	}
-	if i < obj.TagCount() {
-		return tag.getUShort()
-	}
-	return 0
-}
-
-func (obj *DcmObj) GetUInt(tag *tags.Tag) uint32 {
-	return obj.GetUIntGE(tag.Group, tag.Element)
-}
-
-// GetUIntGE - return the Uint32 for this group & element
-func (obj *DcmObj) GetUIntGE(group uint16, element uint16) uint32 {
-	var i int
-	var tag *DcmTag
-	sq := 0
-	for i = 0; i < obj.TagCount(); i++ {
-		tag = obj.GetTagAt(i)
-		if tag.isSequenceUndefined() {
-			sq++
-		}
-		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
-			if (tag.Group == group) && (tag.Element == element) {
-				break
-			}
-		}
-		if tag.isSequenceEnd() {
-			sq--
-		}
-	}
-	if i < obj.TagCount() {
-		return tag.getUInt()
 	}
 	return 0
 }

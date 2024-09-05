@@ -229,3 +229,30 @@ func TestGetString(t *testing.T) {
 		})
 	}
 }
+
+func TestGetUShort(t *testing.T) {
+	tests := []struct {
+		name  string
+		tag   *tags.Tag
+		value uint16
+	}{
+		{
+			name:  "Get SamplesPerPixel",
+			tag:   tags.SamplesPerPixel,
+			value: 1,
+		},
+		{
+			name:  "Get Rows",
+			tag:   tags.Rows,
+			value: 256,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o, _ := NewDCMObjFromFile("../samples/test.dcm", &ParseOptions{SkipPixelData: true})
+			if pn := o.GetUShort(tt.tag); pn != tt.value {
+				t.Errorf("TestGetUInt() get = %v, want %v", pn, tt.value)
+			}
+		})
+	}
+}
