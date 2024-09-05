@@ -22,8 +22,8 @@ type DcmTag struct {
 	BigEndian   bool
 }
 
-// getUShort convert tag.Data to uint16
-func (tag *DcmTag) getUShort() uint16 {
+// GetUShort convert tag.Data to uint16
+func (tag *DcmTag) GetUShort() uint16 {
 	if tag.Length == 2 {
 		if tag.BigEndian {
 			return binary.BigEndian.Uint16(tag.Data)
@@ -33,8 +33,8 @@ func (tag *DcmTag) getUShort() uint16 {
 	return 0
 }
 
-// getUInt convert tag.Data to uint32
-func (tag *DcmTag) getUInt() uint32 {
+// GetUInt convert tag.Data to uint32
+func (tag *DcmTag) GetUInt() uint32 {
 	var val uint32
 	if tag.Length == 4 {
 		if tag.BigEndian {
@@ -46,8 +46,8 @@ func (tag *DcmTag) getUInt() uint32 {
 	return val
 }
 
-// getString convert tag.Data to string
-func (tag *DcmTag) getString() string {
+// GetString convert tag.Data to string
+func (tag *DcmTag) GetString() string {
 	n := bytes.IndexByte(tag.Data, 0)
 	if n == -1 {
 		n = int(tag.Length)
@@ -55,8 +55,8 @@ func (tag *DcmTag) getString() string {
 	return strings.TrimSpace(string(tag.Data[:n]))
 }
 
-// writeSeq - Create an SQ tag from a DICOM Object
-func (tag *DcmTag) writeSeq(group uint16, element uint16, seq *DcmObj) {
+// WriteSeq - Create an SQ tag from a DICOM Object
+func (tag *DcmTag) WriteSeq(group uint16, element uint16, seq *DcmObj) {
 	bufdata := &BufData{
 		BigEndian: false,
 		MS:        NewEmptyMemoryStream(),
@@ -132,7 +132,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (*DcmObj, error) {
 }
 
 func (tag *DcmTag) writeItem(obj *DcmObj) {
-	tag.writeSeq(0xFFFE, 0xE000, obj)
+	tag.WriteSeq(0xFFFE, 0xE000, obj)
 }
 
 func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
@@ -147,7 +147,7 @@ func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSynt
 			item.transcode(explicitVR, outTS)
 		}
 		seq.SetTransferSyntax(outTS)
-		tag.writeSeq(tag.Group, tag.Element, seq)
+		tag.WriteSeq(tag.Group, tag.Element, seq)
 	}
 	return nil
 }

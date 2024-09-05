@@ -300,7 +300,7 @@ func (bd *BufData) ReadMeta() (*transfersyntax.TransferSyntax, error) {
 			pos = bd.GetPosition()
 			tag, _ := bd.ReadTag(true)
 			if (tag.Group == 0x02) && (tag.Element == 0x010) {
-				uid := tag.getString()
+				uid := tag.GetString()
 				TransferSyntax = transfersyntax.GetTransferSyntaxFromUID(uid)
 			}
 			if tag.Group > 0x02 {

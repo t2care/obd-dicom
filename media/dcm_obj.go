@@ -252,7 +252,7 @@ func (obj *DcmObj) getUShortGE(group uint16, element uint16) uint16 {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.getUShort()
+		return tag.GetUShort()
 	}
 	return 0
 }
@@ -281,7 +281,7 @@ func (obj *DcmObj) GetUIntGE(group uint16, element uint16) uint32 {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.getUInt()
+		return tag.GetUInt()
 	}
 	return 0
 }
@@ -310,7 +310,7 @@ func (obj *DcmObj) GetStringGE(group uint16, element uint16) string {
 		}
 	}
 	if i < obj.TagCount() {
-		return tag.getString()
+		return tag.GetString()
 	}
 	return ""
 }
@@ -471,25 +471,25 @@ func (obj *DcmObj) GetPixelData(frame int) ([]byte, error) {
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.getString()
+					PhotoInt = tag.GetString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.getUShort()
+					planar = tag.GetUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.getString())
+					uframes, err := strconv.Atoi(tag.GetString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.getUShort()
+					rows = tag.GetUShort()
 				case 0x11:
-					cols = tag.getUShort()
+					cols = tag.GetUShort()
 				case 0x0100:
-					bitsa = tag.getUShort()
+					bitsa = tag.GetUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -583,29 +583,29 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 			if (tag.Group == 0x0028) && (!icon) {
 				switch tag.Element {
 				case 0x04:
-					PhotoInt = tag.getString()
+					PhotoInt = tag.GetString()
 					if !strings.Contains(PhotoInt, "MONO") {
 						RGB = true
 					}
 				case 0x06:
-					planar = tag.getUShort()
+					planar = tag.GetUShort()
 				case 0x08:
-					uframes, err := strconv.Atoi(tag.getString())
+					uframes, err := strconv.Atoi(tag.GetString())
 					if err != nil {
 						frames = 0
 					} else {
 						frames = uint32(uframes)
 					}
 				case 0x10:
-					rows = tag.getUShort()
+					rows = tag.GetUShort()
 				case 0x11:
-					cols = tag.getUShort()
+					cols = tag.GetUShort()
 				case 0x0100:
-					bitsa = tag.getUShort()
+					bitsa = tag.GetUShort()
 				case 0x0101:
-					bitss = tag.getUShort()
+					bitss = tag.GetUShort()
 				case 0x0103:
-					pixelrep = tag.getUShort()
+					pixelrep = tag.GetUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -694,7 +694,7 @@ func (obj *DcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 	tag.writeItem(item)
 	seq.Add(tag)
 	tag = new(DcmTag)
-	tag.writeSeq(group, element, seq)
+	tag.WriteSeq(group, element, seq)
 	obj.Add(tag)
 }
 
@@ -725,9 +725,9 @@ func (obj *DcmObj) AddSRText(text string) {
 	item.WriteString(tags.ValueType, "TEXT")
 	item.AddConceptNameSeq(0x40, 0xA043, "2222", "Report Text")
 	item.WriteString(tags.TextValue, text)
-	tag.writeSeq(0xFFFE, 0xE000, item)
+	tag.WriteSeq(0xFFFE, 0xE000, item)
 	seq.Add(tag)
-	tag.writeSeq(0x40, 0xA730, seq)
+	tag.WriteSeq(0x40, 0xA730, seq)
 	obj.Add(tag)
 }
 
