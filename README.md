@@ -8,8 +8,7 @@ One Byte Data DICOM Golang Library
 ## Install
 
 ```bash
-go get -u github.com/one-byte-data/obd-dicom
-go mod edit --replace="github.com/one-byte-data/obd-dicom=github.com/t2care/obd-dicom@<version>"
+go get -u github.com/t2care/obd-dicom
 ```
 
 ## Plugin JPEG2000:

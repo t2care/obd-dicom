@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 
-	"github.com/one-byte-data/obd-dicom/media"
+	"github.com/t2care/obd-dicom/media"
 )
 
 type presentationContext struct {

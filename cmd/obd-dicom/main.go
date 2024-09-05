@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/media"
-	"github.com/one-byte-data/obd-dicom/network"
-	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
-	"github.com/one-byte-data/obd-dicom/services"
-	"github.com/one-byte-data/obd-dicom/utils"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
+	"github.com/t2care/obd-dicom/services"
+	"github.com/t2care/obd-dicom/utils"
 )
 
 var destination *network.Destination

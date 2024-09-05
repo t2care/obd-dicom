@@ -3,12 +3,12 @@ package dimsec
 import (
 	"errors"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/media"
-	"github.com/one-byte-data/obd-dicom/network"
-	"github.com/one-byte-data/obd-dicom/network/dicomcommand"
-	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
-	"github.com/one-byte-data/obd-dicom/network/priority"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
+	"github.com/t2care/obd-dicom/network/priority"
 )
 
 // CMoveReadRQ CMove request read

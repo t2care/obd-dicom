@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"log/slog"
 
-	"github.com/one-byte-data/obd-dicom/media"
+	"github.com/t2care/obd-dicom/media"
 )
 
 // PermanentRejectReasons - Permanent association reject reasons

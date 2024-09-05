@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/dimsec"
-	"github.com/one-byte-data/obd-dicom/media"
-	"github.com/one-byte-data/obd-dicom/network"
-	"github.com/one-byte-data/obd-dicom/network/dicomcommand"
-	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dimsec"
+	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
 type scp struct {

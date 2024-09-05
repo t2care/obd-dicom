@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/media"
+	"github.com/t2care/obd-dicom/dictionary/sopclass"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/media"
 )
 
 type AAssociationRQ struct {

@@ -8,12 +8,12 @@ import (
 	"net"
 	"time"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/imp"
-	"github.com/one-byte-data/obd-dicom/media"
-	"github.com/one-byte-data/obd-dicom/network/pdutype"
+	"github.com/t2care/obd-dicom/dictionary/sopclass"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/imp"
+	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network/pdutype"
 )
 
 type PDUService struct {

@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/dimsec"
-	"github.com/one-byte-data/obd-dicom/media"
-	"github.com/one-byte-data/obd-dicom/network"
-	"github.com/one-byte-data/obd-dicom/network/dicomstatus"
+	"github.com/t2care/obd-dicom/dictionary/sopclass"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/dimsec"
+	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
 type scu struct {
