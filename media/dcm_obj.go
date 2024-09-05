@@ -292,25 +292,10 @@ func (obj *DcmObj) GetString(tag *tags.Tag) string {
 
 // GetStringGE - return the String for this group & element
 func (obj *DcmObj) GetStringGE(group uint16, element uint16) string {
-	var i int
-	var tag *DcmTag
-	sq := 0
-	for i = 0; i < obj.TagCount(); i++ {
-		tag = obj.GetTagAt(i)
-		if tag.isSequenceUndefined() {
-			sq++
+	for _, tag := range obj.GetTags() {
+		if (tag.Group == group) && (tag.Element == element) {
+			return tag.getString()
 		}
-		if (sq == 0) && (tag.Length > 0) && (tag.Length != 0xFFFFFFFF) {
-			if (tag.Group == group) && (tag.Element == element) {
-				break
-			}
-		}
-		if tag.isSequenceEnd() {
-			sq--
-		}
-	}
-	if i < obj.TagCount() {
-		return tag.getString()
 	}
 	return ""
 }
