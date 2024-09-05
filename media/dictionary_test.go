@@ -3,7 +3,7 @@ package media
 import (
 	"testing"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/tags"
 )
 
 func TestTags(t *testing.T) {

@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/sopclass"
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/media/transcoder"
-	"github.com/one-byte-data/obd-dicom/media/transcoder/jpeglib"
+	"github.com/t2care/obd-dicom/dictionary/sopclass"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/media/transcoder"
+	"github.com/t2care/obd-dicom/media/transcoder/jpeglib"
 )
 
 type DcmObj struct {

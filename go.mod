@@ -1,3 +1,3 @@
-module github.com/one-byte-data/obd-dicom
+module github.com/t2care/obd-dicom
 
 go 1.21

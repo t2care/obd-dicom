@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/one-byte-data/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network"
 )
 
 func Test_Association_ID(t *testing.T) {

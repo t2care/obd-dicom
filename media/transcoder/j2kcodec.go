@@ -3,8 +3,8 @@
 package transcoder
 
 import (
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
-	"github.com/one-byte-data/obd-dicom/media/transcoder/openjpeg"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/media/transcoder/openjpeg"
 )
 
 func init() {

@@ -5,7 +5,7 @@ package media
 import (
 	"testing"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 )
 
 func Test_dcmObj_jpeg2000_ChangeTransferSynx(t *testing.T) {

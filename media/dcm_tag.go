@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 )
 
 // DcmTag DICOM tag structure

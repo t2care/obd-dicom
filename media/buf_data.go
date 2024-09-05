@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/one-byte-data/obd-dicom/dictionary/tags"
-	"github.com/one-byte-data/obd-dicom/dictionary/transfersyntax"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 )
 
 type BufData struct {
