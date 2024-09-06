@@ -20,7 +20,9 @@ func TestMapDicomDataToStruct(t *testing.T) {
 		PatientName string `dicom:"0010,0010"`
 		Series      []series
 	}
-
+	type dicomweb struct {
+		PatientName string `json:"0010,0010"`
+	}
 	type args struct {
 		dicomDataset *media.DcmObj
 		targetStruct any
@@ -30,6 +32,7 @@ func TestMapDicomDataToStruct(t *testing.T) {
 		args       args
 		wantErr    bool
 		wantTarget any
+		keywork    string
 	}{
 		{
 			name:       "Parse error",
@@ -49,10 +52,17 @@ func TestMapDicomDataToStruct(t *testing.T) {
 				}},
 			},
 		},
+		{
+			name:       "Parse with other keywork",
+			args:       args{obj, &dicomweb{}},
+			keywork:    "json",
+			wantErr:    false,
+			wantTarget: &dicomweb{PatientName: "ACR PHANTOM"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := MapDicomDataToStruct(tt.args.dicomDataset, tt.args.targetStruct); (err != nil) != tt.wantErr {
+			if err := MapDicomDataToStruct(tt.args.dicomDataset, tt.args.targetStruct, tt.keywork); (err != nil) != tt.wantErr {
 				t.Errorf("MapDicomDataToStruct() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(tt.args.targetStruct, tt.wantTarget) {
