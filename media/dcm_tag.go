@@ -33,19 +33,6 @@ func (tag *DcmTag) getUShort() uint16 {
 	return 0
 }
 
-// getUInt convert tag.Data to uint32
-func (tag *DcmTag) getUInt() uint32 {
-	var val uint32
-	if tag.Length == 4 {
-		if tag.BigEndian {
-			val = binary.BigEndian.Uint32(tag.Data)
-		} else {
-			val = binary.LittleEndian.Uint32(tag.Data)
-		}
-	}
-	return val
-}
-
 // getString convert tag.Data to string
 func (tag *DcmTag) getString() string {
 	n := bytes.IndexByte(tag.Data, 0)
