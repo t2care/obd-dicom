@@ -3,6 +3,7 @@ package network
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strconv"
 	"time"
@@ -165,6 +166,9 @@ func (aarq *AAssociationRQ) Write(rw *bufio.ReadWriter) error {
 		return err
 	}
 	for presIndex, presContext := range aarq.PresContexts {
+		if len(presContext.TrnSyntaxs) == 0 {
+			return fmt.Errorf("missing transfer syntax for presContext %v", presContext.AbsSyntax)
+		}
 		slog.Info("ASSOC-RQ: PresentationContext", "Index", presIndex+1)
 		slog.Info("ASSOC-RQ: \tAbstractSyntax:", "UID", presContext.GetAbstractSyntax().GetUID(), "Description", sopclass.GetSOPClassFromUID(presContext.GetAbstractSyntax().GetUID()).Description)
 		for _, transSyntax := range presContext.GetTransferSyntaxes() {

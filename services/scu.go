@@ -161,6 +161,9 @@ func (d *scu) openAssociation(pdu *network.PDUService, abstractSyntaxes []*sopcl
 		for _, ts := range transferSyntaxes {
 			PresContext.AddTransferSyntax(ts)
 		}
+		if len(transferSyntaxes) == 0 {
+			PresContext.AddTransferSyntax(transfersyntax.ImplicitVRLittleEndian.UID)
+		}
 		pdu.AddPresContexts(PresContext)
 	}
 
