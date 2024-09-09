@@ -1,6 +1,8 @@
 package media
 
 import (
+	"fmt"
+	"os/exec"
 	"testing"
 
 	"github.com/t2care/obd-dicom/dictionary/tags"
@@ -135,12 +137,20 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 	if err = dcmObj.ChangeTransferSynx(ts); err != nil {
 		return
 	}
-	if err = dcmObj.DumpTags(); err != nil {
+	out := "tmp"
+	if err = dcmObj.WriteToFile(out); err != nil {
 		return
 	}
-	_, err = NewDCMObjFromBytes(dcmObj.WriteToBytes())
-	return
+	return dcmtk_dump(out)
 }
+
+func dcmtk_dump(dcm string) error {
+	if out, err := exec.Command("dcmdump", dcm).CombinedOutput(); err != nil {
+		return fmt.Errorf("%s", string(out))
+	}
+	return nil
+}
+
 func BenchmarkOBD(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewDCMObjFromFile("../samples/test.dcm")

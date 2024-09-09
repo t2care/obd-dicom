@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 )
 
@@ -234,7 +233,7 @@ func (bd *BufData) WriteTag(tag *DcmTag, explicitVR bool) {
 	// If the byte length is not even, append 1 padding byte to make it even.
 	// https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_8.1.1
 	padding := false
-	if (tag.Name == tags.Item.Name || tag.Name == tags.PixelData.Name) && tag.Length%2 != 0 {
+	if tag.Length%2 != 0 && tag.Length != 0xFFFFFFFF {
 		tag.Length += 1
 		padding = true
 	}
