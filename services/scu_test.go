@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/media"
@@ -12,76 +13,14 @@ import (
 	"github.com/t2care/obd-dicom/utils"
 )
 
-func Test_scu_EchoSCU(t *testing.T) {
-	_, testSCP := StartSCP(t, 1040)
+const (
+	scp_aet  = "SCP"
+	scp_port = 1104
+)
 
-	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
-		return request.GetCalledAE() == "TEST_SCP"
-	})
-
-	media.InitDict()
-
-	type fields struct {
-		destination *network.Destination
-	}
-	type args struct {
-		timeout int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Should have C-Echo Success",
-			fields: fields{
-				destination: &network.Destination{
-					Name:      "Test Destination",
-					CalledAE:  "TEST_SCP",
-					CallingAE: "TEST_SCU",
-					HostName:  "localhost",
-					Port:      1040,
-					IsCFind:   false,
-					IsCMove:   false,
-					IsCStore:  false,
-					IsTLS:     false,
-				},
-			},
-			args: args{
-				timeout: 0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Should not have C-Echo Success",
-			fields: fields{
-				destination: &network.Destination{
-					Name:      "Test Destination",
-					CalledAE:  "TEST_SCP2",
-					CallingAE: "TEST_SCU",
-					HostName:  "localhost",
-					Port:      1040,
-					IsCFind:   false,
-					IsCMove:   false,
-					IsCStore:  false,
-					IsTLS:     false,
-				},
-			},
-			args: args{
-				timeout: 0,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := NewSCU(tt.fields.destination)
-			if err := d.EchoSCU(tt.args.timeout); (err != nil) != tt.wantErr {
-				t.Errorf("scu.EchoSCU() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+func TestEchoSCU(t *testing.T) {
+	assert.Error(t, NewSCU(&network.Destination{Port: scp_port}).EchoSCU(1), "Should not have C-Echo Success")
+	assert.NoError(t, NewSCU(&network.Destination{Port: 1104, CalledAE: scp_aet, CallingAE: "SCU"}).EchoSCU(1), "Should have C-Echo Success")
 }
 
 func Test_scu_FindSCU(t *testing.T) {
