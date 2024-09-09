@@ -17,6 +17,9 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: dcmtk
+        
+    - name: Start storescp 
+      run: storescp +xa -aet SCP 1104 &
 
     - name: Test
       env:
