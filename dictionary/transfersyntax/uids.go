@@ -10,7 +10,6 @@ type TransferSyntax struct {
 var SupportedTransferSyntaxes = []*TransferSyntax{
 	ImplicitVRLittleEndian,
 	ExplicitVRLittleEndian,
-	ExplicitVRBigEndian,
 	JPEGLosslessSV1,
 	JPEGBaseline8Bit,
 	JPEGExtended12Bit,

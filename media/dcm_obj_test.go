@@ -62,8 +62,16 @@ func TestChangeTransferSynx(t *testing.T) {
 		fileName string
 	}{
 		{
-			name:     "Should change transfer synxtax from ExplicitVRLittleEndian",
+			name:     "Should change transfer synxtax from ExplicitVRLittleEndian (undefined length sequence)",
 			fileName: "../samples/test2.dcm",
+		},
+		{
+			name:     "Should change transfer synxtax from ExplicitVRLittleEndian (defined length sequence)",
+			fileName: "../samples/test.dcm",
+		},
+		{
+			name:     "Should change transfer synxtax from JPEGLosslessSV1",
+			fileName: "../samples/test-losslessSV1.dcm",
 		},
 	}
 	for _, tt := range tests {
