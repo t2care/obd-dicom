@@ -7,11 +7,9 @@ type TransferSyntax struct {
 	Type        string
 }
 
-var supportedTransferSyntaxes = []*TransferSyntax{
+var SupportedTransferSyntaxes = []*TransferSyntax{
 	ImplicitVRLittleEndian,
 	ExplicitVRLittleEndian,
-	DeflatedExplicitVRLittleEndian,
-	ExplicitVRBigEndian,
 	JPEGLosslessSV1,
 	JPEGBaseline8Bit,
 	JPEGExtended12Bit,
@@ -50,7 +48,7 @@ func GetTransferSyntaxFromUID(uid string) *TransferSyntax {
 }
 
 func SupportedTransferSyntax(uid string) bool {
-	for _, ts := range supportedTransferSyntaxes {
+	for _, ts := range SupportedTransferSyntaxes {
 		if ts.UID == uid {
 			return true
 		}
@@ -66,7 +64,7 @@ var encodes = make(map[string]encodeFunc)
 
 func RegisterCodec(uid string, decode decodeFunc, encode encodeFunc) {
 	decodes[uid] = decode
-	supportedTransferSyntaxes = append(supportedTransferSyntaxes, GetTransferSyntaxFromUID(uid))
+	SupportedTransferSyntaxes = append(SupportedTransferSyntaxes, GetTransferSyntaxFromUID(uid))
 }
 
 func (ts *TransferSyntax) Decode(j2kData []byte, j2kSize uint32, outputData []byte) error {
