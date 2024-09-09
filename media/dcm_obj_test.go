@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 )
@@ -55,77 +56,20 @@ func TestNewDCMObjFromFile(t *testing.T) {
 	}
 }
 
-func Test_dcmObj_ChangeTransferSynx(t *testing.T) {
-	type args struct {
-		outTS *transfersyntax.TransferSyntax
-	}
+func TestChangeTransferSynx(t *testing.T) {
 	tests := []struct {
 		name     string
 		fileName string
-		args     args
-		wantErr  bool
 	}{
 		{
-			name:     "Should change transfer synxtax to ImplicitVRLittleEndian",
+			name:     "Should change transfer synxtax from ExplicitVRLittleEndian",
 			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.ImplicitVRLittleEndian},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to ExplicitVRLittleEndian",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.ExplicitVRLittleEndian},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to ExplicitVRBigEndian",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.ExplicitVRBigEndian},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to RLELossless",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.RLELossless},
-			wantErr:  true,
-		},
-		{
-			name:     "Should change transfer synxtax to JPEGLosslessSV1",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.JPEGLosslessSV1},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to JPEGBaseline8Bit",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.JPEGBaseline8Bit},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax to JPEGExtended12Bit",
-			fileName: "../samples/test2.dcm",
-			args:     args{transfersyntax.JPEGExtended12Bit},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax from JPEGLosslessSV1",
-			fileName: "../samples/test-losslessSV1.dcm",
-			args:     args{transfersyntax.ExplicitVRLittleEndian},
-			wantErr:  false,
-		},
-		{
-			name:     "Should change transfer synxtax from JPEGLosslessSV1 to ImplicitVRLittleEndian",
-			fileName: "../samples/test-losslessSV1.dcm",
-			args:     args{transfersyntax.ImplicitVRLittleEndian},
-			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := changeSyntax(tt.fileName, tt.args.outTS); (err != nil) != tt.wantErr {
-				t.Errorf("changeSyntax() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+		for _, ts := range transfersyntax.SupportedTransferSyntaxes {
+			assert.NoError(t, changeSyntax(tt.fileName, ts), fmt.Sprintf("%s to %s", tt.name, ts.Name))
+		}
 	}
 }
 
