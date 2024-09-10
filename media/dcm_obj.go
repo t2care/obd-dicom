@@ -985,7 +985,7 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		jpeg_size = 0
 		for j = 0; j < frames; j++ {
 			index++
-			if err := transfersyntax.JPEG2000Lossless.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
+			if err := transfersyntax.JPEG2000.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
 				return err
 			}
 			newtag = &DcmTag{
