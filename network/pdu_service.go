@@ -32,6 +32,7 @@ type PDUService struct {
 	Timeout                      int
 	OnAssociationRequest         func(request *AAssociationRQ) bool
 	OnAssociationRelease         func(request *AAssociationRQ)
+	Conn                         net.Conn
 }
 
 // NewPDUService - creates a pointer to PDUService
@@ -71,7 +72,7 @@ func (pdu *PDUService) Connect(IP string, Port string) error {
 	if err != nil {
 		return errors.New("pduservice::Connect - " + err.Error())
 	}
-
+	pdu.Conn = conn
 	if pdu.Timeout > 0 {
 		conn.SetDeadline(time.Now().Add(time.Duration(int32(pdu.Timeout)) * time.Second))
 	}
@@ -90,6 +91,7 @@ func (pdu *PDUService) Connect(IP string, Port string) error {
 	pdu.ms = media.NewEmptyMemoryStream()
 
 	if err := pdu.ms.ReadFully(rw, 10); err != nil {
+		pdu.Close()
 		return err
 	}
 
@@ -139,6 +141,7 @@ func (pdu *PDUService) Connect(IP string, Port string) error {
 func (pdu *PDUService) Close() {
 	pdu.ReleaseRQ.Write(pdu.readWriter)
 	pdu.ReleaseRP.Read(pdu.ms)
+	pdu.Conn.Close()
 }
 
 func (pdu *PDUService) NextPDU() (command *media.DcmObj, err error) {
