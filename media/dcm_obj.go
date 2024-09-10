@@ -493,7 +493,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 	flag := false
 
 	var i int
-	var rows, cols, bitss, bitsa, planar, pixelrep uint16
+	var rows, cols, bitss, bitsa, planar uint16
 	var PhotoInt string
 	sq := 0
 	frames := uint32(0)
@@ -545,8 +545,6 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 					bitsa = tag.getUShort()
 				case 0x0101:
 					bitss = tag.getUShort()
-				case 0x0103:
-					pixelrep = tag.getUShort()
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -588,7 +586,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 						copy(img, tag.Data)
 					}
 				}
-				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, pixelrep, planar, frames, outTS.UID); err != nil {
+				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, frames, outTS.UID); err != nil {
 					return err
 				} else {
 					flag = true
@@ -741,7 +739,7 @@ func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 	obj.WriteString(tags.MIMETypeOfEncapsulatedDocument, "application/pdf")
 }
 
-func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, pixelrep uint16, planar uint16, frames uint32, outTS string) error {
+func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, frames uint32, outTS string) error {
 	var offset, size, jpeg_size, j uint32
 	var JPEGData []byte
 	var JPEGBytes, index int
