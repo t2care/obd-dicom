@@ -103,6 +103,7 @@ func (tag *DcmTag) ReadSeq(ExplicitVR bool) (*DcmObj, error) {
 			}
 			haveItem = true
 			tempTags = new(DcmObj)
+			tempTags.SetExplicitVR(ExplicitVR)
 		case 0xE00D:
 			item := new(DcmTag)
 			item.writeItem(tempTags)
@@ -123,9 +124,7 @@ func (tag *DcmTag) writeItem(obj *DcmObj) {
 }
 
 func (tag *DcmTag) transcode(explicitVR bool, outTS *transfersyntax.TransferSyntax) error {
-	seq := new(DcmObj)
-	seq.SetTransferSyntax(outTS)
-	if (explicitVR != seq.IsExplicitVR()) && tag.isSequence() {
+	if tag.isSequence() {
 		seq, err := tag.ReadSeq(explicitVR)
 		if err != nil {
 			return err
