@@ -62,7 +62,13 @@ func TestMapDicomDataToStruct(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := MapDicomDataToStruct(tt.args.dicomDataset, tt.args.targetStruct, tt.keywork); (err != nil) != tt.wantErr {
+			var err error
+			if tt.keywork != "" {
+				err = MapDicomDataToStruct(tt.args.dicomDataset, tt.args.targetStruct, tt.keywork)
+			} else {
+				err = MapDicomDataToStruct(tt.args.dicomDataset, tt.args.targetStruct)
+			}
+			if (err != nil) != tt.wantErr {
 				t.Errorf("MapDicomDataToStruct() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(tt.args.targetStruct, tt.wantTarget) {

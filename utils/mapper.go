@@ -10,7 +10,7 @@ import (
 	"github.com/t2care/obd-dicom/media"
 )
 
-var key string
+var key = "dicom"
 
 func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword ...string) (err error) {
 	v := reflect.ValueOf(targetStruct)
@@ -18,7 +18,7 @@ func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword 
 	if t != reflect.Ptr {
 		return fmt.Errorf("targerStruct must be a pointer")
 	}
-	if len(key) > 0 {
+	if len(keyword) > 0 {
 		key = keyword[0]
 	}
 	recursiveFill(dicomDataset, v.Elem())
@@ -33,9 +33,6 @@ func recursiveFill(dataset *media.DcmObj, targetStructure reflect.Value) {
 			field := targetType.Field(i)
 			fieldName := field.Name
 			fieldType := field.Type
-			if key == "" {
-				key = "dicom"
-			}
 			groupElem := field.Tag.Get(key)
 			switch fieldType.Kind() {
 			case reflect.Struct:
