@@ -80,6 +80,43 @@ func TestFindSCU(t *testing.T) {
 	}
 }
 
+func TestMoveSCU(t *testing.T) {
+	type args struct {
+		Query   *media.DcmObj
+		timeout int
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus uint16
+		wantErr    bool
+	}{
+		{
+			name: "Should move study with studyUID",
+			args: args{
+				Query:   utils.DefaultCMoveRequest("1.3.46.670589.11.8410.6.132672291010455276"),
+				timeout: 0,
+			},
+			wantStatus: dicomstatus.Success,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewSCU(scp_dst)
+			d.SetOnCMoveResult(func(result *media.DcmObj) {})
+			status, err := d.MoveSCU("SCP", tt.args.Query, tt.args.timeout)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("scu.FindSCU() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if status != tt.wantStatus {
+				t.Errorf("scu.FindSCU() = %v, want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
 func cFindReqByDate() *media.DcmObj {
 	queryDate := media.NewEmptyDCMObj()
 	queryDate.WriteString(tags.QueryRetrieveLevel, "STUDY")

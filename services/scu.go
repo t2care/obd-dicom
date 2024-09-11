@@ -78,7 +78,7 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 	status := dicomstatus.Pending
 
 	pdu := network.NewPDUService()
-	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.StudyRootQueryRetrieveInformationModelMove}, []string{}, timeout); err != nil {
+	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.StudyRootQueryRetrieveInformationModelFind, sopclass.StudyRootQueryRetrieveInformationModelMove}, []string{}, timeout); err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}
 	defer pdu.Close()

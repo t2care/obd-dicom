@@ -19,7 +19,9 @@ jobs:
         packages: dcmtk
         
     - name: Start dcmqrscp 
-      run: dcmqrscp -c samples/dcmqrscp.cfg +xs &
+      run: |
+        storescp +xa -aet SCP 1105 &
+        dcmqrscp -c samples/dcmqrscp.cfg +xs &
 
     - name: Test
       env:
