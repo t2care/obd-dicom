@@ -25,7 +25,7 @@ func init() {
 	}
 }
 
-func getTransferSyntaxFromName(name string) *TransferSyntax {
+func GetTransferSyntaxFromName(name string) *TransferSyntax {
 	for _, ts := range transferSyntaxes {
 		if ts.Name == name {
 			return ts

@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
@@ -42,6 +44,13 @@ func main() {
 	query := flag.String("query", "", "Comma seperated query to be sent with request ex: 00080020=test")
 
 	dump := flag.Bool("dump", false, "Dump contents of DICOM file to stdout")
+
+	transcode := flag.Bool("transcode", false, "Transcode contents of DICOM file to new Transfersyntax")
+	supportedTS := "TransferSyntax file to be converted. Supported: \n"
+	for _, ts := range transfersyntax.SupportedTransferSyntaxes {
+		supportedTS += fmt.Sprintf("%s \n", ts.Name)
+	}
+	transferSyntax := flag.String("ts", "", supportedTS)
 
 	datastore := flag.String("datastore", "", "Directory to use as SCP storage")
 
@@ -186,6 +195,24 @@ func main() {
 			log.Panicln(err)
 		}
 		obj.DumpTags()
+		os.Exit(0)
+	}
+	if *transcode {
+		if *fileName == "" {
+			log.Fatalln("file is required for transcode")
+		}
+		if *transferSyntax == "" {
+			log.Fatalln("transferSyntax is required for transcode")
+		}
+		obj, err := media.NewDCMObjFromFile(*fileName)
+		if err != nil {
+			log.Panicln(err)
+		}
+		if err = obj.ChangeTransferSynx(transfersyntax.GetTransferSyntaxFromName(*transferSyntax)); err != nil {
+			log.Panicln(err)
+		}
+		log.Printf("Transcode ok. Writing file")
+		obj.WriteToFile(*fileName)
 		os.Exit(0)
 	}
 }
