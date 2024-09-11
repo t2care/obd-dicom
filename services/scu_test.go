@@ -25,6 +25,51 @@ func TestEchoSCU(t *testing.T) {
 	assert.NoError(t, NewSCU(scp_dst).EchoSCU(1), "Should have C-Echo Success")
 }
 
+func TestStoreSCU(t *testing.T) {
+	type args struct {
+		FileNames        []string
+		transfersyntaxes []string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Should store multiples files",
+			args: args{
+				FileNames:        []string{"../samples/test.dcm", "../samples/test2.dcm"},
+				transfersyntaxes: []string{transfersyntax.ExplicitVRLittleEndian.UID},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should store lossless",
+			args: args{
+				FileNames:        []string{"../samples/test-losslessSV1.dcm"},
+				transfersyntaxes: []string{transfersyntax.JPEGLosslessSV1.UID},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should transcode file to send",
+			args: args{
+				FileNames:        []string{"../samples/test-losslessSV1.dcm"},
+				transfersyntaxes: []string{transfersyntax.ImplicitVRLittleEndian.UID},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewSCU(scp_dst)
+			if err := d.StoreSCU(tt.args.FileNames, 0, tt.args.transfersyntaxes...); (err != nil) != tt.wantErr {
+				t.Errorf("scu.StoreSCU() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestFindSCU(t *testing.T) {
 	type args struct {
 		Query   *media.DcmObj
@@ -122,51 +167,6 @@ func cFindReqByDate() *media.DcmObj {
 	queryDate.WriteString(tags.QueryRetrieveLevel, "STUDY")
 	queryDate.WriteString(tags.StudyDate, "20050323")
 	return queryDate
-}
-
-func TestStoreSCU(t *testing.T) {
-	type args struct {
-		FileNames        []string
-		transfersyntaxes []string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Should store multiples files",
-			args: args{
-				FileNames:        []string{"../samples/test.dcm", "../samples/test2.dcm"},
-				transfersyntaxes: []string{transfersyntax.ExplicitVRLittleEndian.UID},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Should store lossless",
-			args: args{
-				FileNames:        []string{"../samples/test-losslessSV1.dcm"},
-				transfersyntaxes: []string{transfersyntax.JPEGLosslessSV1.UID},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Should transcode file to send",
-			args: args{
-				FileNames:        []string{"../samples/test-losslessSV1.dcm"},
-				transfersyntaxes: []string{transfersyntax.ImplicitVRLittleEndian.UID},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := NewSCU(scp_dst)
-			if err := d.StoreSCU(tt.args.FileNames, 0, tt.args.transfersyntaxes...); (err != nil) != tt.wantErr {
-				t.Errorf("scu.StoreSCU() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
 }
 
 func StartSCP(t testing.TB, port int) (func(t testing.TB), *scp) {
