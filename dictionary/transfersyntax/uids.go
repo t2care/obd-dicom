@@ -65,6 +65,7 @@ var encodes = make(map[string]encodeFunc)
 
 func RegisterCodec(uid string, decode decodeFunc, encode encodeFunc) {
 	decodes[uid] = decode
+	encodes[uid] = encode
 	SupportedTransferSyntaxes = append(SupportedTransferSyntaxes, GetTransferSyntaxFromUID(uid))
 }
 
