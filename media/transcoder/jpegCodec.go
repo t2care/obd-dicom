@@ -1,3 +1,5 @@
+//go:build cgo && jpeg
+
 package transcoder
 
 import (
