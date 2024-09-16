@@ -13,7 +13,6 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/media/transcoder"
-	"github.com/t2care/obd-dicom/media/transcoder/jpeglib"
 )
 
 type DcmObj struct {
@@ -740,7 +739,7 @@ func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 }
 
 func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, frames uint32, outTS string) error {
-	var offset, size, jpeg_size, j uint32
+	var size, jpeg_size, j uint32
 	var JPEGData []byte
 	var JPEGBytes, index, mode int
 
@@ -821,8 +820,7 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		jpeg_size = 0
 		for j = 0; j < frames; j++ {
 			index++
-			offset = j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
-			if err := jpeglib.EIJG12encode(img[offset/2:], cols, rows, 1, &JPEGData, &JPEGBytes, 0); err != nil {
+			if err := transfersyntax.JPEGExtended12Bit.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
 				return err
 			}
 			newtag = &DcmTag{
@@ -943,9 +941,8 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		obj.DelTag(i + 1)
 	case transfersyntax.JPEGExtended12Bit.UID:
 		for j = 0; j < frames; j++ {
-			offset = j * single
 			tag := obj.GetTagAt(i + 1)
-			if err := jpeglib.DIJG12decode(tag.Data, tag.Length, img[offset:], single); err != nil {
+			if err := transfersyntax.JPEGExtended12Bit.Decode(j, bitsa, tag.Data, tag.Length, img[offset:], single); err != nil {
 				return err
 			}
 			obj.DelTag(i + 1)
