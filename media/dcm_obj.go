@@ -911,14 +911,14 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 }
 
 func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error {
-	var j, offset, single uint32
+	var j, single uint32
 	single = size / frames
 
 	obj.DelTag(i + 1) // Delete offset table.
 	switch obj.TransferSyntax.UID {
 	case transfersyntax.RLELossless.UID:
 		for j = 0; j < frames; j++ {
-			offset = j * single
+			offset := j * single
 			tag := obj.GetTagAt(i + 1)
 			if err := transcoder.RLEdecode(tag.Data, img[offset:], tag.Length, single, PhotoInt); err != nil {
 				return err
@@ -942,7 +942,7 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 	case transfersyntax.JPEGExtended12Bit.UID:
 		for j = 0; j < frames; j++ {
 			tag := obj.GetTagAt(i + 1)
-			if err := transfersyntax.JPEGExtended12Bit.Decode(j, bitsa, tag.Data, tag.Length, img[offset:], single); err != nil {
+			if err := transfersyntax.JPEGExtended12Bit.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
 				return err
 			}
 			obj.DelTag(i + 1)
