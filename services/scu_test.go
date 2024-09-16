@@ -25,75 +25,6 @@ func TestEchoSCU(t *testing.T) {
 	assert.NoError(t, NewSCU(scp_dst).EchoSCU(1), "Should have C-Echo Success")
 }
 
-func Test_scu_FindSCU(t *testing.T) {
-	_, testSCP := StartSCP(t, 1041)
-
-	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
-		return request.GetCalledAE() == "TEST_SCP"
-	})
-
-	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16) {
-		return make([]*media.DcmObj, 0), dicomstatus.Success
-	})
-
-	media.InitDict()
-
-	type fields struct {
-		destination *network.Destination
-	}
-	type args struct {
-		Query   *media.DcmObj
-		timeout int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    uint16
-		wantErr bool
-	}{
-		{
-			name: "Should C-Find All",
-			fields: fields{
-				destination: &network.Destination{
-					Name:      "Test Destination",
-					CalledAE:  "TEST_SCP",
-					CallingAE: "TEST_SCU",
-					HostName:  "localhost",
-					Port:      1041,
-					IsCFind:   true,
-					IsCMove:   true,
-					IsCStore:  true,
-					IsTLS:     false,
-				},
-			},
-			args: args{
-				Query:   utils.DefaultCFindRequest(),
-				timeout: 0,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.args.Query.WriteString(tags.StudyDate, "20150617")
-			d := NewSCU(tt.fields.destination)
-			d.SetOnCFindResult(func(result *media.DcmObj) {
-				result.DumpTags()
-			})
-
-			_, status, err := d.FindSCU(tt.args.Query, tt.args.timeout)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("scu.FindSCU() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if status != tt.want {
-				t.Errorf("scu.FindSCU() = %v, want %v", status, tt.want)
-			}
-		})
-	}
-}
-
 func TestStoreSCU(t *testing.T) {
 	type args struct {
 		FileNames        []string
@@ -137,6 +68,105 @@ func TestStoreSCU(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFindSCU(t *testing.T) {
+	type args struct {
+		Query   *media.DcmObj
+		timeout int
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantResult int
+		wantStatus uint16
+		wantErr    bool
+	}{
+		{
+			name: "Should C-Find All",
+			args: args{
+				Query:   utils.DefaultCFindRequest(),
+				timeout: 0,
+			},
+			wantResult: 2,
+			wantStatus: dicomstatus.Success,
+			wantErr:    false,
+		},
+		{
+			name: "Should find study with date 20050323",
+			args: args{
+				Query:   cFindReqByDate(),
+				timeout: 0,
+			},
+			wantResult: 1,
+			wantStatus: dicomstatus.Success,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var results []*media.DcmObj
+			d := NewSCU(scp_dst)
+			d.SetOnCFindResult(func(result *media.DcmObj) {
+				results = append(results, result)
+			})
+			_, status, err := d.FindSCU(tt.args.Query, tt.args.timeout)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("scu.FindSCU() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if status != tt.wantStatus {
+				t.Errorf("scu.FindSCU() = %v, want %v", status, tt.wantStatus)
+			}
+			if len(results) != tt.wantResult {
+				t.Errorf("scu.FindSCU() count obj= %v, want %v", len(results), tt.wantResult)
+			}
+		})
+	}
+}
+
+func TestMoveSCU(t *testing.T) {
+	type args struct {
+		Query   *media.DcmObj
+		timeout int
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus uint16
+		wantErr    bool
+	}{
+		{
+			name: "Should move study with studyUID",
+			args: args{
+				Query:   utils.DefaultCMoveRequest("1.3.46.670589.11.8410.6.132672291010455276"),
+				timeout: 0,
+			},
+			wantStatus: dicomstatus.Success,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewSCU(scp_dst)
+			d.SetOnCMoveResult(func(result *media.DcmObj) {})
+			status, err := d.MoveSCU("SCP", tt.args.Query, tt.args.timeout)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("scu.FindSCU() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if status != tt.wantStatus {
+				t.Errorf("scu.FindSCU() = %v, want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
+func cFindReqByDate() *media.DcmObj {
+	queryDate := media.NewEmptyDCMObj()
+	queryDate.WriteString(tags.QueryRetrieveLevel, "STUDY")
+	queryDate.WriteString(tags.StudyDate, "20050323")
+	return queryDate
 }
 
 func StartSCP(t testing.TB, port int) (func(t testing.TB), *scp) {
