@@ -1047,33 +1047,12 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 	case transfersyntax.JPEGLosslessSV1.UID:
 		fallthrough
 	case transfersyntax.JPEGLossless.UID:
-		for j = 0; j < frames; j++ {
-			offset = j * single
-			tag := obj.GetTagAt(i + 1)
-			if bitsa == 8 {
-				if err := jpeglib.DIJG8decode(tag.Data, tag.Length, img[offset:], single); err != nil {
-					return err
-				}
-			} else {
-				if err := jpeglib.DIJG16decode(tag.Data, tag.Length, img[offset:], single); err != nil {
-					return err
-				}
-			}
-			obj.DelTag(i + 1)
-		}
-		obj.DelTag(i + 1)
+		fallthrough
 	case transfersyntax.JPEGBaseline8Bit.UID:
 		for j = 0; j < frames; j++ {
-			offset = j * single
 			tag := obj.GetTagAt(i + 1)
-			if bitsa == 8 {
-				if err := jpeglib.DIJG8decode(tag.Data, tag.Length, img[offset:], single); err != nil {
-					return err
-				}
-			} else {
-				if err := jpeglib.DIJG12decode(tag.Data, tag.Length, img[offset:], single); err != nil {
-					return err
-				}
+			if err := transfersyntax.JPEGLossless.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
+				return err
 			}
 			obj.DelTag(i + 1)
 		}
@@ -1089,15 +1068,7 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		}
 		obj.DelTag(i + 1)
 	case transfersyntax.JPEG2000Lossless.UID:
-		for j = 0; j < frames; j++ {
-			tag := obj.GetTagAt(i + 1)
-
-			if err := transfersyntax.JPEG2000Lossless.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
-				return err
-			}
-			obj.DelTag(i + 1)
-		}
-		obj.DelTag(i + 1)
+		fallthrough
 	case transfersyntax.JPEG2000.UID:
 		for j = 0; j < frames; j++ {
 			tag := obj.GetTagAt(i + 1)
