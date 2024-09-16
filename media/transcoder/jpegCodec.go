@@ -9,7 +9,6 @@ import (
 
 func init() {
 	transfersyntax.RegisterCodec(transfersyntax.JPEGLosslessSV1.UID, jpegDecode, jpegEncode)
-	transfersyntax.RegisterCodec(transfersyntax.JPEGLossless.UID, jpegDecode, jpegEncode)
 	transfersyntax.RegisterCodec(transfersyntax.JPEGBaseline8Bit.UID, jpegDecode, jpegEncode)
 	transfersyntax.RegisterCodec(transfersyntax.JPEGExtended12Bit.UID, jpeg12Decode, jpeg12Encode)
 }
