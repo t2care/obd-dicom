@@ -6,11 +6,11 @@ import (
 )
 
 func init() {
-	transfersyntax.RegisterCodec(transfersyntax.JPEGLosslessSV1.UID, losslessDecode, losslessEncode)
-	transfersyntax.RegisterCodec(transfersyntax.JPEGLossless.UID, losslessDecode, losslessEncode)
+	transfersyntax.RegisterCodec(transfersyntax.JPEGLosslessSV1.UID, jpegDecode, jpegEncode)
+	transfersyntax.RegisterCodec(transfersyntax.JPEGLossless.UID, jpegDecode, jpegEncode)
 }
 
-func losslessDecode(j uint32, bitsa uint16, j2kData []byte, j2kSize uint32, outputData []byte, single uint32) error {
+func jpegDecode(j uint32, bitsa uint16, j2kData []byte, j2kSize uint32, outputData []byte, single uint32) error {
 	offset := j * single
 	if bitsa == 8 {
 		return jpeglib.DIJG8decode(j2kData, j2kSize, outputData[offset:], single)
@@ -19,7 +19,7 @@ func losslessDecode(j uint32, bitsa uint16, j2kData []byte, j2kSize uint32, outp
 	}
 }
 
-func losslessEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, JPEGData *[]byte, JPEGBytes *int, ratio int) error {
+func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, JPEGData *[]byte, JPEGBytes *int, ratio int) error {
 	offset := j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 	if RGB {
 		offset = 3 * offset

@@ -742,7 +742,7 @@ func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, frames uint32, outTS string) error {
 	var offset, size, jpeg_size, j uint32
 	var JPEGData []byte
-	var JPEGBytes, index int
+	var JPEGBytes, index, mode int
 
 	single := uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 	size = single * frames
@@ -755,65 +755,8 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 
 	switch outTS {
 	case transfersyntax.JPEGLosslessSV1.UID:
-		tag.VR = "OB"
-		tag.Length = 0xFFFFFFFF
-		if tag.Data != nil {
-			tag.Data = nil
-		}
-		obj.SetTag(index, tag)
-		index++
-		newtag := &DcmTag{
-			Group:     0xFFFE,
-			Element:   0xE000,
-			Length:    0,
-			VR:        "DL",
-			Data:      nil,
-			BigEndian: obj.IsBigEndian(),
-		}
-		obj.InsertTag(index, newtag)
-		for j = 0; j < frames; j++ {
-			index++
-			offset = j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
-			if RGB {
-				offset = 3 * offset
-			}
-			if bitsa == 8 {
-				if RGB {
-					if err := jpeglib.EIJG8encode(img[offset:], cols, rows, 3, &JPEGData, &JPEGBytes, 4); err != nil {
-						return err
-					}
-				} else {
-					if err := jpeglib.EIJG8encode(img[offset:], cols, rows, 1, &JPEGData, &JPEGBytes, 4); err != nil {
-						return err
-					}
-				}
-			} else {
-				if err := jpeglib.EIJG16encode(img[offset/2:], cols, rows, 1, &JPEGData, &JPEGBytes, 0); err != nil {
-					return err
-				}
-			}
-			newtag = &DcmTag{
-				Group:     0xFFFE,
-				Element:   0xE000,
-				Length:    uint32(JPEGBytes),
-				VR:        "DL",
-				Data:      JPEGData,
-				BigEndian: obj.IsBigEndian(),
-			}
-			obj.InsertTag(index, newtag)
-			JPEGData = nil
-		}
-		index++
-		newtag = &DcmTag{
-			Group:     0xFFFE,
-			Element:   0xE0DD,
-			Length:    0,
-			VR:        "DL",
-			Data:      nil,
-			BigEndian: obj.IsBigEndian(),
-		}
-		obj.InsertTag(index, newtag)
-		*i = index
+		mode = 4
+		fallthrough
 	case transfersyntax.JPEGBaseline8Bit.UID:
 		tag.VR = "OB"
 		tag.Length = 0xFFFFFFFF
@@ -831,25 +774,10 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 			BigEndian: obj.IsBigEndian(),
 		}
 		obj.InsertTag(index, newtag)
-		jpeg_size = 0
 		for j = 0; j < frames; j++ {
 			index++
-			offset = j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
-			if RGB {
-				offset = 3 * offset
-				if err := jpeglib.EIJG8encode(img[offset:], cols, rows, 3, &JPEGData, &JPEGBytes, 0); err != nil {
-					return err
-				}
-			} else {
-				if bitsa == 8 {
-					if err := jpeglib.EIJG8encode(img[offset:], cols, rows, 1, &JPEGData, &JPEGBytes, 0); err != nil {
-						return err
-					}
-				} else {
-					if err := jpeglib.EIJG12encode(img[offset:], cols, rows, 1, &JPEGData, &JPEGBytes, 0); err != nil {
-						return err
-					}
-				}
+			if err := transfersyntax.JPEGLosslessSV1.Encode(j, RGB, img, cols, rows, 3, bitsa, &JPEGData, &JPEGBytes, mode); err != nil {
+				return err
 			}
 			newtag = &DcmTag{
 				Group:     0xFFFE,
@@ -861,7 +789,6 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 			}
 			obj.InsertTag(index, newtag)
 			JPEGData = nil
-			jpeg_size = jpeg_size + uint32(JPEGBytes)
 		}
 		index++
 		newtag = &DcmTag{
@@ -921,6 +848,9 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		}
 		obj.InsertTag(index, newtag)
 		*i = index
+	case transfersyntax.JPEG2000.UID:
+		mode = 10
+		fallthrough
 	case transfersyntax.JPEG2000Lossless.UID:
 		tag.VR = "OB"
 		tag.Length = 0xFFFFFFFF
@@ -940,7 +870,7 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		obj.InsertTag(index, newtag)
 		for j = 0; j < frames; j++ {
 			index++
-			if err := transfersyntax.JPEG2000Lossless.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 0); err != nil {
+			if err := transfersyntax.JPEG2000Lossless.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, mode); err != nil {
 				return err
 			}
 			newtag = &DcmTag{
@@ -953,52 +883,6 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 			}
 			obj.InsertTag(index, newtag)
 			JPEGData = nil
-		}
-		index++
-		newtag = &DcmTag{
-			Group:     0xFFFE,
-			Element:   0xE0DD,
-			Length:    0,
-			VR:        "DL",
-			Data:      nil,
-			BigEndian: obj.IsBigEndian(),
-		}
-		obj.InsertTag(index, newtag)
-		*i = index
-	case transfersyntax.JPEG2000.UID:
-		tag.VR = "OB"
-		tag.Length = 0xFFFFFFFF
-		if tag.Data != nil {
-			tag.Data = nil
-		}
-		obj.SetTag(index, tag)
-		index++
-		newtag := &DcmTag{
-			Group:     0xFFFE,
-			Element:   0xE000,
-			Length:    0,
-			VR:        "DL",
-			Data:      nil,
-			BigEndian: obj.IsBigEndian(),
-		}
-		obj.InsertTag(index, newtag)
-		jpeg_size = 0
-		for j = 0; j < frames; j++ {
-			index++
-			if err := transfersyntax.JPEG2000.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, 10); err != nil {
-				return err
-			}
-			newtag = &DcmTag{
-				Group:     0xFFFE,
-				Element:   0xE000,
-				Length:    uint32(JPEGBytes),
-				VR:        "DL",
-				Data:      JPEGData,
-				BigEndian: obj.IsBigEndian(),
-			}
-			obj.InsertTag(index, newtag)
-			JPEGData = nil
-			jpeg_size = jpeg_size + uint32(JPEGBytes)
 		}
 		index++
 		newtag = &DcmTag{
