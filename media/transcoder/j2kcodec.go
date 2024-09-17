@@ -1,4 +1,4 @@
-//go:build jpeg2000
+//go:build cgo && jpeg2000
 
 package transcoder
 

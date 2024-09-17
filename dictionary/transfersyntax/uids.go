@@ -11,9 +11,6 @@ var SupportedTransferSyntaxes = []*TransferSyntax{
 	ImplicitVRLittleEndian,
 	ExplicitVRLittleEndian,
 	ExplicitVRBigEndian,
-	JPEGLosslessSV1,
-	JPEGBaseline8Bit,
-	JPEGExtended12Bit,
 }
 
 var tsMap map[string]*TransferSyntax

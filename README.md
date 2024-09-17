@@ -11,10 +11,10 @@ One Byte Data DICOM Golang Library
 go get -u github.com/t2care/obd-dicom
 ```
 
-## Plugin JPEG2000:
+## Plugin JPEG/JPEG2000:
 
 ```bash
-go build -tags jpeg2000 ...
+go build -tags "jpeg jpeg2000" ...
 ```
 
 ## Usage
