@@ -738,6 +738,41 @@ func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 	obj.WriteString(tags.MIMETypeOfEncapsulatedDocument, "application/pdf")
 }
 
+func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, frames uint32, outTS *transfersyntax.TransferSyntax) error {
+	mode := 0
+	switch outTS.UID {
+	case transfersyntax.JPEGLosslessSV1.UID:
+		mode = 4
+	case transfersyntax.JPEGBaseline8Bit.UID:
+	case transfersyntax.JPEGExtended12Bit.UID:
+	case transfersyntax.JPEG2000.UID:
+		mode = 10
+	case transfersyntax.JPEG2000Lossless.UID:
+	default:
+		index := *i
+		tag := obj.GetTagAt(index)
+		if bitss == 8 {
+			tag.VR = "OB"
+		} else {
+			tag.VR = "OW"
+		}
+		single := uint32(cols) * uint32(rows) * uint32(bitsa) / 8
+		size := single * frames
+		if RGB {
+			size = 3 * size
+		}
+		tag.Length = size
+		if tag.Data != nil {
+			tag.Data = nil
+		}
+		tag.Data = make([]byte, tag.Length)
+		copy(tag.Data, img)
+		obj.SetTag(index, tag)
+		return nil
+	}
+	return obj.encode(i, img, RGB, cols, rows, bitsa, frames, mode, outTS)
+}
+
 func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitsa uint16, frames uint32, mode int, ts *transfersyntax.TransferSyntax) error {
 	var JPEGData []byte
 	var JPEGBytes, index int
@@ -789,54 +824,6 @@ func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16
 	return nil
 }
 
-func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, bitsa uint16, frames uint32, outTS *transfersyntax.TransferSyntax) error {
-	mode := 0
-	switch outTS.UID {
-	case transfersyntax.JPEGLosslessSV1.UID:
-		mode = 4
-	case transfersyntax.JPEGBaseline8Bit.UID:
-	case transfersyntax.JPEGExtended12Bit.UID:
-	case transfersyntax.JPEG2000.UID:
-		mode = 10
-	case transfersyntax.JPEG2000Lossless.UID:
-	default:
-		index := *i
-		tag := obj.GetTagAt(index)
-		if bitss == 8 {
-			tag.VR = "OB"
-		} else {
-			tag.VR = "OW"
-		}
-		single := uint32(cols) * uint32(rows) * uint32(bitsa) / 8
-		size := single * frames
-		if RGB {
-			size = 3 * size
-		}
-		tag.Length = size
-		if tag.Data != nil {
-			tag.Data = nil
-		}
-		tag.Data = make([]byte, tag.Length)
-		copy(tag.Data, img)
-		obj.SetTag(index, tag)
-		return nil
-	}
-	return obj.encode(i, img, RGB, cols, rows, bitsa, frames, mode, outTS)
-}
-
-func (obj *DcmObj) decode(i int, img []byte, size uint32, frames uint32, bitsa uint16, ts *transfersyntax.TransferSyntax) error {
-	single := size / frames
-	for j := uint32(0); j < frames; j++ {
-		tag := obj.GetTagAt(i + 1)
-		if err := ts.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
-			return err
-		}
-		obj.DelTag(i + 1)
-	}
-	obj.DelTag(i + 1)
-	return nil
-}
-
 func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bitsa uint16, PhotoInt string) error {
 	var j, single uint32
 	single = size / frames
@@ -856,5 +843,18 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 	default:
 		return obj.decode(i, img, size, frames, bitsa, obj.TransferSyntax)
 	}
+	return nil
+}
+
+func (obj *DcmObj) decode(i int, img []byte, size uint32, frames uint32, bitsa uint16, ts *transfersyntax.TransferSyntax) error {
+	single := size / frames
+	for j := uint32(0); j < frames; j++ {
+		tag := obj.GetTagAt(i + 1)
+		if err := ts.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
+			return err
+		}
+		obj.DelTag(i + 1)
+	}
+	obj.DelTag(i + 1)
 	return nil
 }
