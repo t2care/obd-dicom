@@ -841,16 +841,16 @@ func (obj *DcmObj) uncompress(i int, img []byte, size uint32, frames uint32, bit
 		}
 		obj.DelTag(i + 1)
 	default:
-		return obj.decode(i, img, size, frames, bitsa, obj.TransferSyntax)
+		return obj.decode(i, img, size, frames, bitsa)
 	}
 	return nil
 }
 
-func (obj *DcmObj) decode(i int, img []byte, size uint32, frames uint32, bitsa uint16, ts *transfersyntax.TransferSyntax) error {
+func (obj *DcmObj) decode(i int, img []byte, size uint32, frames uint32, bitsa uint16) error {
 	single := size / frames
 	for j := uint32(0); j < frames; j++ {
 		tag := obj.GetTagAt(i + 1)
-		if err := ts.Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
+		if err := obj.GetTransferSyntax().Decode(j, bitsa, tag.Data, tag.Length, img, single); err != nil {
 			return err
 		}
 		obj.DelTag(i + 1)
