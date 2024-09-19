@@ -157,7 +157,7 @@ func (bd *BufData) ReadTag(explicitVR bool, opt ...*ParseOptions) (*DcmTag, erro
 		case 0x0008:
 			stop = opt[0].OnlyMetaHeader
 		case 0x0010:
-		case 0x7FE0:
+		case 0x0028:
 			stop = opt[0].SkipPixelData
 		default:
 			stop = opt[0].UntilPatientTag
@@ -220,7 +220,7 @@ func (bd *BufData) ReadTag(explicitVR bool, opt ...*ParseOptions) (*DcmTag, erro
 			return nil, err
 		}
 	}
-	if len(opt) > 1 && opt[0].SkipFillTag {
+	if len(opt) == 0 || !opt[0].SkipFillTag {
 		FillTag(tag)
 	}
 	return tag, nil

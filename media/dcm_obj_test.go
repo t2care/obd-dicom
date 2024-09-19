@@ -125,7 +125,7 @@ func TestParseOptions(t *testing.T) {
 		{
 			name:         "Skip pixel",
 			opt:          &ParseOptions{SkipPixelData: true},
-			tagCount:     98,
+			tagCount:     76,
 			protocolName: "SAG T1 ACR",
 		},
 		{
@@ -143,7 +143,7 @@ func TestParseOptions(t *testing.T) {
 		{
 			name:         "Skip FillTag",
 			opt:          &ParseOptions{SkipPixelData: true, SkipFillTag: true},
-			tagCount:     98,
+			tagCount:     76,
 			protocolName: "SAG T1 ACR",
 		},
 	}
@@ -155,6 +155,9 @@ func TestParseOptions(t *testing.T) {
 			}
 			if pn := o.GetString(tags.ProtocolName); pn != tt.protocolName {
 				t.Errorf("TestParseOptions() syntax = %v, want %v", pn, tt.protocolName)
+			}
+			if tt.opt.SkipFillTag && o.GetTag(tags.PatientName).Description != "" {
+				t.Error("TestParseOptions() SkipPixelData: want empty description")
 			}
 		})
 	}
@@ -211,7 +214,7 @@ func TestGetUShort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o, _ := NewDCMObjFromFile("../samples/test.dcm", &ParseOptions{SkipPixelData: true})
+			o, _ := NewDCMObjFromFile("../samples/test.dcm")
 			if pn := o.GetUShort(tt.tag); pn != tt.value {
 				t.Errorf("TestGetUInt() get = %v, want %v", pn, tt.value)
 			}
