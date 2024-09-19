@@ -220,7 +220,7 @@ func (bd *BufData) ReadTag(explicitVR bool, opt ...*ParseOptions) (*DcmTag, erro
 			return nil, err
 		}
 	}
-	if len(opt) > 1 && opt[0].SkipFillTag {
+	if len(opt) == 0 || !opt[0].SkipFillTag {
 		FillTag(tag)
 	}
 	return tag, nil
