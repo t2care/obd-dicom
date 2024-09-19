@@ -214,7 +214,7 @@ func TestGetUShort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o, _ := NewDCMObjFromFile("../samples/test.dcm", &ParseOptions{SkipPixelData: true})
+			o, _ := NewDCMObjFromFile("../samples/test.dcm")
 			if pn := o.GetUShort(tt.tag); pn != tt.value {
 				t.Errorf("TestGetUInt() get = %v, want %v", pn, tt.value)
 			}

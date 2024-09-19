@@ -8,7 +8,7 @@ import (
 )
 
 func TestMapDicomDataToStruct(t *testing.T) {
-	obj, _ := media.NewDCMObjFromFile("../samples/test.dcm", &media.ParseOptions{SkipPixelData: true})
+	obj, _ := media.NewDCMObjFromFile("../samples/test.dcm")
 	type instance struct {
 		BitsAllocated uint8 `dicom:"0028,0100"`
 	}
