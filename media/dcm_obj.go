@@ -26,7 +26,7 @@ type DcmObj struct {
 type ParseOptions struct {
 	OnlyMetaHeader  bool // Group 0x0002. Useful for storeSCU for exemple
 	UntilPatientTag bool // Until group 0x0010
-	SkipPixelData   bool
+	SkipPixelData   bool // Skip group 0x0028 and return
 	SkipFillTag     bool // Increase perf by skipping FillTag. Filltag is only useful for dumpTags
 }
 
