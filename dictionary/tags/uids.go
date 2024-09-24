@@ -10,7 +10,7 @@ type Tag struct {
 	Description string
 }
 
-func getTagFromName(name string) *Tag {
+func GetTagFromName(name string) *Tag {
 	for _, tag := range tags {
 		if tag.Name == name {
 			return tag

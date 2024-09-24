@@ -34,7 +34,7 @@ func TestGetTagFromName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getTagFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got := GetTagFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetTagFromName() = %v, want %v", got, tt.want)
 			}
 		})
