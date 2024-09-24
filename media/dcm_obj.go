@@ -300,6 +300,7 @@ func (obj *DcmObj) WriteUint32(tag *tags.Tag, val uint32) {
 	obj.WriteUint32GE(tag.Group, tag.Element, tag.VR, val)
 }
 
+// WriteString - Add or update string tag
 func (obj *DcmObj) WriteString(tag *tags.Tag, content string) {
 	obj.WriteStringGE(tag.Group, tag.Element, tag.VR, content)
 }
@@ -357,6 +358,11 @@ func (obj *DcmObj) WriteStringGE(group uint16, element uint16, vr string, conten
 		} else {
 			data = append(data, 0x20)
 		}
+	}
+	if t := obj.GetTagGE(group, element); t != nil {
+		t.Length = uint32(length)
+		t.Data = data
+		return
 	}
 	tag := &DcmTag{
 		Group:     group,

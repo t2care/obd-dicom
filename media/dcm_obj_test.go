@@ -221,3 +221,13 @@ func TestGetUShort(t *testing.T) {
 		})
 	}
 }
+
+func Test_WriteString(t *testing.T) {
+	obj, _ := NewDCMObjFromFile("../samples/test.dcm", &ParseOptions{UntilPatientTag: true})
+	assert.Equal(t, "ACR PHANTOM", obj.GetString(tags.PatientName))
+
+	// Change patientName
+	newString := "abc"
+	obj.WriteString(tags.PatientName, newString)
+	assert.Equal(t, newString, obj.GetString(tags.PatientName))
+}
