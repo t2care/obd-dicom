@@ -242,11 +242,11 @@ func (obj *DcmObj) getUShortGE(group uint16, element uint16) uint16 {
 }
 
 func (obj *DcmObj) GetString(tag *tags.Tag) string {
-	return obj.GetStringGE(tag.Group, tag.Element)
+	return obj.getStringGE(tag.Group, tag.Element)
 }
 
-// GetStringGE - return the String for this group & element
-func (obj *DcmObj) GetStringGE(group uint16, element uint16) string {
+// getStringGE - return the String for this group & element
+func (obj *DcmObj) getStringGE(group uint16, element uint16) string {
 	for _, tag := range obj.GetTags() {
 		if (tag.Group == group) && (tag.Element == element) {
 			return tag.getString()
@@ -262,8 +262,8 @@ func (obj *DcmObj) Add(tag *DcmTag) {
 
 func (obj *DcmObj) WriteToBytes() []byte {
 	bufdata := NewEmptyBufData()
-	SOPClassUID := obj.GetStringGE(0x08, 0x16)
-	SOPInstanceUID := obj.GetStringGE(0x08, 0x18)
+	SOPClassUID := obj.getStringGE(0x08, 0x16)
+	SOPInstanceUID := obj.getStringGE(0x08, 0x18)
 	bufdata.WriteMeta(SOPClassUID, SOPInstanceUID, obj.TransferSyntax.UID)
 	// Don't write metadata header in BigEndian (ReadMeta does not support )
 	if obj.TransferSyntax.UID == transfersyntax.ExplicitVRBigEndian.UID {
@@ -300,8 +300,9 @@ func (obj *DcmObj) WriteUint32(tag *tags.Tag, val uint32) {
 	obj.WriteUint32GE(tag.Group, tag.Element, tag.VR, val)
 }
 
+// WriteString - Add or update string tag
 func (obj *DcmObj) WriteString(tag *tags.Tag, content string) {
-	obj.WriteStringGE(tag.Group, tag.Element, tag.VR, content)
+	obj.writeStringGE(tag.Group, tag.Element, tag.VR, content)
 }
 
 // WriteUint16GE - Writes a Uint16 to a DICOM tag
@@ -346,8 +347,8 @@ func (obj *DcmObj) WriteUint32GE(group uint16, element uint16, vr string, val ui
 	obj.Tags = append(obj.Tags, tag)
 }
 
-// WriteStringGE - Writes a String to a DICOM tag
-func (obj *DcmObj) WriteStringGE(group uint16, element uint16, vr string, content string) {
+// writeStringGE - Writes a String to a DICOM tag
+func (obj *DcmObj) writeStringGE(group uint16, element uint16, vr string, content string) {
 	data := []byte(content)
 	length := len(data)
 	if length%2 == 1 {
@@ -357,6 +358,11 @@ func (obj *DcmObj) WriteStringGE(group uint16, element uint16, vr string, conten
 		} else {
 			data = append(data, 0x20)
 		}
+	}
+	if t := obj.GetTagGE(group, element); t != nil {
+		t.Length = uint32(length)
+		t.Data = data
+		return
 	}
 	tag := &DcmTag{
 		Group:     group,

@@ -221,3 +221,37 @@ func TestGetUShort(t *testing.T) {
 		})
 	}
 }
+
+func Test_WriteString(t *testing.T) {
+	tests := []struct {
+		name     string
+		tag      *tags.Tag
+		oldValue string
+		newValue string
+	}{
+		{
+			name:     "Update patient name",
+			tag:      tags.PatientName,
+			oldValue: "ACR PHANTOM",
+			newValue: "abc",
+		},
+		{
+			name:     "Update InstanceCreatorUID",
+			tag:      tags.InstanceCreatorUID,
+			oldValue: "1.3.46.670589.11.8410.5",
+			newValue: "123",
+		},
+		{
+			name:     "Add patient name",
+			tag:      tags.PatientAddress,
+			oldValue: "",
+			newValue: "new address",
+		},
+	}
+	o, _ := NewDCMObjFromFile("../samples/test.dcm", &ParseOptions{SkipPixelData: true})
+	for _, tt := range tests {
+		assert.Equal(t, tt.oldValue, o.GetString(tt.tag), tt.name)
+		o.WriteString(tt.tag, tt.newValue)
+		assert.Equal(t, tt.newValue, o.GetString(tt.tag), tt.name)
+	}
+}

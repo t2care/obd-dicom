@@ -29,6 +29,14 @@ if err != nil {
 obj.DumpTags()
 ```
 
+### Update string tag
+
+```golang
+obj, _ := media.NewDCMObjFromFile(fileName, &ParseOptions{SkipPixelData: true})
+obj.WriteString(tags.PatientName, "new value")
+obj.WriteToFile(fileName)
+```
+
 ### Send C-Echo Request
 ```golang
 scu := services.NewSCU(destination)
