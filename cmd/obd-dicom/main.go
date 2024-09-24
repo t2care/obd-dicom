@@ -45,6 +45,8 @@ func main() {
 
 	dump := flag.Bool("dump", false, "Dump contents of DICOM file to stdout")
 
+	modify := flag.String("modify", "", "Modify dicom tag. Eg: PatientName=test,PatientBirthDate=123")
+
 	transcode := flag.Bool("transcode", false, "Transcode contents of DICOM file to new Transfersyntax")
 	supportedTS := "TransferSyntax file to be converted. Supported: \n"
 	for _, ts := range transfersyntax.SupportedTransferSyntaxes {
@@ -212,6 +214,30 @@ func main() {
 			log.Panicln(err)
 		}
 		log.Printf("Transcode ok. Writing file")
+		obj.WriteToFile(*fileName)
+		os.Exit(0)
+	}
+	if *modify != "" {
+		if *fileName == "" {
+			log.Fatalln("file is required for modify")
+		}
+		obj, err := media.NewDCMObjFromFile(*fileName)
+		parts := strings.Split(*modify, ",")
+		for _, part := range parts {
+			p := strings.Split(part, "=")
+			if len(p) == 2 {
+				tagName := p[0]
+				value := p[1]
+
+				if err != nil {
+					log.Fatalln(err)
+				}
+				if tag := tags.GetTagFromName(tagName); tag != nil {
+					obj.WriteString(tag, value)
+					log.Printf("write tag %s = %s ok", tag.Name, value)
+				}
+			}
+		}
 		obj.WriteToFile(*fileName)
 		os.Exit(0)
 	}
