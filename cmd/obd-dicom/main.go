@@ -38,11 +38,9 @@ func main() {
 
 	cecho := flag.Bool("cecho", false, "Send C-Echo to the destination")
 	cfind := flag.Bool("cfind", false, "Send C-Find request to the destination")
+	cfindWorkList := flag.Bool("cfindWorklist", false, "Send C-Find Modality Worklist request to the destination")
 	cmove := flag.Bool("cmove", false, "Send C-Move request to the destination")
 	cstore := flag.Bool("cstore", false, "Sends a C-Store request to the destination")
-
-	query := flag.String("query", "", "Comma seperated query to be sent with request ex: 00080020=test")
-
 	dump := flag.Bool("dump", false, "Dump contents of DICOM file to stdout")
 
 	modify := flag.String("modify", "", "Modify dicom tag. Eg: PatientName=test,PatientBirthDate=123")
@@ -130,26 +128,18 @@ func main() {
 		}
 		log.Println("CEcho was successful")
 	}
-	if *cfind {
+	if *cfind || *cfindWorkList {
 		request := utils.DefaultCFindRequest()
 		scu := services.NewSCU(destination)
 		scu.SetOnCFindResult(func(result *media.DcmObj) {
 			log.Printf("Found study %s\n", result.GetString(tags.StudyInstanceUID))
 			result.DumpTags()
 		})
-
-		if *query != "" {
-			parts := strings.Split(*query, ",")
-			for _, part := range parts {
-				log.Println(part)
-				// p := strings.Split(part, "=")
-				// tag := media.DcmTag{
-
-				// }
-			}
+		var modes []services.FindMode
+		if *cfindWorkList {
+			modes = append(modes, services.FindWorklist)
 		}
-
-		count, status, err := scu.FindSCU(request, 0)
+		count, status, err := scu.FindSCU(request, 0, modes...)
 		if err != nil {
 			log.Fatalln(err)
 		}

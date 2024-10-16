@@ -20,6 +20,15 @@ type scu struct {
 	onCMoveResult func(result *media.DcmObj)
 }
 
+type FindMode uint8
+
+const (
+	FindWorklist FindMode = iota
+	FindPatient
+	FindStudy
+	FINDPatientStudyOnly
+)
+
 // NewSCU - Creates an interface to scu
 func NewSCU(destination *network.Destination) *scu {
 	return &scu{
@@ -42,12 +51,25 @@ func (d *scu) EchoSCU(timeout int) error {
 	return nil
 }
 
-func (d *scu) FindSCU(Query *media.DcmObj, timeout int) (int, uint16, error) {
+func (d *scu) FindSCU(Query *media.DcmObj, timeout int, mode ...FindMode) (int, uint16, error) {
 	results := 0
 	status := dicomstatus.Warning
 
+	var abstractSyntax *sopclass.SOPClass
+	mode = append(mode, FindStudy)
+	switch mode[0] {
+	case FindWorklist:
+		abstractSyntax = sopclass.ModalityWorklistInformationModelFind
+	case FindPatient:
+		abstractSyntax = sopclass.PatientRootQueryRetrieveInformationModelFind
+	case FINDPatientStudyOnly:
+		abstractSyntax = sopclass.PatientStudyOnlyQueryRetrieveInformationModelFind
+	default:
+		abstractSyntax = sopclass.StudyRootQueryRetrieveInformationModelFind
+	}
+
 	pdu := network.NewPDUService()
-	if err := d.openAssociation(pdu, []*sopclass.SOPClass{sopclass.StudyRootQueryRetrieveInformationModelFind}, []string{}, timeout); err != nil {
+	if err := d.openAssociation(pdu, []*sopclass.SOPClass{abstractSyntax}, []string{}, timeout); err != nil {
 		return results, status, err
 	}
 	defer pdu.Close()
