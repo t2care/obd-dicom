@@ -17,6 +17,20 @@ go get -u github.com/t2care/obd-dicom
 go build -tags "jpeg jpeg2000" ...
 ```
 
+## CMD:
+
+### WorklistSCU
+
+```bash
+go run cmd/obd-dicom/main.go  -cfindWorklist -calledae=SCP -host=x.x.x.x -port=y
+```
+
+### Modify Dicom file
+
+```bash
+go run cmd/obd-dicom/main.go -modify PatientName=abc,PatientAddress=123 -file samples/test.dcm
+```
+
 ## Usage
 
 ### Load DICOM File
