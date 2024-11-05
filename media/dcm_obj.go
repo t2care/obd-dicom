@@ -21,7 +21,7 @@ type DcmObj struct {
 	ExplicitVR     bool
 	BigEndian      bool
 	SQtag          *DcmTag
-	Size           int
+	Size           int // bytes
 }
 
 type ParseOptions struct {
