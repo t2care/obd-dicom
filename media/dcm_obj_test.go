@@ -22,35 +22,30 @@ func TestNewDCMObjFromFile(t *testing.T) {
 		args          args
 		wantTagsCount int
 		wantErr       bool
-		wantSize      int
 	}{
 		{
 			name:          "Should load DICOM file from bugged DICOM written by us",
 			args:          args{fileName: "../samples/test2-2.dcm"},
 			wantTagsCount: 116,
 			wantErr:       false,
-			wantSize:      526562,
 		},
 		{
 			name:          "Should load DICOM file from post bugged DICOM written by us",
 			args:          args{fileName: "../samples/test2-3.dcm"},
 			wantTagsCount: 116,
 			wantErr:       false,
-			wantSize:      526562,
 		},
 		{
 			name:          "Should load DICOM file",
 			args:          args{fileName: "../samples/test2.dcm"},
 			wantTagsCount: 116,
 			wantErr:       false,
-			wantSize:      526598,
 		},
 		{
 			name:          "Should load Lossless",
 			args:          args{fileName: "../samples/test-losslessSV1.dcm"},
 			wantTagsCount: 102,
 			wantErr:       false,
-			wantSize:      48626,
 		},
 	}
 	for _, tt := range tests {
@@ -65,8 +60,8 @@ func TestNewDCMObjFromFile(t *testing.T) {
 				return
 			}
 			if f, err := os.Stat(tt.args.fileName); err == nil {
-				if f.Size() != int64(tt.wantSize) {
-					t.Errorf("Size %v, wantSize %v", f.Size(), tt.wantSize)
+				if f.Size() != int64(dcmObj.Size) {
+					t.Errorf("Size %v, wantSize %v", f.Size(), dcmObj.Size)
 				}
 			}
 		})
