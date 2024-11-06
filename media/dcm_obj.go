@@ -21,6 +21,7 @@ type DcmObj struct {
 	ExplicitVR     bool
 	BigEndian      bool
 	SQtag          *DcmTag
+	Size           int // bytes
 }
 
 type ParseOptions struct {
@@ -77,6 +78,7 @@ func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 		ExplicitVR:     false,
 		BigEndian:      false,
 		SQtag:          &DcmTag{},
+		Size:           bufdata.GetSize(),
 	}
 
 	if obj.TransferSyntax == nil {

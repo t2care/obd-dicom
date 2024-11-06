@@ -2,6 +2,7 @@ package media
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -40,6 +41,12 @@ func TestNewDCMObjFromFile(t *testing.T) {
 			wantTagsCount: 116,
 			wantErr:       false,
 		},
+		{
+			name:          "Should load Lossless",
+			args:          args{fileName: "../samples/test-losslessSV1.dcm"},
+			wantTagsCount: 102,
+			wantErr:       false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,6 +58,11 @@ func TestNewDCMObjFromFile(t *testing.T) {
 			if len(dcmObj.GetTags()) != tt.wantTagsCount {
 				t.Errorf("NewDCMObjFromFile() count = %v, wantTagsCount %v", len(dcmObj.GetTags()), tt.wantTagsCount)
 				return
+			}
+			if f, err := os.Stat(tt.args.fileName); err == nil {
+				if f.Size() != int64(dcmObj.Size) {
+					t.Errorf("Size %v, wantSize %v", f.Size(), dcmObj.Size)
+				}
 			}
 		})
 	}
