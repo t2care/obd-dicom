@@ -2,6 +2,7 @@ package services
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -43,6 +44,9 @@ func (s *scp) Start() error {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return err
+			}
 			slog.Error(err.Error())
 			continue
 		}
