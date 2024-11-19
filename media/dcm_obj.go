@@ -294,11 +294,11 @@ func (obj *DcmObj) WriteTime(tag *tags.Tag, date time.Time) {
 }
 
 func (obj *DcmObj) WriteUint16(tag *tags.Tag, val uint16) {
-	obj.WriteUint16GE(tag.Group, tag.Element, tag.VR, val)
+	obj.writeUint16GE(tag.Group, tag.Element, tag.VR, val)
 }
 
 func (obj *DcmObj) WriteUint32(tag *tags.Tag, val uint32) {
-	obj.WriteUint32GE(tag.Group, tag.Element, tag.VR, val)
+	obj.writeUint32GE(tag.Group, tag.Element, tag.VR, val)
 }
 
 // WriteString - Add or update string tag
@@ -306,13 +306,18 @@ func (obj *DcmObj) WriteString(tag *tags.Tag, content string) {
 	obj.writeStringGE(tag.Group, tag.Element, tag.VR, content)
 }
 
-// WriteUint16GE - Writes a Uint16 to a DICOM tag
-func (obj *DcmObj) WriteUint16GE(group uint16, element uint16, vr string, val uint16) {
+// writeUint16GE - Writes a Uint16 to a DICOM tag
+func (obj *DcmObj) writeUint16GE(group uint16, element uint16, vr string, val uint16) {
 	c := make([]byte, 2)
 	if obj.BigEndian {
 		binary.BigEndian.PutUint16(c, val)
 	} else {
 		binary.LittleEndian.PutUint16(c, val)
+	}
+
+	if t := obj.GetTagGE(group, element); t != nil {
+		t.Data = c
+		return
 	}
 
 	tag := &DcmTag{
@@ -327,8 +332,8 @@ func (obj *DcmObj) WriteUint16GE(group uint16, element uint16, vr string, val ui
 	obj.Tags = append(obj.Tags, tag)
 }
 
-// WriteUint32GE - Writes a Uint32 to a DICOM tag
-func (obj *DcmObj) WriteUint32GE(group uint16, element uint16, vr string, val uint32) {
+// writeUint32GE - Writes a Uint32 to a DICOM tag
+func (obj *DcmObj) writeUint32GE(group uint16, element uint16, vr string, val uint32) {
 	c := make([]byte, 4)
 	if obj.BigEndian {
 		binary.BigEndian.PutUint32(c, val)
@@ -348,8 +353,11 @@ func (obj *DcmObj) WriteUint32GE(group uint16, element uint16, vr string, val ui
 	obj.Tags = append(obj.Tags, tag)
 }
 
-// writeStringGE - Writes a String to a DICOM tag
+// writeStringGE - Writes a String to a DICOM tag. Do nothing if content is empty
 func (obj *DcmObj) writeStringGE(group uint16, element uint16, vr string, content string) {
+	if content == "" {
+		return
+	}
 	data := []byte(content)
 	length := len(data)
 	if length%2 == 1 {

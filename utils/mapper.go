@@ -11,6 +11,7 @@ import (
 )
 
 var key = "dicom"
+var struct2Dicom = false
 
 func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword ...string) (err error) {
 	v := reflect.ValueOf(targetStruct)
@@ -23,6 +24,12 @@ func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword 
 	}
 	recursiveFill(dicomDataset, v.Elem())
 	return
+}
+
+// Map struct to dicom object, do nothing if tag does not exist
+func MapToDicom(in any, obj *media.DcmObj) (err error) {
+	struct2Dicom = true
+	return MapDicomDataToStruct(obj, in, "dicom")
 }
 
 // recursiveFill analyze recursively the target structure and find corresponding Dicom value in the dataset.
@@ -83,8 +90,20 @@ func fillElement(fieldType reflect.Type, dataset *media.DcmObj, targetStructure 
 	tag := &tags.Tag{Group: uint16(groupHex), Element: uint16(elemHex)}
 	switch fieldType.Kind() {
 	case reflect.String:
-		targetStructure.FieldByName(fieldName).SetString(dataset.GetString(tag))
+		if struct2Dicom {
+			if dataset.GetTag(tag) != nil {
+				dataset.WriteString(tag, targetStructure.FieldByName(fieldName).String())
+			}
+		} else {
+			targetStructure.FieldByName(fieldName).SetString(dataset.GetString(tag))
+		}
 	case reflect.Uint8, reflect.Uint16:
-		targetStructure.FieldByName(fieldName).SetUint(uint64(dataset.GetUShort(tag)))
+		if struct2Dicom {
+			if dataset.GetTag(tag) != nil {
+				dataset.WriteUint16(tag, uint16(targetStructure.FieldByName(fieldName).Uint()))
+			}
+		} else {
+			targetStructure.FieldByName(fieldName).SetUint(uint64(dataset.GetUShort(tag)))
+		}
 	}
 }
