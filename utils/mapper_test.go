@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/media"
 )
 
@@ -76,4 +78,22 @@ func TestMapDicomDataToStruct(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMapToDicom(t *testing.T) {
+	// Create data
+	in := struct {
+		PatientName   string `dicom:"0010,0010"`
+		BitsAllocated uint8  `dicom:"0028,0100"`
+	}{
+		PatientName:   "test",
+		BitsAllocated: 10,
+	}
+	obj := media.NewEmptyDCMObj()
+	obj.WriteString(tags.PatientName, "abc")
+	obj.WriteUint16(tags.BitsAllocated, 1)
+
+	assert.NoError(t, MapToDicom(&in, obj), "Should not have error")
+	assert.Equal(t, "test", obj.GetString(tags.PatientName), "Check map string value")
+	assert.Equal(t, uint16(10), obj.GetUShort(tags.BitsAllocated), "Check map uint value")
 }
