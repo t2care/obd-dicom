@@ -350,6 +350,9 @@ func (obj *DcmObj) WriteUint32GE(group uint16, element uint16, vr string, val ui
 
 // writeStringGE - Writes a String to a DICOM tag
 func (obj *DcmObj) writeStringGE(group uint16, element uint16, vr string, content string) {
+	if content == "" {
+		return
+	}
 	data := []byte(content)
 	length := len(data)
 	if length%2 == 1 {
