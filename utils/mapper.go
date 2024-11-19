@@ -28,7 +28,7 @@ func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword 
 
 func MapToDicom(in any, obj *media.DcmObj) (err error) {
 	struct2Dicom = true
-	return MapDicomDataToStruct(obj, in)
+	return MapDicomDataToStruct(obj, in, "dicom")
 }
 
 // recursiveFill analyze recursively the target structure and find corresponding Dicom value in the dataset.
