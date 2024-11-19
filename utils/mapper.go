@@ -26,6 +26,7 @@ func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword 
 	return
 }
 
+// Map struct to dicom object, do nothing if tag does not exist
 func MapToDicom(in any, obj *media.DcmObj) (err error) {
 	struct2Dicom = true
 	return MapDicomDataToStruct(obj, in, "dicom")
@@ -90,13 +91,17 @@ func fillElement(fieldType reflect.Type, dataset *media.DcmObj, targetStructure 
 	switch fieldType.Kind() {
 	case reflect.String:
 		if struct2Dicom {
-			dataset.WriteString(tag, targetStructure.FieldByName(fieldName).String())
+			if dataset.GetTag(tag) != nil {
+				dataset.WriteString(tag, targetStructure.FieldByName(fieldName).String())
+			}
 		} else {
 			targetStructure.FieldByName(fieldName).SetString(dataset.GetString(tag))
 		}
 	case reflect.Uint8, reflect.Uint16:
 		if struct2Dicom {
-			dataset.WriteUint16(tag, uint16(targetStructure.FieldByName(fieldName).Uint()))
+			if dataset.GetTag(tag) != nil {
+				dataset.WriteUint16(tag, uint16(targetStructure.FieldByName(fieldName).Uint()))
+			}
 		} else {
 			targetStructure.FieldByName(fieldName).SetUint(uint64(dataset.GetUShort(tag)))
 		}

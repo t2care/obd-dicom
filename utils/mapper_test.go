@@ -85,9 +85,11 @@ func TestMapToDicom(t *testing.T) {
 	in := struct {
 		PatientName   string `dicom:"0010,0010"`
 		BitsAllocated uint8  `dicom:"0028,0100"`
+		SeriesNumber  string `dicom:"0020,0011"`
 	}{
 		PatientName:   "test",
 		BitsAllocated: 10,
+		SeriesNumber:  "123",
 	}
 	obj := media.NewEmptyDCMObj()
 	obj.WriteString(tags.PatientName, "abc")
@@ -96,4 +98,5 @@ func TestMapToDicom(t *testing.T) {
 	assert.NoError(t, MapToDicom(&in, obj), "Should not have error")
 	assert.Equal(t, "test", obj.GetString(tags.PatientName), "Check map string value")
 	assert.Equal(t, uint16(10), obj.GetUShort(tags.BitsAllocated), "Check map uint value")
+	assert.Equal(t, "", obj.GetString(tags.SeriesNumber), "Should not update unexisted tag")
 }
