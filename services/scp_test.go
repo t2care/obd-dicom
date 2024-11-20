@@ -1,10 +1,17 @@
 package services
 
 import (
+	"fmt"
+	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
 func Test_Association_ID(t *testing.T) {
@@ -53,4 +60,39 @@ func Test_Association_ID(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_QRSCP(t *testing.T) {
+	port := 1043
+	_, testSCP := StartSCP(t, port)
+	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool { return true })
+	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, queryLevel string, query *media.DcmObj) ([]*media.DcmObj, uint16) {
+		query.WriteString(tags.PatientName, "123")
+		return []*media.DcmObj{query}, dicomstatus.Success
+	})
+	assert.NoError(t, dcmtk_findscu(&network.Destination{Port: port}), "FindSCU should be ok")
+}
+
+func dcmtk_findscu(aet *network.Destination) error {
+	out, err := exec.Command("findscu", "-d", "-S", "-k", "QueryRetrieveLevel=STUDY", "-k", "PatientName=", "127.0.0.1", strconv.Itoa(aet.Port)).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", string(out))
+	}
+	fmt.Println(string(out)) // For debug logging
+	return nil
+}
+
+func StartSCP(t testing.TB, port int) (func(t testing.TB), *scp) {
+	testSCP := NewSCP(port)
+	go func() {
+		if err := testSCP.Start(); err != nil {
+			panic(err)
+		}
+	}()
+	time.Sleep(100 * time.Millisecond) // wait for server started
+	return func(t testing.TB) {
+		if err := testSCP.Stop(); err != nil {
+			panic(err)
+		}
+	}, testSCP
 }
