@@ -63,7 +63,7 @@ func Test_Association_ID(t *testing.T) {
 }
 
 func Test_QRSCP(t *testing.T) {
-	port := 1043
+	port := 1044
 	_, testSCP := StartSCP(t, port)
 	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool { return true })
 	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, queryLevel string, query *media.DcmObj) ([]*media.DcmObj, uint16) {
