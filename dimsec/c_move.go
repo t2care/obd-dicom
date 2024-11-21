@@ -76,7 +76,7 @@ func CMoveReadRSP(pdu *network.PDUService, pending *int) (*media.DcmObj, uint16,
 }
 
 // CMoveWriteRSP CMove response write
-func CMoveWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, status uint16, pending uint16) error {
+func CMoveWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, status uint16, pending, completed, failed uint16) error {
 	DCOR := media.NewEmptyDCMObj()
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
@@ -95,9 +95,11 @@ func CMoveWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, status uint16, pe
 		DCOR.WriteUint16(tags.CommandField, dicomcommand.CMoveResponse)
 		valor := DCO.GetUShort(tags.MessageID)
 		DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, valor)
-		DCOR.WriteUint16(tags.CommandDataSetType, 0x101)
+		DCOR.WriteUint16(tags.CommandDataSetType, dicomstatus.CommandDataSetTypeNull)
 		DCOR.WriteUint16(tags.Status, status)
 		DCOR.WriteUint16(tags.NumberOfRemainingSuboperations, pending)
+		DCOR.WriteUint16(tags.NumberOfCompletedSuboperations, completed)
+		DCOR.WriteUint16(tags.NumberOfFailedSuboperations, failed)
 
 		return pdu.Write(DCOR, 0x01)
 	}

@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/t2care/obd-dicom/dictionary/sopclass"
 	"github.com/t2care/obd-dicom/dictionary/tags"
+	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/dimsec"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
@@ -21,7 +23,7 @@ type scp struct {
 	onAssociationRequest func(request *network.AAssociationRQ) bool
 	onAssociationRelease func(request *network.AAssociationRQ)
 	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
-	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16
+	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)
 	onCStoreRequest      func(request *network.AAssociationRQ, data *media.DcmObj) uint16
 }
 
@@ -143,9 +145,42 @@ func (s *scp) handleConnection(conn net.Conn) {
 				panic("OnCMoveRequest() not implemented")
 			}
 
-			status := s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo)
+			dst := &network.Destination{CalledAE: dco.GetString(tags.MoveDestination)}
+			files, status := s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
+			var failed, completed, pending uint16
 
-			if err := dimsec.CMoveWriteRSP(pdu, dco, status, 0x00); err != nil {
+			// Open connection to MoveDestination
+			scu := NewSCU(dst)
+			scu_asso := network.NewPDUService()
+			err = scu.openAssociation(scu_asso, sopclass.DcmShortSCUStorageSOPClassUIDs, []string{
+				transfersyntax.JPEGLosslessSV1.UID,
+				transfersyntax.ImplicitVRLittleEndian.UID}, 1)
+			if err != nil {
+				slog.Error("C-Move failed to open association to destination", "ERROR", err.Error())
+				status = dicomstatus.CMoveMoveDestinationUnknown
+			} else {
+				// Send dicom file using cStore
+				for index, file := range files {
+					pending = uint16(len(files) - index - 1)
+					if err := scu.cstore(scu_asso, file); err != nil {
+						failed++
+						slog.Warn("StoreSCU: Send file failed.", "Error", err.Error(), "File", file)
+					} else {
+						completed++
+					}
+					if err := dimsec.CMoveWriteRSP(pdu, dco, dicomstatus.Pending, pending, completed, failed); err != nil {
+						slog.Error("slog.ErrorhandleConnection, C-Move failed to write response", "ERROR", err.Error())
+						conn.Close()
+						return
+					}
+					if failed > completed {
+						status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
+					}
+				}
+				scu_asso.Close() // Close MoveDestination connection
+			}
+
+			if err := dimsec.CMoveWriteRSP(pdu, dco, status, pending, completed, failed); err != nil {
 				slog.Error("slog.ErrorhandleConnection, C-Move failed to write response", "ERROR", err.Error())
 				conn.Close()
 				return
@@ -182,7 +217,7 @@ func (s *scp) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel s
 	s.onCFindRequest = f
 }
 
-func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16) {
+func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)) {
 	s.onCMoveRequest = f
 }
 

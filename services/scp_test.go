@@ -70,11 +70,27 @@ func Test_QRSCP(t *testing.T) {
 		query.WriteString(tags.PatientName, "123")
 		return []*media.DcmObj{query}, dicomstatus.Success
 	})
+	testSCP.OnCMoveRequest(func(request *network.AAssociationRQ, moveLevel string, query *media.DcmObj, moveDst *network.Destination) ([]string, uint16) {
+		moveDst.CallingAE = request.GetCalledAE()
+		moveDst.HostName = "127.0.0.1"
+		moveDst.Port = 1105
+		return []string{"../samples/test-losslessSV1.dcm"}, dicomstatus.Success
+	})
 	assert.NoError(t, dcmtk_findscu(&network.Destination{Port: port}), "FindSCU should be ok")
+	assert.NoError(t, dcmtk_movescu(&network.Destination{Port: port}), "MoveSCU should be ok")
 }
 
 func dcmtk_findscu(aet *network.Destination) error {
-	out, err := exec.Command("findscu", "-d", "-S", "-k", "QueryRetrieveLevel=STUDY", "-k", "PatientName=", "127.0.0.1", strconv.Itoa(aet.Port)).CombinedOutput()
+	out, err := exec.Command("findscu", "-d", "-S", "-k", "QueryRetrieveLevel=123", "-k", "PatientName=", "127.0.0.1", strconv.Itoa(aet.Port)).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", string(out))
+	}
+	fmt.Println(string(out)) // For debug logging
+	return nil
+}
+
+func dcmtk_movescu(aet *network.Destination) error {
+	out, err := exec.Command("movescu", "-d", "-k", "StudyInstanceUID=STUDY", "-aem", "scp", "127.0.0.1", strconv.Itoa(aet.Port)).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", string(out))
 	}

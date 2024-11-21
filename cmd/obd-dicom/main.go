@@ -82,9 +82,9 @@ func main() {
 			return results, dicomstatus.Success
 		})
 
-		scp.OnCMoveRequest(func(request *network.AAssociationRQ, moveLevel string, query *media.DcmObj) uint16 {
+		scp.OnCMoveRequest(func(request *network.AAssociationRQ, moveLevel string, query *media.DcmObj, moveDst *network.Destination) ([]string, uint16) {
 			query.DumpTags()
-			return dicomstatus.Success
+			return []string{}, dicomstatus.Success
 		})
 
 		scp.OnCStoreRequest(func(request *network.AAssociationRQ, data *media.DcmObj) uint16 {
