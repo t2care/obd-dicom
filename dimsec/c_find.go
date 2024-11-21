@@ -71,9 +71,9 @@ func CFindWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, DDO *media.DcmObj
 
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
 
-	leDSType := uint16(0x0101)
+	leDSType := dicomstatus.CommandDataSetTypeNull
 	if DDO.TagCount() > 0 {
-		leDSType = 0x0102
+		leDSType = dicomstatus.CommandDataSetTypeNonNull
 	}
 
 	SOPClassUID := DCO.GetString(tags.AffectedSOPClassUID)
@@ -96,10 +96,7 @@ func CFindWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, DDO *media.DcmObj
 		if err := pdu.Write(DCOR, 0x01); err != nil {
 			return err
 		}
-
-		if DDO.TagCount() > 0 {
-			return pdu.Write(DDO, 0x00)
-		}
+		return pdu.Write(DDO, 0x00)
 	}
 	return errors.New("CFindReadRSP, unknown error")
 }

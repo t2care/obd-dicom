@@ -2,7 +2,6 @@ package services
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/t2care/obd-dicom/dictionary/tags"
@@ -167,19 +166,4 @@ func cFindReqByDate() *media.DcmObj {
 	queryDate.WriteString(tags.QueryRetrieveLevel, "STUDY")
 	queryDate.WriteString(tags.StudyDate, "20050323")
 	return queryDate
-}
-
-func StartSCP(t testing.TB, port int) (func(t testing.TB), *scp) {
-	testSCP := NewSCP(port)
-	go func() {
-		if err := testSCP.Start(); err != nil {
-			panic(err)
-		}
-	}()
-	time.Sleep(100 * time.Millisecond) // wait for server started
-	return func(t testing.TB) {
-		if err := testSCP.Stop(); err != nil {
-			panic(err)
-		}
-	}, testSCP
 }

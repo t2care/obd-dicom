@@ -115,30 +115,21 @@ func (s *scp) handleConnection(conn net.Conn) {
 			}
 
 			results, status := s.onCFindRequest(pdu.GetAAssociationRQ(), queryLevel, ddo)
-			if len(results) > 0 {
-				for index, result := range results {
-					if index == len(results)-1 {
-						break
-					}
-					if err := dimsec.CFindWriteRSP(pdu, dco, result, dicomstatus.Pending); err != nil {
-						slog.Error("handleConnection, C-Find failed to write response", "ERROR", err.Error())
-						conn.Close()
-						return
-					}
-				}
 
-				if err := dimsec.CFindWriteRSP(pdu, dco, results[len(results)-1], status); err != nil {
-					slog.Error("handleConnection, C-Find failed to write response", "ERROR", err.Error())
-					conn.Close()
-					return
-				}
-			} else {
-				if err := dimsec.CFindWriteRSP(pdu, dco, dco, status); err != nil {
+			for _, result := range results {
+				if err := dimsec.CFindWriteRSP(pdu, dco, result, dicomstatus.Pending); err != nil {
 					slog.Error("handleConnection, C-Find failed to write response", "ERROR", err.Error())
 					conn.Close()
 					return
 				}
 			}
+
+			if err := dimsec.CFindWriteRSP(pdu, dco, media.NewEmptyDCMObj(), status); err != nil {
+				slog.Error("handleConnection, C-Find failed to write response", "ERROR", err.Error())
+				conn.Close()
+				return
+			}
+
 		case dicomcommand.CMoveRequest:
 			ddo, err := dimsec.CMoveReadRQ(pdu)
 			if err != nil {

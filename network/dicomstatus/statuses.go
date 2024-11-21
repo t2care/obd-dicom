@@ -26,3 +26,12 @@ const FailureSOPClassNotSupported uint16 = 0x0122
 
 // Failure - 0xc000
 const FailureUnableToProcess uint16 = 0xc000
+
+// CommandDataSetTypeNull indicates that the DIMSE message has no data payload,
+// when set in dicom.TagCommandDataSetType. Any other value indicates the
+// existence of a payload.
+const CommandDataSetTypeNull uint16 = 0x0101
+
+// CommandDataSetTypeNonNull indicates that the DIMSE message has a data
+// payload, when set in dicom.TagCommandDataSetType.
+const CommandDataSetTypeNonNull uint16 = 1
