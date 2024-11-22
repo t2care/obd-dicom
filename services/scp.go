@@ -152,7 +152,7 @@ func (s *scp) handleConnection(conn net.Conn) {
 			if err = scu.StoreSCU(files, 0); err != nil {
 				status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
 			}
-			if err := dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0); err != nil {
+			if err = dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0); err != nil {
 				slog.Error("slog.ErrorhandleConnection, C-Move failed to write response", "ERROR", err.Error())
 				conn.Close()
 				return

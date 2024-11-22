@@ -81,7 +81,7 @@ func Test_QRSCP(t *testing.T) {
 }
 
 func dcmtk_findscu(port int) error {
-	return exe("finscu", "-d", "-S", "-k", "QueryRetrieveLevel=123", "-k", "PatientName=", "127.0.0.1", strconv.Itoa(port))
+	return exe("findscu", "-d", "-S", "-k", "QueryRetrieveLevel=STUDY", "-k", "PatientName=", "127.0.0.1", strconv.Itoa(port))
 }
 
 func dcmtk_movescu(port int) error {
