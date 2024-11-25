@@ -92,7 +92,9 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 			if s.onCStoreRequest != nil {
 				status = s.onCStoreRequest(pdu.GetAAssociationRQ(), ddo)
 			}
-			return dimsec.CStoreWriteRSP(pdu, dco, status)
+			if err = dimsec.CStoreWriteRSP(pdu, dco, status); err != nil {
+				return
+			}
 		case dicomcommand.CFindRequest:
 			if ddo, err = dimsec.CFindReadRQ(pdu); err != nil {
 				return
@@ -107,7 +109,9 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 					}
 				}
 			}
-			return dimsec.CFindWriteRSP(pdu, dco, media.NewEmptyDCMObj(), status)
+			if err = dimsec.CFindWriteRSP(pdu, dco, media.NewEmptyDCMObj(), status); err != nil {
+				return
+			}
 		case dicomcommand.CMoveRequest:
 			if ddo, err = dimsec.CMoveReadRQ(pdu); err != nil {
 				return
@@ -125,9 +129,13 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 					status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
 				}
 			}
-			return dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0)
+			if err = dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0); err != nil {
+				return
+			}
 		case dicomcommand.CEchoRequest:
-			return dimsec.CEchoWriteRSP(pdu, dco)
+			if err = dimsec.CEchoWriteRSP(pdu, dco); err != nil {
+				return
+			}
 		default:
 			return fmt.Errorf("handleConnection, service not implemented: %v", command)
 		}
