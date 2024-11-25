@@ -65,38 +65,3 @@ func CStoreReadRSP(pdu *network.PDUService) (uint16, error) {
 	}
 	return dicomstatus.FailureUnableToProcess, errors.New("CStoreReadRSP, unknown error")
 }
-
-// CStoreWriteRSP CStore response write
-func CStoreWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, status uint16) error {
-	DCOR := media.NewEmptyDCMObj()
-
-	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
-	SOPClassUID := DCO.GetString(tags.AffectedSOPClassUID)
-	sopclasslength := uint16(len(SOPClassUID))
-	if sopclasslength > 0 {
-		if sopclasslength%2 == 1 {
-			sopclasslength++
-		}
-
-		SOPInstance := DCO.GetString(tags.AffectedSOPInstanceUID)
-		sopinstancelength := uint16(len(SOPClassUID))
-		if sopinstancelength > 0 {
-			if sopinstancelength%2 == 1 {
-				sopinstancelength++
-			}
-
-			size := uint32(8 + sopclasslength + 8 + 2 + 8 + 2 + 8 + 2 + 8 + sopinstancelength)
-
-			DCOR.WriteUint32(tags.CommandGroupLength, size)
-			DCOR.WriteString(tags.AffectedSOPClassUID, SOPClassUID)
-			DCOR.WriteUint16(tags.CommandField, dicomcommand.CStoreResponse)
-			valor := DCO.GetUShort(tags.MessageID)
-			DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, valor)
-			DCOR.WriteUint16(tags.CommandDataSetType, 0x0101)
-			DCOR.WriteUint16(tags.Status, status)
-			DCOR.WriteString(tags.AffectedSOPInstanceUID, SOPInstance)
-			return pdu.Write(DCOR, 0x01)
-		}
-	}
-	return errors.New("CStoreWriteRSP, unknown error")
-}

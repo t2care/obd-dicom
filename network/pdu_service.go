@@ -13,6 +13,7 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/imp"
 	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/network/pdutype"
 )
 
@@ -410,4 +411,18 @@ func (pdu *PDUService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
 
 func (pdu *PDUService) readPDU() error {
 	return pdu.ms.ReadFully(pdu.readWriter, int(pdu.pdulength)-4)
+}
+
+func (pdu *PDUService) WriteResp(command uint16, DCO *media.DcmObj, status ...uint16) error {
+	status = append(status, dicomstatus.Success, 0, 0, 0)
+
+	DCOR := media.NewEmptyDCMObj()
+	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
+	DCOR.WriteString(tags.AffectedSOPClassUID, DCO.GetString(tags.AffectedSOPClassUID))
+	DCOR.WriteUint16(tags.CommandField, command)
+	DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, DCO.GetUShort(tags.MessageID))
+	DCOR.WriteUint16(tags.CommandDataSetType, dicomstatus.CommandDataSetTypeNull)
+	DCOR.WriteUint16(tags.Status, status[0])
+	DCOR.WriteString(tags.AffectedSOPInstanceUID, DCO.GetString(tags.AffectedSOPInstanceUID))
+	return pdu.Write(DCOR, 0x01)
 }

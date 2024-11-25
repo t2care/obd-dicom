@@ -92,7 +92,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 			if s.onCStoreRequest != nil {
 				status = s.onCStoreRequest(pdu.GetAAssociationRQ(), ddo)
 			}
-			dimsec.CStoreWriteRSP(pdu, dco, status)
+			err = pdu.WriteResp(dicomcommand.CStoreResponse, dco, status)
 		case dicomcommand.CFindRequest:
 			if ddo, err = dimsec.CFindReadRQ(pdu); err != nil {
 				return
@@ -127,7 +127,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 			}
 			err = dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0)
 		case dicomcommand.CEchoRequest:
-			err = dimsec.CEchoWriteRSP(pdu, dco)
+			err = pdu.WriteResp(dicomcommand.CEchoResponse, dco)
 		default:
 			return fmt.Errorf("handleConnection, service not implemented: %v", command)
 		}
