@@ -21,7 +21,7 @@ type scp struct {
 	onAssociationRequest func(request *network.AAssociationRQ) bool
 	onAssociationRelease func(request *network.AAssociationRQ)
 	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
-	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16
+	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)
 	onCStoreRequest      func(request *network.AAssociationRQ, data *media.DcmObj) uint16
 }
 
@@ -143,9 +143,16 @@ func (s *scp) handleConnection(conn net.Conn) {
 				panic("OnCMoveRequest() not implemented")
 			}
 
-			status := s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo)
-
-			if err := dimsec.CMoveWriteRSP(pdu, dco, status, 0x00); err != nil {
+			dst := &network.Destination{CalledAE: dco.GetString(tags.MoveDestination)}
+			files, status := s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
+			scu := NewSCU(dst)
+			scu.onCStoreResult = func(pending, completed, failed uint16) error {
+				return dimsec.CMoveWriteRSP(pdu, dco, dicomstatus.Pending, pending, completed, failed)
+			}
+			if err = scu.StoreSCU(files, 0); err != nil {
+				status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
+			}
+			if err = dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0); err != nil {
 				slog.Error("slog.ErrorhandleConnection, C-Move failed to write response", "ERROR", err.Error())
 				conn.Close()
 				return
@@ -182,7 +189,7 @@ func (s *scp) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel s
 	s.onCFindRequest = f
 }
 
-func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj) uint16) {
+func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)) {
 	s.onCMoveRequest = f
 }
 

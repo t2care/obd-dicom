@@ -35,3 +35,7 @@ const CommandDataSetTypeNull uint16 = 0x0101
 // CommandDataSetTypeNonNull indicates that the DIMSE message has a data
 // payload, when set in dicom.TagCommandDataSetType.
 const CommandDataSetTypeNonNull uint16 = 1
+
+// C-MOVE/C-GET-specific status codes.
+const CMoveMoveDestinationUnknown uint16 = 0xa801
+const CMoveOutOfResourcesUnableToPerformSubOperations uint16 = 0xa702

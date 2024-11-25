@@ -15,9 +15,10 @@ import (
 )
 
 type scu struct {
-	destination   *network.Destination
-	onCFindResult func(result *media.DcmObj)
-	onCMoveResult func(result *media.DcmObj)
+	destination    *network.Destination
+	onCFindResult  func(result *media.DcmObj)
+	onCMoveResult  func(result *media.DcmObj)
+	onCStoreResult func(pending, completed, failed uint16) error
 }
 
 type FindMode uint8
@@ -124,21 +125,30 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 }
 
 func (d *scu) StoreSCU(FileNames []string, timeout int, transferSyntaxes ...string) error {
+	var failed, completed, pending uint16
 	pdu := network.NewPDUService()
 	if len(transferSyntaxes) == 0 {
-		transferSyntaxes = append(transferSyntaxes, transfersyntax.ImplicitVRLittleEndian.UID, transfersyntax.JPEGLosslessSV1.UID)
+		transferSyntaxes = append(transferSyntaxes, transfersyntax.JPEGLosslessSV1.UID, transfersyntax.ImplicitVRLittleEndian.UID)
 	}
-	err := d.openAssociation(pdu, sopclass.DcmShortSCUStorageSOPClassUIDs, transferSyntaxes, timeout)
-	if err != nil {
+	if err := d.openAssociation(pdu, sopclass.DcmShortSCUStorageSOPClassUIDs, transferSyntaxes, timeout); err != nil {
 		return err
 	}
 	defer pdu.Close()
-	for _, FileName := range FileNames {
+	for index, FileName := range FileNames {
+		pending = uint16(len(FileNames) - index - 1)
 		if err := d.cstore(pdu, FileName); err != nil {
-			slog.Warn("StoreSCU: Send file failed.", "Error", err.Error(), "File", FileName)
-			return err
+			failed++
+			slog.Warn("StoreSCU", "File", FileName, "Error", err.Error())
+		} else {
+			completed++
+		}
+		if d.onCStoreResult != nil {
+			if err := d.onCStoreResult(pending, completed, failed); err != nil {
+				return err
+			}
 		}
 	}
+	slog.Info("StoreSCU", "Completed", completed, "Failed", failed)
 	return nil
 }
 
