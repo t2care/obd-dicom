@@ -10,11 +10,6 @@ import (
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
-// CEchoReadRQ CEcho request read
-func CEchoReadRQ(DCO *media.DcmObj) bool {
-	return DCO.GetUShort(tags.CommandField) == dicomcommand.CEchoRequest
-}
-
 // CEchoWriteRQ CEcho request write
 func CEchoWriteRQ(pdu *network.PDUService) error {
 	DCO := media.NewEmptyDCMObj()
