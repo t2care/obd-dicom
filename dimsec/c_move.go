@@ -1,8 +1,6 @@
 package dimsec
 
 import (
-	"errors"
-
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
@@ -73,35 +71,4 @@ func CMoveReadRSP(pdu *network.PDUService, pending *int) (*media.DcmObj, uint16,
 	}
 
 	return nil, status, nil
-}
-
-// CMoveWriteRSP CMove response write
-func CMoveWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, status uint16, pending, completed, failed uint16) error {
-	DCOR := media.NewEmptyDCMObj()
-
-	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
-
-	SOPClassUID := DCO.GetString(tags.AffectedSOPClassUID)
-	sopclasslength := uint16(len(SOPClassUID))
-	if sopclasslength > 0 {
-		if sopclasslength%2 == 1 {
-			sopclasslength++
-		}
-
-		size := uint32(8 + sopclasslength + 8 + 2 + 8 + 2 + 8 + 2 + 8 + 2 + 8 + 2)
-
-		DCOR.WriteUint32(tags.CommandGroupLength, size)
-		DCOR.WriteString(tags.AffectedSOPClassUID, SOPClassUID)
-		DCOR.WriteUint16(tags.CommandField, dicomcommand.CMoveResponse)
-		valor := DCO.GetUShort(tags.MessageID)
-		DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, valor)
-		DCOR.WriteUint16(tags.CommandDataSetType, dicomstatus.CommandDataSetTypeNull)
-		DCOR.WriteUint16(tags.Status, status)
-		DCOR.WriteUint16(tags.NumberOfRemainingSuboperations, pending)
-		DCOR.WriteUint16(tags.NumberOfCompletedSuboperations, completed)
-		DCOR.WriteUint16(tags.NumberOfFailedSuboperations, failed)
-
-		return pdu.Write(DCOR, 0x01)
-	}
-	return errors.New("CMoveWriteRSP, unknown error")
 }

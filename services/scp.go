@@ -119,13 +119,13 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				files, status = s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
 				scu := NewSCU(dst)
 				scu.onCStoreResult = func(pending, completed, failed uint16) error {
-					return dimsec.CMoveWriteRSP(pdu, dco, dicomstatus.Pending, pending, completed, failed)
+					return pdu.WriteResp(dicomcommand.CMoveResponse, dco, dicomstatus.Pending, completed, failed)
 				}
 				if err = scu.StoreSCU(files, 0); err != nil {
 					status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
 				}
 			}
-			err = dimsec.CMoveWriteRSP(pdu, dco, status, 0, 0, 0)
+			err = pdu.WriteResp(dicomcommand.CMoveResponse, dco, status)
 		case dicomcommand.CEchoRequest:
 			err = pdu.WriteResp(dicomcommand.CEchoResponse, dco)
 		default:

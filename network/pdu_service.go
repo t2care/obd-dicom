@@ -424,5 +424,8 @@ func (pdu *PDUService) WriteResp(command uint16, DCO *media.DcmObj, status ...ui
 	DCOR.WriteUint16(tags.CommandDataSetType, dicomstatus.CommandDataSetTypeNull)
 	DCOR.WriteUint16(tags.Status, status[0])
 	DCOR.WriteString(tags.AffectedSOPInstanceUID, DCO.GetString(tags.AffectedSOPInstanceUID))
+	DCOR.WriteUint16(tags.NumberOfRemainingSuboperations, status[1])
+	DCOR.WriteUint16(tags.NumberOfCompletedSuboperations, status[2])
+	DCOR.WriteUint16(tags.NumberOfFailedSuboperations, status[3])
 	return pdu.Write(DCOR, 0x01)
 }
