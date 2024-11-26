@@ -92,7 +92,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 			if s.onCStoreRequest != nil {
 				status = s.onCStoreRequest(pdu.GetAAssociationRQ(), ddo)
 			}
-			err = pdu.WriteResp(dicomcommand.CStoreResponse, dco, status)
+			err = pdu.WriteResp(dicomcommand.CStoreResponse, dco, ddo, status)
 		case dicomcommand.CFindRequest:
 			if ddo, err = dimsec.CFindReadRQ(pdu); err != nil {
 				return
@@ -102,12 +102,12 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				var results []*media.DcmObj
 				results, status = s.onCFindRequest(pdu.GetAAssociationRQ(), queryLevel, ddo)
 				for _, result := range results {
-					if err = dimsec.CFindWriteRSP(pdu, dco, result, dicomstatus.Pending); err != nil {
+					if err = pdu.WriteResp(dicomcommand.CFindResponse, dco, result, dicomstatus.Pending); err != nil {
 						return
 					}
 				}
 			}
-			dimsec.CFindWriteRSP(pdu, dco, media.NewEmptyDCMObj(), status)
+			err = pdu.WriteResp(dicomcommand.CFindResponse, dco, ddo, status)
 		case dicomcommand.CMoveRequest:
 			if ddo, err = dimsec.CMoveReadRQ(pdu); err != nil {
 				return
@@ -119,15 +119,15 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				files, status = s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
 				scu := NewSCU(dst)
 				scu.onCStoreResult = func(pending, completed, failed uint16) error {
-					return pdu.WriteResp(dicomcommand.CMoveResponse, dco, dicomstatus.Pending, completed, failed)
+					return pdu.WriteResp(dicomcommand.CMoveResponse, dco, ddo, dicomstatus.Pending, completed, failed)
 				}
 				if err = scu.StoreSCU(files, 0); err != nil {
 					status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
 				}
 			}
-			err = pdu.WriteResp(dicomcommand.CMoveResponse, dco, status)
+			err = pdu.WriteResp(dicomcommand.CMoveResponse, dco, ddo, status)
 		case dicomcommand.CEchoRequest:
-			err = pdu.WriteResp(dicomcommand.CEchoResponse, dco)
+			err = pdu.WriteResp(dicomcommand.CEchoResponse, dco, ddo)
 		default:
 			return fmt.Errorf("handleConnection, service not implemented: %v", command)
 		}

@@ -413,19 +413,27 @@ func (pdu *PDUService) readPDU() error {
 	return pdu.ms.ReadFully(pdu.readWriter, int(pdu.pdulength)-4)
 }
 
-func (pdu *PDUService) WriteResp(command uint16, DCO *media.DcmObj, status ...uint16) error {
+func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
 	status = append(status, dicomstatus.Success, 0, 0, 0)
+
+	leDSType := dicomstatus.CommandDataSetTypeNull
+	if ddo != nil && ddo.TagCount() > 0 {
+		leDSType = dicomstatus.CommandDataSetTypeNonNull
+	}
 
 	DCOR := media.NewEmptyDCMObj()
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
 	DCOR.WriteString(tags.AffectedSOPClassUID, DCO.GetString(tags.AffectedSOPClassUID))
 	DCOR.WriteUint16(tags.CommandField, command)
 	DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, DCO.GetUShort(tags.MessageID))
-	DCOR.WriteUint16(tags.CommandDataSetType, dicomstatus.CommandDataSetTypeNull)
+	DCOR.WriteUint16(tags.CommandDataSetType, leDSType)
 	DCOR.WriteUint16(tags.Status, status[0])
 	DCOR.WriteString(tags.AffectedSOPInstanceUID, DCO.GetString(tags.AffectedSOPInstanceUID))
 	DCOR.WriteUint16(tags.NumberOfRemainingSuboperations, status[1])
 	DCOR.WriteUint16(tags.NumberOfCompletedSuboperations, status[2])
 	DCOR.WriteUint16(tags.NumberOfFailedSuboperations, status[3])
-	return pdu.Write(DCOR, 0x01)
+	if err := pdu.Write(DCOR, 0x01); err != nil {
+		return err
+	}
+	return pdu.Write(ddo, 0x00)
 }
