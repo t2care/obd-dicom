@@ -106,7 +106,7 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 		return dicomstatus.FailureUnableToProcess, err
 	}
 	defer pdu.Close()
-	if err := dimsec.CMoveWriteRQ(pdu, Query, destAET); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CMoveRequest, Query, destAET); err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}
 

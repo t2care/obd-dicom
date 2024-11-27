@@ -437,7 +437,8 @@ func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status 
 	return pdu.Write(DCOR, 0x01)
 }
 
-func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj) error {
+func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj, moveDst ...string) error {
+	moveDst = append(moveDst, "")
 	leDSType := dicomstatus.CommandDataSetTypeNull
 	if ddo != nil && ddo.TagCount() > 0 {
 		leDSType = dicomstatus.CommandDataSetTypeNonNull
@@ -453,6 +454,7 @@ func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj) error {
 	dco.WriteString(tags.AffectedSOPClassUID, sopClassUID)
 	dco.WriteUint16(tags.CommandField, command)
 	dco.WriteUint16(tags.MessageID, Uniq16odd())
+	dco.WriteString(tags.MoveDestination, moveDst[0])
 	dco.WriteUint16(tags.Priority, priority.Medium)
 	dco.WriteUint16(tags.CommandDataSetType, leDSType)
 	dco.WriteString(tags.AffectedSOPInstanceUID, ddo.GetString(tags.SOPInstanceUID))
