@@ -15,6 +15,7 @@ import (
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/network/pdutype"
+	"github.com/t2care/obd-dicom/network/priority"
 )
 
 type PDUService struct {
@@ -434,4 +435,26 @@ func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status 
 		DCOR.WriteUint16(tags.NumberOfFailedSuboperations, status[3])
 	}
 	return pdu.Write(DCOR, 0x01)
+}
+
+func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj) error {
+	leDSType := dicomstatus.CommandDataSetTypeNull
+	if ddo != nil && ddo.TagCount() > 0 {
+		leDSType = dicomstatus.CommandDataSetTypeNonNull
+		defer pdu.Write(ddo, 0x00)
+	}
+	sopClassUID := ddo.GetString(tags.SOPClassUID)
+	for _, presContext := range pdu.GetAAssociationRQ().GetPresContexts() {
+		sopClassUID = presContext.GetAbstractSyntax().GetUID()
+	}
+
+	dco := media.NewEmptyDCMObj()
+	dco.SetTransferSyntax(ddo.GetTransferSyntax())
+	dco.WriteString(tags.AffectedSOPClassUID, sopClassUID)
+	dco.WriteUint16(tags.CommandField, command)
+	dco.WriteUint16(tags.MessageID, Uniq16odd())
+	dco.WriteUint16(tags.Priority, priority.Medium)
+	dco.WriteUint16(tags.CommandDataSetType, leDSType)
+	dco.WriteString(tags.AffectedSOPInstanceUID, ddo.GetString(tags.SOPInstanceUID))
+	return pdu.Write(dco, 0x01)
 }

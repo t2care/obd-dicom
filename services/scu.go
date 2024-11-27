@@ -11,6 +11,7 @@ import (
 	"github.com/t2care/obd-dicom/dimsec"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
@@ -43,7 +44,7 @@ func (d *scu) EchoSCU(timeout int) error {
 		return err
 	}
 	defer pdu.Close()
-	if err := dimsec.CEchoWriteRQ(pdu); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CEchoRequest, media.NewEmptyDCMObj()); err != nil {
 		return err
 	}
 	if err := dimsec.CEchoReadRSP(pdu); err != nil {
@@ -74,7 +75,7 @@ func (d *scu) FindSCU(Query *media.DcmObj, timeout int, mode ...FindMode) (int, 
 		return results, status, err
 	}
 	defer pdu.Close()
-	if err := dimsec.CFindWriteRQ(pdu, Query); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CFindRequest, Query); err != nil {
 		return results, status, err
 	}
 	for status != dicomstatus.Success {
@@ -216,7 +217,7 @@ func (d *scu) writeStoreRQ(pdu *network.PDUService, DDO *media.DcmObj) (uint16, 
 	}
 
 	if TrnSyntOUT.UID == DDO.GetTransferSyntax().UID {
-		if err := dimsec.CStoreWriteRQ(pdu, DDO); err != nil {
+		if err := pdu.WriteRQ(dicomcommand.CStoreRequest, DDO); err != nil {
 			return status, err
 		}
 		return dicomstatus.Success, nil
@@ -224,7 +225,7 @@ func (d *scu) writeStoreRQ(pdu *network.PDUService, DDO *media.DcmObj) (uint16, 
 	slog.Info("StoreSCU: Transcode.", "From", DDO.GetTransferSyntax().Description, "To", TrnSyntOUT.Description)
 	DDO.ChangeTransferSynx(TrnSyntOUT)
 
-	err := dimsec.CStoreWriteRQ(pdu, DDO)
+	err := pdu.WriteRQ(dicomcommand.CStoreRequest, DDO)
 	if err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}
