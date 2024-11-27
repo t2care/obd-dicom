@@ -46,7 +46,7 @@ func (d *scu) EchoSCU(timeout int) error {
 	if err := pdu.WriteRQ(dicomcommand.CEchoRequest, media.NewEmptyDCMObj()); err != nil {
 		return err
 	}
-	if _, _, err := pdu.ReadResp(dicomcommand.CEchoResponse); err != nil {
+	if _, _, err := pdu.ReadResp(); err != nil {
 		return err
 	}
 	return nil
@@ -78,7 +78,7 @@ func (d *scu) FindSCU(Query *media.DcmObj, timeout int, mode ...FindMode) (int, 
 		return results, status, err
 	}
 	for status != dicomstatus.Success {
-		ddo, s, err := pdu.ReadResp(dicomcommand.CFindResponse)
+		ddo, s, err := pdu.ReadResp()
 		status = s
 		if err != nil {
 			return results, status, err
@@ -110,7 +110,7 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 	}
 
 	for status == dicomstatus.Pending {
-		ddo, s, err := pdu.ReadResp(dicomcommand.CMoveResponse, &pending)
+		ddo, s, err := pdu.ReadResp(&pending)
 		status = s
 		if err != nil {
 			return dicomstatus.FailureUnableToProcess, err
@@ -160,7 +160,7 @@ func (d *scu) cstore(pdu *network.PDUService, FileName string) error {
 	if err = getCStoreError(d.writeStoreRQ(pdu, DDO)); err != nil {
 		return err
 	}
-	_, status, err := pdu.ReadResp(dicomcommand.CStoreResponse)
+	_, status, err := pdu.ReadResp()
 	return getCStoreError(status, err)
 }
 

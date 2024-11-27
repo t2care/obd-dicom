@@ -1,5 +1,8 @@
 package dicomcommand
 
+// Offset between Request and Response
+const Offset = 0x8000
+
 // CStoreRequest = 0x0001
 const CStoreRequest = 0x0001
 
