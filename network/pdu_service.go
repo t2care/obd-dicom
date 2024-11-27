@@ -13,6 +13,7 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/imp"
 	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/network/pdutype"
 )
 
@@ -410,4 +411,27 @@ func (pdu *PDUService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
 
 func (pdu *PDUService) readPDU() error {
 	return pdu.ms.ReadFully(pdu.readWriter, int(pdu.pdulength)-4)
+}
+
+func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
+	leDSType := dicomstatus.CommandDataSetTypeNull
+	if ddo != nil && ddo.TagCount() > 0 {
+		leDSType = dicomstatus.CommandDataSetTypeNonNull
+		defer pdu.Write(ddo, 0x00)
+	}
+
+	DCOR := media.NewEmptyDCMObj()
+	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
+	DCOR.WriteString(tags.AffectedSOPClassUID, DCO.GetString(tags.AffectedSOPClassUID))
+	DCOR.WriteUint16(tags.CommandField, command+0x8000)
+	DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, DCO.GetUShort(tags.MessageID))
+	DCOR.WriteUint16(tags.CommandDataSetType, leDSType)
+	DCOR.WriteUint16(tags.Status, status[0])
+	DCOR.WriteString(tags.AffectedSOPInstanceUID, DCO.GetString(tags.AffectedSOPInstanceUID))
+	if len(status) == 4 {
+		DCOR.WriteUint16(tags.NumberOfRemainingSuboperations, status[1])
+		DCOR.WriteUint16(tags.NumberOfCompletedSuboperations, status[2])
+		DCOR.WriteUint16(tags.NumberOfFailedSuboperations, status[3])
+	}
+	return pdu.Write(DCOR, 0x01)
 }

@@ -11,11 +11,6 @@ import (
 	"github.com/t2care/obd-dicom/network/priority"
 )
 
-// CFindReadRQ CFind request read
-func CFindReadRQ(pdu *network.PDUService) (*media.DcmObj, error) {
-	return pdu.NextPDU()
-}
-
 // CFindWriteRQ CFind request write
 func CFindWriteRQ(pdu *network.PDUService, DDO *media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()
@@ -63,40 +58,4 @@ func CFindReadRSP(pdu *network.PDUService) (*media.DcmObj, uint16, error) {
 		return nil, dco.GetUShort(tags.Status), nil
 	}
 	return nil, dicomstatus.FailureUnableToProcess, errors.New("CFindReadRSP, unknown error")
-}
-
-// CFindWriteRSP CFind response write
-func CFindWriteRSP(pdu *network.PDUService, DCO *media.DcmObj, DDO *media.DcmObj, status uint16) error {
-	DCOR := media.NewEmptyDCMObj()
-
-	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
-
-	leDSType := dicomstatus.CommandDataSetTypeNull
-	if DDO.TagCount() > 0 {
-		leDSType = dicomstatus.CommandDataSetTypeNonNull
-	}
-
-	SOPClassUID := DCO.GetString(tags.AffectedSOPClassUID)
-	sopclasslength := uint16(len(SOPClassUID))
-	if sopclasslength > 0 {
-		if sopclasslength%2 == 1 {
-			sopclasslength++
-		}
-
-		size := uint32(8 + sopclasslength + 8 + 2 + 8 + 2 + 8 + 2)
-
-		DCOR.WriteUint32(tags.CommandGroupLength, size)
-		DCOR.WriteString(tags.AffectedSOPClassUID, SOPClassUID)
-		DCOR.WriteUint16(tags.CommandField, dicomcommand.CFindResponse)
-		valor := DCO.GetUShort(tags.MessageID)
-		DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, valor)
-		DCOR.WriteUint16(tags.CommandDataSetType, leDSType)
-		DCOR.WriteUint16(tags.Status, status)
-
-		if err := pdu.Write(DCOR, 0x01); err != nil {
-			return err
-		}
-		return pdu.Write(DDO, 0x00)
-	}
-	return errors.New("CFindReadRSP, unknown error")
 }

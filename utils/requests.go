@@ -49,6 +49,7 @@ func DefaultCMoveRequest(studyUID string) *media.DcmObj {
 func GenerateCFindRequest() *media.DcmObj {
 	studyUID := uuids.CreateStudyUID("FAKE^PATIENT", "123456789", "AC1234", time.Now().Format("20060102"))
 	query := media.NewEmptyDCMObj()
+	query.SetExplicitVR(true)
 	query.WriteDate(tags.StudyDate, time.Now())
 	query.WriteDate(tags.StudyTime, time.Now())
 	query.WriteString(tags.AccessionNumber, "AC1234")

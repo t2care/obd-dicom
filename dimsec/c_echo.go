@@ -10,11 +10,6 @@ import (
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
-// CEchoReadRQ CEcho request read
-func CEchoReadRQ(DCO *media.DcmObj) bool {
-	return DCO.GetUShort(tags.CommandField) == dicomcommand.CEchoRequest
-}
-
 // CEchoWriteRQ CEcho request write
 func CEchoWriteRQ(pdu *network.PDUService) error {
 	DCO := media.NewEmptyDCMObj()
@@ -51,31 +46,4 @@ func CEchoReadRSP(pdu *network.PDUService) error {
 		}
 	}
 	return nil
-}
-
-// CEchoWriteRSP CEcho response write
-func CEchoWriteRSP(pdu *network.PDUService, DCO *media.DcmObj) error {
-	DCOR := media.NewEmptyDCMObj()
-
-	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
-	SOPClassUID := DCO.GetString(tags.AffectedSOPClassUID)
-	valor := uint16(len(SOPClassUID))
-	if valor > 0 {
-		if valor%2 == 1 {
-			valor++
-		}
-
-		size := uint32(8 + valor + 8 + 2 + 8 + 2 + 8 + 2)
-
-		DCOR.WriteUint32(tags.CommandGroupLength, size)
-		DCOR.WriteString(tags.AffectedSOPClassUID, SOPClassUID)
-		DCOR.WriteUint16(tags.CommandField, dicomcommand.CEchoResponse)
-		valor = DCO.GetUShort(tags.MessageID)
-		DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, valor)
-		valor = DCO.GetUShort(tags.CommandDataSetType)
-		DCOR.WriteUint16(tags.CommandDataSetType, valor)
-		DCOR.WriteUint16(tags.Status, dicomstatus.Success)
-		return pdu.Write(DCOR, 0x01)
-	}
-	return errors.New("CEchoReadRSP, unknown error")
 }
