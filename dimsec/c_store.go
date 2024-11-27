@@ -11,11 +11,6 @@ import (
 	"github.com/t2care/obd-dicom/network/priority"
 )
 
-// CStoreReadRQ CStore request read
-func CStoreReadRQ(pdu *network.PDUService, command *media.DcmObj) (*media.DcmObj, error) {
-	return pdu.NextPDU()
-}
-
 // CStoreWriteRQ CStore request write
 func CStoreWriteRQ(pdu *network.PDUService, DDO *media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()

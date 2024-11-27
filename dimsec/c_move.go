@@ -9,11 +9,6 @@ import (
 	"github.com/t2care/obd-dicom/network/priority"
 )
 
-// CMoveReadRQ CMove request read
-func CMoveReadRQ(pdu *network.PDUService) (*media.DcmObj, error) {
-	return pdu.NextPDU()
-}
-
 // CMoveWriteRQ CMove request write
 func CMoveWriteRQ(pdu *network.PDUService, DDO *media.DcmObj, AETDest string) error {
 	DCO := media.NewEmptyDCMObj()

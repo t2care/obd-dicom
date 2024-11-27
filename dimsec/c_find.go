@@ -11,11 +11,6 @@ import (
 	"github.com/t2care/obd-dicom/network/priority"
 )
 
-// CFindReadRQ CFind request read
-func CFindReadRQ(pdu *network.PDUService) (*media.DcmObj, error) {
-	return pdu.NextPDU()
-}
-
 // CFindWriteRQ CFind request write
 func CFindWriteRQ(pdu *network.PDUService, DDO *media.DcmObj) error {
 	DCO := media.NewEmptyDCMObj()

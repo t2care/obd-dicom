@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"github.com/t2care/obd-dicom/dictionary/tags"
-	"github.com/t2care/obd-dicom/dimsec"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomcommand"
@@ -86,14 +85,14 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 		status := dicomstatus.Success
 		switch command {
 		case dicomcommand.CStoreRequest:
-			if ddo, err = dimsec.CStoreReadRQ(pdu, dco); err != nil {
+			if ddo, err = pdu.NextPDU(); err != nil {
 				return
 			}
 			if s.onCStoreRequest != nil {
 				status = s.onCStoreRequest(pdu.GetAAssociationRQ(), ddo)
 			}
 		case dicomcommand.CFindRequest:
-			if ddo, err = dimsec.CFindReadRQ(pdu); err != nil {
+			if ddo, err = pdu.NextPDU(); err != nil {
 				return
 			}
 			if s.onCFindRequest != nil {
@@ -107,7 +106,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				}
 			}
 		case dicomcommand.CMoveRequest:
-			if ddo, err = dimsec.CMoveReadRQ(pdu); err != nil {
+			if ddo, err = pdu.NextPDU(); err != nil {
 				return
 			}
 			if s.onCMoveRequest != nil {
