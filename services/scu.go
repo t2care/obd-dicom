@@ -8,7 +8,6 @@ import (
 
 	"github.com/t2care/obd-dicom/dictionary/sopclass"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
-	"github.com/t2care/obd-dicom/dimsec"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomcommand"
@@ -79,7 +78,7 @@ func (d *scu) FindSCU(Query *media.DcmObj, timeout int, mode ...FindMode) (int, 
 		return results, status, err
 	}
 	for status != dicomstatus.Success {
-		ddo, s, err := dimsec.CFindReadRSP(pdu)
+		ddo, s, err := pdu.ReadResp(dicomcommand.CFindResponse)
 		status = s
 		if err != nil {
 			return results, status, err
@@ -111,7 +110,7 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 	}
 
 	for status == dicomstatus.Pending {
-		ddo, s, err := dimsec.CMoveReadRSP(pdu, &pending)
+		ddo, s, err := pdu.ReadResp(dicomcommand.CMoveResponse, &pending)
 		status = s
 		if err != nil {
 			return dicomstatus.FailureUnableToProcess, err
