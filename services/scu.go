@@ -47,7 +47,7 @@ func (d *scu) EchoSCU(timeout int) error {
 	if err := pdu.WriteRQ(dicomcommand.CEchoRequest, media.NewEmptyDCMObj()); err != nil {
 		return err
 	}
-	if err := dimsec.CEchoReadRSP(pdu); err != nil {
+	if _, _, err := pdu.ReadResp(dicomcommand.CEchoResponse); err != nil {
 		return err
 	}
 	return nil
@@ -161,7 +161,8 @@ func (d *scu) cstore(pdu *network.PDUService, FileName string) error {
 	if err = getCStoreError(d.writeStoreRQ(pdu, DDO)); err != nil {
 		return err
 	}
-	return getCStoreError(dimsec.CStoreReadRSP(pdu))
+	_, status, err := pdu.ReadResp(dicomcommand.CStoreResponse)
+	return getCStoreError(status, err)
 }
 
 func getCStoreError(status uint16, err error) error {

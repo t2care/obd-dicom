@@ -13,6 +13,7 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/imp"
 	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/network/pdutype"
 	"github.com/t2care/obd-dicom/network/priority"
@@ -459,4 +460,28 @@ func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj, moveDst ...str
 	dco.WriteUint16(tags.CommandDataSetType, leDSType)
 	dco.WriteString(tags.AffectedSOPInstanceUID, ddo.GetString(tags.SOPInstanceUID))
 	return pdu.Write(dco, 0x01)
+}
+
+func (pdu *PDUService) ReadResp(command uint16, pending ...*int) (ddo *media.DcmObj, status uint16, err error) {
+	status = dicomstatus.FailureUnableToProcess
+	dco, err := pdu.NextPDU()
+	if err != nil {
+		return
+	}
+	switch command {
+	case dicomcommand.CEchoResponse:
+	case dicomcommand.CStoreResponse:
+	case dicomcommand.CFindResponse:
+	case dicomcommand.CMoveResponse:
+	default:
+		err = fmt.Errorf("command not found: %v", command)
+		return
+	}
+	if dco.GetUShort(tags.CommandDataSetType) != dicomstatus.CommandDataSetTypeNull {
+		ddo, err = pdu.NextPDU()
+		if len(pending) == 1 {
+			*pending[0] = int(dco.GetUShort(tags.NumberOfRemainingSuboperations))
+		}
+	}
+	return ddo, dco.GetUShort(tags.Status), err
 }
