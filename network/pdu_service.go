@@ -446,10 +446,11 @@ func (pdu *PDUService) WriteRQ(command uint16, ddo *media.DcmObj, moveDst ...str
 		defer pdu.Write(ddo, 0x00)
 	}
 	sopClassUID := ddo.GetString(tags.SOPClassUID)
-	for _, presContext := range pdu.GetAAssociationRQ().GetPresContexts() {
-		sopClassUID = presContext.GetAbstractSyntax().GetUID()
+	if sopClassUID == "" {
+		for _, presContext := range pdu.GetAAssociationRQ().GetPresContexts() {
+			sopClassUID = presContext.GetAbstractSyntax().GetUID()
+		}
 	}
-
 	dco := media.NewEmptyDCMObj()
 	dco.SetTransferSyntax(ddo.GetTransferSyntax())
 	dco.WriteString(tags.AffectedSOPClassUID, sopClassUID)
