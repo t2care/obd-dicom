@@ -8,9 +8,9 @@ import (
 
 	"github.com/t2care/obd-dicom/dictionary/sopclass"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
-	"github.com/t2care/obd-dicom/dimsec"
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
@@ -43,10 +43,10 @@ func (d *scu) EchoSCU(timeout int) error {
 		return err
 	}
 	defer pdu.Close()
-	if err := dimsec.CEchoWriteRQ(pdu); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CEchoRequest, media.NewEmptyDCMObj()); err != nil {
 		return err
 	}
-	if err := dimsec.CEchoReadRSP(pdu); err != nil {
+	if _, _, err := pdu.ReadResp(); err != nil {
 		return err
 	}
 	return nil
@@ -74,11 +74,11 @@ func (d *scu) FindSCU(Query *media.DcmObj, timeout int, mode ...FindMode) (int, 
 		return results, status, err
 	}
 	defer pdu.Close()
-	if err := dimsec.CFindWriteRQ(pdu, Query); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CFindRequest, Query); err != nil {
 		return results, status, err
 	}
 	for status != dicomstatus.Success {
-		ddo, s, err := dimsec.CFindReadRSP(pdu)
+		ddo, s, err := pdu.ReadResp()
 		status = s
 		if err != nil {
 			return results, status, err
@@ -105,12 +105,12 @@ func (d *scu) MoveSCU(destAET string, Query *media.DcmObj, timeout int) (uint16,
 		return dicomstatus.FailureUnableToProcess, err
 	}
 	defer pdu.Close()
-	if err := dimsec.CMoveWriteRQ(pdu, Query, destAET); err != nil {
+	if err := pdu.WriteRQ(dicomcommand.CMoveRequest, Query, destAET); err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}
 
 	for status == dicomstatus.Pending {
-		ddo, s, err := dimsec.CMoveReadRSP(pdu, &pending)
+		ddo, s, err := pdu.ReadResp(&pending)
 		status = s
 		if err != nil {
 			return dicomstatus.FailureUnableToProcess, err
@@ -160,7 +160,8 @@ func (d *scu) cstore(pdu *network.PDUService, FileName string) error {
 	if err = getCStoreError(d.writeStoreRQ(pdu, DDO)); err != nil {
 		return err
 	}
-	return getCStoreError(dimsec.CStoreReadRSP(pdu))
+	_, status, err := pdu.ReadResp()
+	return getCStoreError(status, err)
 }
 
 func getCStoreError(status uint16, err error) error {
@@ -216,7 +217,7 @@ func (d *scu) writeStoreRQ(pdu *network.PDUService, DDO *media.DcmObj) (uint16, 
 	}
 
 	if TrnSyntOUT.UID == DDO.GetTransferSyntax().UID {
-		if err := dimsec.CStoreWriteRQ(pdu, DDO); err != nil {
+		if err := pdu.WriteRQ(dicomcommand.CStoreRequest, DDO); err != nil {
 			return status, err
 		}
 		return dicomstatus.Success, nil
@@ -224,7 +225,7 @@ func (d *scu) writeStoreRQ(pdu *network.PDUService, DDO *media.DcmObj) (uint16, 
 	slog.Info("StoreSCU: Transcode.", "From", DDO.GetTransferSyntax().Description, "To", TrnSyntOUT.Description)
 	DDO.ChangeTransferSynx(TrnSyntOUT)
 
-	err := dimsec.CStoreWriteRQ(pdu, DDO)
+	err := pdu.WriteRQ(dicomcommand.CStoreRequest, DDO)
 	if err != nil {
 		return dicomstatus.FailureUnableToProcess, err
 	}

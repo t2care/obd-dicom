@@ -13,8 +13,10 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/imp"
 	"github.com/t2care/obd-dicom/media"
+	"github.com/t2care/obd-dicom/network/dicomcommand"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/network/pdutype"
+	"github.com/t2care/obd-dicom/network/priority"
 )
 
 type PDUService struct {
@@ -34,6 +36,7 @@ type PDUService struct {
 	OnAssociationRequest         func(request *AAssociationRQ) bool
 	OnAssociationRelease         func(request *AAssociationRQ)
 	Conn                         net.Conn
+	commandField                 uint16
 }
 
 // NewPDUService - creates a pointer to PDUService
@@ -413,7 +416,7 @@ func (pdu *PDUService) readPDU() error {
 	return pdu.ms.ReadFully(pdu.readWriter, int(pdu.pdulength)-4)
 }
 
-func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
+func (pdu *PDUService) WriteResp(rqCommand uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
 	leDSType := dicomstatus.CommandDataSetTypeNull
 	if ddo != nil && ddo.TagCount() > 0 {
 		leDSType = dicomstatus.CommandDataSetTypeNonNull
@@ -423,7 +426,7 @@ func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status 
 	DCOR := media.NewEmptyDCMObj()
 	DCOR.SetTransferSyntax(DCO.GetTransferSyntax())
 	DCOR.WriteString(tags.AffectedSOPClassUID, DCO.GetString(tags.AffectedSOPClassUID))
-	DCOR.WriteUint16(tags.CommandField, command+0x8000)
+	DCOR.WriteUint16(tags.CommandField, rqCommand+dicomcommand.Offset)
 	DCOR.WriteUint16(tags.MessageIDBeingRespondedTo, DCO.GetUShort(tags.MessageID))
 	DCOR.WriteUint16(tags.CommandDataSetType, leDSType)
 	DCOR.WriteUint16(tags.Status, status[0])
@@ -434,4 +437,52 @@ func (pdu *PDUService) WriteResp(command uint16, DCO, ddo *media.DcmObj, status 
 		DCOR.WriteUint16(tags.NumberOfFailedSuboperations, status[3])
 	}
 	return pdu.Write(DCOR, 0x01)
+}
+
+func (pdu *PDUService) WriteRQ(rqCommand uint16, ddo *media.DcmObj, moveDst ...string) error {
+	pdu.commandField = rqCommand
+	moveDst = append(moveDst, "")
+	leDSType := dicomstatus.CommandDataSetTypeNull
+	if ddo != nil && ddo.TagCount() > 0 {
+		leDSType = dicomstatus.CommandDataSetTypeNonNull
+		defer pdu.Write(ddo, 0x00)
+	}
+	sopClassUID := ddo.GetString(tags.SOPClassUID)
+	if sopClassUID == "" {
+		for _, presContext := range pdu.GetAAssociationRQ().GetPresContexts() {
+			sopClassUID = presContext.GetAbstractSyntax().GetUID()
+		}
+	}
+	dco := media.NewEmptyDCMObj()
+	dco.SetTransferSyntax(ddo.GetTransferSyntax())
+	dco.WriteString(tags.AffectedSOPClassUID, sopClassUID)
+	dco.WriteUint16(tags.CommandField, rqCommand)
+	dco.WriteUint16(tags.MessageID, Uniq16odd())
+	dco.WriteString(tags.MoveDestination, moveDst[0])
+	dco.WriteUint16(tags.Priority, priority.Medium)
+	dco.WriteUint16(tags.CommandDataSetType, leDSType)
+	dco.WriteString(tags.AffectedSOPInstanceUID, ddo.GetString(tags.SOPInstanceUID))
+	return pdu.Write(dco, 0x01)
+}
+
+func (pdu *PDUService) ReadResp(pending ...*int) (ddo *media.DcmObj, status uint16, err error) {
+	status = dicomstatus.FailureUnableToProcess
+	dco, err := pdu.NextPDU()
+	if err != nil {
+		return
+	}
+	resp := pdu.commandField + dicomcommand.Offset
+	switch resp {
+	case dicomcommand.CEchoResponse, dicomcommand.CStoreResponse, dicomcommand.CFindResponse, dicomcommand.CMoveResponse:
+	default:
+		err = fmt.Errorf("command not found: %v", resp)
+		return
+	}
+	if dco.GetUShort(tags.CommandDataSetType) != dicomstatus.CommandDataSetTypeNull {
+		ddo, err = pdu.NextPDU()
+		if len(pending) == 1 {
+			*pending[0] = int(dco.GetUShort(tags.NumberOfRemainingSuboperations))
+		}
+	}
+	return ddo, dco.GetUShort(tags.Status), err
 }
