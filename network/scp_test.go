@@ -92,7 +92,7 @@ func dcmtk_movescu(port int) error {
 }
 
 func dcmtk_storescu(port int, file string) error {
-	return exe("storescu", "-d", "127.0.0.1", strconv.Itoa(port), file)
+	return exe("storescu", "-d", "-xs", "127.0.0.1", strconv.Itoa(port), file)
 }
 
 func dcmtk_echoscu(port int) error {
