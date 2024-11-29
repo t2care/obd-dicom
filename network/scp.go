@@ -65,7 +65,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 	defer conn.Close()
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
-	pdu := NewPDUService()
+	pdu := newPDUService()
 	pdu.SetConn(rw)
 
 	if s.onAssociationRequest != nil {
