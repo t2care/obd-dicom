@@ -19,7 +19,7 @@ import (
 	"github.com/t2care/obd-dicom/network/priority"
 )
 
-type PDUService struct {
+type pduService struct {
 	AcceptedPresentationContexts []*presentationContextAccept
 	readWriter                   *bufio.ReadWriter
 	ms                           *media.MemoryStream
@@ -39,9 +39,9 @@ type PDUService struct {
 	commandField                 uint16
 }
 
-// NewPDUService - creates a pointer to PDUService
-func NewPDUService() *PDUService {
-	return &PDUService{
+// newPDUService - creates a pointer to PDUService
+func newPDUService() *pduService {
+	return &pduService{
 		ms:        media.NewEmptyMemoryStream(),
 		AssocRQ:   NewAAssociationRQ(),
 		AssocAC:   NewAAssociationAC(),
@@ -54,11 +54,11 @@ func NewPDUService() *PDUService {
 
 var maxPduLength uint32 = 16384
 
-func (pdu *PDUService) SetConn(rw *bufio.ReadWriter) {
+func (pdu *pduService) SetConn(rw *bufio.ReadWriter) {
 	pdu.readWriter = rw
 }
 
-func (pdu *PDUService) GetTransferSyntax(pcid byte) *transfersyntax.TransferSyntax {
+func (pdu *pduService) GetTransferSyntax(pcid byte) *transfersyntax.TransferSyntax {
 	for _, pca := range pdu.AcceptedPresentationContexts {
 		if pca.GetPresentationContextID() == pcid {
 			return transfersyntax.GetTransferSyntaxFromUID(pca.GetTrnSyntax().GetUID())
@@ -67,11 +67,11 @@ func (pdu *PDUService) GetTransferSyntax(pcid byte) *transfersyntax.TransferSynt
 	return nil
 }
 
-func (pdu *PDUService) SetTimeout(timeout int) {
+func (pdu *pduService) SetTimeout(timeout int) {
 	pdu.Timeout = timeout
 }
 
-func (pdu *PDUService) Connect(IP string, Port string) error {
+func (pdu *pduService) Connect(IP string, Port string) error {
 	conn, err := net.Dial("tcp", IP+":"+Port)
 	if err != nil {
 		return errors.New("pduservice::Connect - " + err.Error())
@@ -142,13 +142,13 @@ func (pdu *PDUService) Connect(IP string, Port string) error {
 	}
 }
 
-func (pdu *PDUService) Close() {
+func (pdu *pduService) Close() {
 	pdu.ReleaseRQ.Write(pdu.readWriter)
 	pdu.ReleaseRP.Read(pdu.ms)
 	pdu.Conn.Close()
 }
 
-func (pdu *PDUService) NextPDU() (command *media.DcmObj, err error) {
+func (pdu *pduService) NextPDU() (command *media.DcmObj, err error) {
 	if pdu.Pdata.Buffer != nil {
 		pdu.Pdata.Buffer.ClearMemoryStream()
 	} else {
@@ -243,43 +243,43 @@ func (pdu *PDUService) NextPDU() (command *media.DcmObj, err error) {
 	}
 }
 
-func (pdu *PDUService) GetAAssociationRQ() *AAssociationRQ {
+func (pdu *pduService) GetAAssociationRQ() *AAssociationRQ {
 	return pdu.AssocRQ
 }
 
-func (pdu *PDUService) GetCalledAE() string {
+func (pdu *pduService) GetCalledAE() string {
 	return pdu.AssocRQ.GetCalledAE()
 }
 
-func (pdu *PDUService) GetCallingAE() string {
+func (pdu *pduService) GetCallingAE() string {
 	return pdu.AssocRQ.GetCallingAE()
 }
 
-func (pdu *PDUService) SetCalledAE(calledAE string) {
+func (pdu *pduService) SetCalledAE(calledAE string) {
 	pdu.AssocRQ.SetCalledAE(calledAE)
 }
 
-func (pdu *PDUService) SetCallingAE(callingAE string) {
+func (pdu *pduService) SetCallingAE(callingAE string) {
 	pdu.AssocRQ.SetCallingAE(callingAE)
 }
 
-func (pdu *PDUService) AddPresContexts(presentationContext *presentationContext) {
+func (pdu *pduService) AddPresContexts(presentationContext *presentationContext) {
 	pdu.AssocRQ.AddPresContexts(presentationContext)
 }
 
-func (pdu *PDUService) GetPresentationContextID() byte {
+func (pdu *pduService) GetPresentationContextID() byte {
 	return pdu.Pdata.PresentationContextID
 }
 
-func (pdu *PDUService) SetOnAssociationRequest(f func(request *AAssociationRQ) bool) {
+func (pdu *pduService) SetOnAssociationRequest(f func(request *AAssociationRQ) bool) {
 	pdu.OnAssociationRequest = f
 }
 
-func (pdu *PDUService) SetOnAssociationRelease(f func(request *AAssociationRQ)) {
+func (pdu *pduService) SetOnAssociationRelease(f func(request *AAssociationRQ)) {
 	pdu.OnAssociationRelease = f
 }
 
-func (pdu *PDUService) Write(DCO *media.DcmObj, ItemType byte) error {
+func (pdu *pduService) Write(DCO *media.DcmObj, ItemType byte) error {
 	if pdu.Pdata.Buffer != nil {
 		pdu.Pdata.Buffer.ClearMemoryStream()
 	} else {
@@ -310,7 +310,7 @@ func (pdu *PDUService) Write(DCO *media.DcmObj, ItemType byte) error {
 	return pdu.Pdata.Write(pdu.readWriter)
 }
 
-func (pdu *PDUService) interogateAAssociateAC() bool {
+func (pdu *pduService) interogateAAssociateAC() bool {
 	var PresentationContextID byte
 	TS := ""
 
@@ -330,7 +330,7 @@ func (pdu *PDUService) interogateAAssociateAC() bool {
 	return false
 }
 
-func (pdu *PDUService) interogateAAssociateRQ(rw *bufio.ReadWriter) error {
+func (pdu *pduService) interogateAAssociateRQ(rw *bufio.ReadWriter) error {
 	if pdu.OnAssociationRequest == nil || !pdu.OnAssociationRequest(pdu.AssocRQ) {
 		pdu.AssocRJ.Set(1, 7)
 		return pdu.AssocRJ.Write(rw)
@@ -396,12 +396,12 @@ func (pdu *PDUService) interogateAAssociateRQ(rw *bufio.ReadWriter) error {
 	return pdu.AssocRJ.Write(rw)
 }
 
-func (pdu *PDUService) parseDCMIntoRaw(DCO *media.DcmObj) bool {
+func (pdu *pduService) parseDCMIntoRaw(DCO *media.DcmObj) bool {
 	pdu.Pdata.Buffer.WriteObj(DCO)
 	return true
 }
 
-func (pdu *PDUService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
+func (pdu *pduService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
 	TrnSyntax := pdu.GetTransferSyntax(pdu.Pdata.PresentationContextID)
 	if TrnSyntax == nil {
 		slog.Info("pduservice::ParseRawVRIntoDCM - Transfer syntax length is 0")
@@ -412,11 +412,11 @@ func (pdu *PDUService) parseRawVRIntoDCM(DCO *media.DcmObj) bool {
 	return pdu.Pdata.Buffer.ReadObj(DCO) == nil
 }
 
-func (pdu *PDUService) readPDU() error {
+func (pdu *pduService) readPDU() error {
 	return pdu.ms.ReadFully(pdu.readWriter, int(pdu.pdulength)-4)
 }
 
-func (pdu *PDUService) WriteResp(rqCommand uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
+func (pdu *pduService) WriteResp(rqCommand uint16, DCO, ddo *media.DcmObj, status ...uint16) error {
 	leDSType := dicomstatus.CommandDataSetTypeNull
 	if ddo != nil && ddo.TagCount() > 0 {
 		leDSType = dicomstatus.CommandDataSetTypeNonNull
@@ -439,7 +439,7 @@ func (pdu *PDUService) WriteResp(rqCommand uint16, DCO, ddo *media.DcmObj, statu
 	return pdu.Write(DCOR, 0x01)
 }
 
-func (pdu *PDUService) WriteRQ(rqCommand uint16, ddo *media.DcmObj, moveDst ...string) error {
+func (pdu *pduService) WriteRQ(rqCommand uint16, ddo *media.DcmObj, moveDst ...string) error {
 	pdu.commandField = rqCommand
 	moveDst = append(moveDst, "")
 	leDSType := dicomstatus.CommandDataSetTypeNull
@@ -465,7 +465,7 @@ func (pdu *PDUService) WriteRQ(rqCommand uint16, ddo *media.DcmObj, moveDst ...s
 	return pdu.Write(dco, 0x01)
 }
 
-func (pdu *PDUService) ReadResp(pending ...*int) (ddo *media.DcmObj, status uint16, err error) {
+func (pdu *pduService) ReadResp(pending ...*int) (ddo *media.DcmObj, status uint16, err error) {
 	status = dicomstatus.FailureUnableToProcess
 	dco, err := pdu.NextPDU()
 	if err != nil {

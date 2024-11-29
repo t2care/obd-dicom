@@ -53,7 +53,7 @@ obj.WriteToFile(fileName)
 
 ### Send C-Echo Request
 ```golang
-scu := services.NewSCU(destination)
+scu := network.NewSCU(destination)
 err := scu.EchoSCU(0)
 if err != nil {
   log.Fatalln(err)
@@ -64,7 +64,7 @@ log.Println("CEcho was successful")
 ### Send C-Find Request
 ```golang
 request := utils.DefaultCFindRequest()
-scu := services.NewSCU(destination)
+scu := network.NewSCU(destination)
 scu.SetOnCFindResult(func(result media.DcmObj) {
   log.Printf("Found study %s\n", result.GetString(tags.StudyInstanceUID))
   result.DumpTags()
@@ -78,7 +78,7 @@ if err != nil {
 
 ### Send C-Store Request: Multiple files and Transcode are supported
 ```golang
-scu := services.NewSCU(destination)
+scu := network.NewSCU(destination)
 err := scu.StoreSCU([]string{fileName}, 0)  // By default ImplicitVRLittleEndian and JPEGLosslessSV1 will be proposed 
 // err := scu.StoreSCU([]string{fileName}, 0, []string{transfersyntax.ExplicitVRLittleEndian.UID}) // Force transcoding to ExplicitVRLittleEndian
 if err != nil {
@@ -90,7 +90,7 @@ if err != nil {
 ```golang
 request := utils.DefaultCMoveRequest(studyUID)
 
-scu := services.NewSCU(destination)
+scu := network.NewSCU(destination)
 _, err := scu.MoveSCU(destinationAE, request, 0)
 if err != nil {
   log.Fatalln(err)
@@ -99,7 +99,7 @@ if err != nil {
 
 ### Start SCP Server
 ```golang
-scp := services.NewSCP(*port)
+scp := network.NewSCP(*port)
 
 scp.OnAssociationRequest(func(request network.AAssociationRQ) bool {
   called := request.GetCalledAE()
