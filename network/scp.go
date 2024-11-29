@@ -18,7 +18,7 @@ type scp struct {
 	listener             net.Listener
 	onAssociationRequest func(request *AAssociationRQ) bool
 	onAssociationRelease func(request *AAssociationRQ)
-	onCFindRequest       func(request *AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
+	onCFindRequest       func(request *AAssociationRQ, data *media.DcmObj) ([]*media.DcmObj, uint16)
 	onCMoveRequest       func(request *AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *Destination) ([]string, uint16)
 	onCStoreRequest      func(request *AAssociationRQ, data *media.DcmObj) uint16
 }
@@ -95,9 +95,8 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				return
 			}
 			if s.onCFindRequest != nil {
-				queryLevel := ddo.GetString(tags.QueryRetrieveLevel)
 				var results []*media.DcmObj
-				results, status = s.onCFindRequest(pdu.GetAAssociationRQ(), queryLevel, ddo)
+				results, status = s.onCFindRequest(pdu.GetAAssociationRQ(), ddo)
 				for _, result := range results {
 					if err = pdu.WriteResp(command, dco, result, dicomstatus.Pending); err != nil {
 						return
@@ -138,7 +137,7 @@ func (s *scp) OnAssociationRelease(f func(request *AAssociationRQ)) {
 	s.onAssociationRelease = f
 }
 
-func (s *scp) OnCFindRequest(f func(request *AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
+func (s *scp) OnCFindRequest(f func(request *AAssociationRQ, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
 	s.onCFindRequest = f
 }
 

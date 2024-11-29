@@ -110,7 +110,7 @@ scp.OnAssociationRelease(func(request network.AAssociationRQ) {
   request.GetID()
 })
 
-scp.OnCFindRequest(func(request network.AAssociationRQ, queryLevel string, query media.DcmObj) ([]media.DcmObj, uint16) {
+scp.OnCFindRequest(func(request network.AAssociationRQ, query media.DcmObj) ([]media.DcmObj, uint16) {
   query.DumpTags()
   results := make([]media.DcmObj, 0)
   for i := 0; i < 10; i++ {

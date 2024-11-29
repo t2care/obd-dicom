@@ -66,7 +66,7 @@ func Test_SCP(t *testing.T) {
 	file := "../samples/test-losslessSV1.dcm"
 	_, testSCP := StartSCP(t, port)
 	testSCP.OnAssociationRequest(func(request *AAssociationRQ) bool { return true })
-	testSCP.OnCFindRequest(func(request *AAssociationRQ, queryLevel string, query *media.DcmObj) ([]*media.DcmObj, uint16) {
+	testSCP.OnCFindRequest(func(request *AAssociationRQ, query *media.DcmObj) ([]*media.DcmObj, uint16) {
 		query.WriteString(tags.PatientName, "123")
 		return []*media.DcmObj{query}, dicomstatus.Success
 	})
