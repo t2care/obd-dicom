@@ -1,4 +1,4 @@
-package services
+package network
 
 import (
 	"testing"
@@ -7,7 +7,6 @@ import (
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/media"
-	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 	"github.com/t2care/obd-dicom/utils"
 )
@@ -17,10 +16,10 @@ const (
 	scp_port = 1104
 )
 
-var scp_dst = &network.Destination{Port: 1104, CalledAE: scp_aet, CallingAE: "SCU"}
+var scp_dst = &Destination{Port: 1104, CalledAE: scp_aet, CallingAE: "SCU"}
 
 func TestEchoSCU(t *testing.T) {
-	assert.Error(t, NewSCU(&network.Destination{Port: scp_port}).EchoSCU(1), "Should not have C-Echo Success")
+	assert.Error(t, NewSCU(&Destination{Port: scp_port}).EchoSCU(1), "Should not have C-Echo Success")
 	assert.NoError(t, NewSCU(scp_dst).EchoSCU(1), "Should have C-Echo Success")
 }
 

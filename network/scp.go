@@ -1,4 +1,4 @@
-package services
+package network
 
 import (
 	"bufio"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/media"
-	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomcommand"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
@@ -17,11 +16,11 @@ import (
 type scp struct {
 	Port                 int
 	listener             net.Listener
-	onAssociationRequest func(request *network.AAssociationRQ) bool
-	onAssociationRelease func(request *network.AAssociationRQ)
-	onCFindRequest       func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
-	onCMoveRequest       func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)
-	onCStoreRequest      func(request *network.AAssociationRQ, data *media.DcmObj) uint16
+	onAssociationRequest func(request *AAssociationRQ) bool
+	onAssociationRelease func(request *AAssociationRQ)
+	onCFindRequest       func(request *AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)
+	onCMoveRequest       func(request *AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *Destination) ([]string, uint16)
+	onCStoreRequest      func(request *AAssociationRQ, data *media.DcmObj) uint16
 }
 
 // NewSCP - Creates an interface to scu
@@ -66,7 +65,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 	defer conn.Close()
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
-	pdu := network.NewPDUService()
+	pdu := NewPDUService()
 	pdu.SetConn(rw)
 
 	if s.onAssociationRequest != nil {
@@ -111,7 +110,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 			}
 			if s.onCMoveRequest != nil {
 				moveLevel := ddo.GetString(tags.QueryRetrieveLevel)
-				dst := &network.Destination{CalledAE: dco.GetString(tags.MoveDestination)}
+				dst := &Destination{CalledAE: dco.GetString(tags.MoveDestination)}
 				var files []string
 				files, status = s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
 				scu := NewSCU(dst)
@@ -131,22 +130,22 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 	return
 }
 
-func (s *scp) OnAssociationRequest(f func(request *network.AAssociationRQ) bool) {
+func (s *scp) OnAssociationRequest(f func(request *AAssociationRQ) bool) {
 	s.onAssociationRequest = f
 }
 
-func (s *scp) OnAssociationRelease(f func(request *network.AAssociationRQ)) {
+func (s *scp) OnAssociationRelease(f func(request *AAssociationRQ)) {
 	s.onAssociationRelease = f
 }
 
-func (s *scp) OnCFindRequest(f func(request *network.AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
+func (s *scp) OnCFindRequest(f func(request *AAssociationRQ, findLevel string, data *media.DcmObj) ([]*media.DcmObj, uint16)) {
 	s.onCFindRequest = f
 }
 
-func (s *scp) OnCMoveRequest(f func(request *network.AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *network.Destination) ([]string, uint16)) {
+func (s *scp) OnCMoveRequest(f func(request *AAssociationRQ, moveLevel string, data *media.DcmObj, moveDst *Destination) ([]string, uint16)) {
 	s.onCMoveRequest = f
 }
 
-func (s *scp) OnCStoreRequest(f func(request *network.AAssociationRQ, data *media.DcmObj) uint16) {
+func (s *scp) OnCStoreRequest(f func(request *AAssociationRQ, data *media.DcmObj) uint16) {
 	s.onCStoreRequest = f
 }

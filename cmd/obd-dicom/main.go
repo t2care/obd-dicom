@@ -13,7 +13,6 @@ import (
 	"github.com/t2care/obd-dicom/media"
 	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
-	"github.com/t2care/obd-dicom/services"
 	"github.com/t2care/obd-dicom/utils"
 )
 
@@ -66,7 +65,7 @@ func main() {
 		if *calledAE == "" {
 			log.Fatalln("calledae is required for scp")
 		}
-		scp := services.NewSCP(*port)
+		scp := network.NewSCP(*port)
 
 		scp.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
 			called := request.GetCalledAE()
@@ -121,7 +120,7 @@ func main() {
 	}
 
 	if *cecho {
-		scu := services.NewSCU(destination)
+		scu := network.NewSCU(destination)
 		err := scu.EchoSCU(30)
 		if err != nil {
 			log.Fatalln(err)
@@ -130,14 +129,14 @@ func main() {
 	}
 	if *cfind || *cfindWorkList {
 		request := utils.DefaultCFindRequest()
-		scu := services.NewSCU(destination)
+		scu := network.NewSCU(destination)
 		scu.SetOnCFindResult(func(result *media.DcmObj) {
 			log.Printf("Found study %s\n", result.GetString(tags.StudyInstanceUID))
 			result.DumpTags()
 		})
-		var modes []services.FindMode
+		var modes []network.FindMode
 		if *cfindWorkList {
-			modes = append(modes, services.FindWorklist)
+			modes = append(modes, network.FindWorklist)
 		}
 		count, status, err := scu.FindSCU(request, 0, modes...)
 		if err != nil {
@@ -158,7 +157,7 @@ func main() {
 
 		request := utils.DefaultCMoveRequest(*studyUID)
 
-		scu := services.NewSCU(destination)
+		scu := network.NewSCU(destination)
 		_, err := scu.MoveSCU(*destinationAE, request, 0)
 		if err != nil {
 			log.Fatalln(err)
@@ -170,7 +169,7 @@ func main() {
 		if *fileName == "" {
 			log.Fatalln("file is required for a C-Store")
 		}
-		scu := services.NewSCU(destination)
+		scu := network.NewSCU(destination)
 		err := scu.StoreSCU([]string{*fileName}, 0)
 		if err != nil {
 			log.Fatalln(err)

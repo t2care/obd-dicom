@@ -1,4 +1,4 @@
-package services
+package network
 
 import (
 	"fmt"
@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/media"
-	"github.com/t2care/obd-dicom/network"
 	"github.com/t2care/obd-dicom/network/dicomstatus"
 )
 
@@ -18,11 +17,11 @@ func Test_Association_ID(t *testing.T) {
 	_, testSCP := StartSCP(t, 1043)
 	var onAssociationRequestID int64
 	var onAssociationReleaseID int64
-	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool {
+	testSCP.OnAssociationRequest(func(request *AAssociationRQ) bool {
 		onAssociationRequestID = request.GetID()
 		return true
 	})
-	testSCP.OnAssociationRelease(func(request *network.AAssociationRQ) {
+	testSCP.OnAssociationRelease(func(request *AAssociationRQ) {
 		onAssociationReleaseID = request.GetID()
 	})
 	tests := []struct {
@@ -40,7 +39,7 @@ func Test_Association_ID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := NewSCU(&network.Destination{
+			d := NewSCU(&Destination{
 				Name:      "Test Destination",
 				CalledAE:  "TEST_SCP",
 				CallingAE: "TEST_SCU",
@@ -62,20 +61,24 @@ func Test_Association_ID(t *testing.T) {
 	}
 }
 
-func Test_QRSCP(t *testing.T) {
+func Test_SCP(t *testing.T) {
 	port := 1044
+	file := "../samples/test-losslessSV1.dcm"
 	_, testSCP := StartSCP(t, port)
-	testSCP.OnAssociationRequest(func(request *network.AAssociationRQ) bool { return true })
-	testSCP.OnCFindRequest(func(request *network.AAssociationRQ, queryLevel string, query *media.DcmObj) ([]*media.DcmObj, uint16) {
+	testSCP.OnAssociationRequest(func(request *AAssociationRQ) bool { return true })
+	testSCP.OnCFindRequest(func(request *AAssociationRQ, queryLevel string, query *media.DcmObj) ([]*media.DcmObj, uint16) {
 		query.WriteString(tags.PatientName, "123")
 		return []*media.DcmObj{query}, dicomstatus.Success
 	})
-	testSCP.OnCMoveRequest(func(request *network.AAssociationRQ, moveLevel string, query *media.DcmObj, moveDst *network.Destination) ([]string, uint16) {
+	testSCP.OnCMoveRequest(func(request *AAssociationRQ, moveLevel string, query *media.DcmObj, moveDst *Destination) ([]string, uint16) {
 		moveDst.CallingAE = request.GetCalledAE()
 		moveDst.HostName = "127.0.0.1"
 		moveDst.Port = 1105
-		return []string{"../samples/test-losslessSV1.dcm"}, dicomstatus.Success
+		return []string{file}, dicomstatus.Success
 	})
+	testSCP.OnCStoreRequest(func(request *AAssociationRQ, data *media.DcmObj) uint16 { return dicomstatus.Success })
+	assert.NoError(t, dcmtk_echoscu(port), "EchoSCU should be ok")
+	assert.NoError(t, dcmtk_storescu(port, file), "StoreSCU should be ok")
 	assert.NoError(t, dcmtk_findscu(port), "FindSCU should be ok")
 	assert.NoError(t, dcmtk_movescu(port), "MoveSCU should be ok")
 }
@@ -86,6 +89,14 @@ func dcmtk_findscu(port int) error {
 
 func dcmtk_movescu(port int) error {
 	return exe("movescu", "-d", "-k", "StudyInstanceUID=STUDY", "-aem", "scp", "127.0.0.1", strconv.Itoa(port))
+}
+
+func dcmtk_storescu(port int, file string) error {
+	return exe("storescu", "-d", "127.0.0.1", strconv.Itoa(port), file)
+}
+
+func dcmtk_echoscu(port int) error {
+	return exe("echoscu", "-d", "127.0.0.1", strconv.Itoa(port))
 }
 
 func exe(name string, args ...string) error {
