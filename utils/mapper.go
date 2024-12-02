@@ -10,26 +10,32 @@ import (
 	"github.com/t2care/obd-dicom/media"
 )
 
-var key = "dicom"
-var struct2Dicom = false
+var key string
+var struct2Dicom bool
 
+// Map dicom object to struct. keyword = dicom by defaut
 func MapDicomDataToStruct(dicomDataset *media.DcmObj, targetStruct any, keyword ...string) (err error) {
+	return mapping(dicomDataset, targetStruct, false, keyword...)
+}
+
+func mapping(dicomDataset *media.DcmObj, targetStruct any, toDicom bool, keyword ...string) error {
 	v := reflect.ValueOf(targetStruct)
 	t := reflect.TypeOf(targetStruct).Kind()
 	if t != reflect.Ptr {
 		return fmt.Errorf("targerStruct must be a pointer")
 	}
+	key = "dicom"
 	if len(keyword) > 0 {
 		key = keyword[0]
 	}
+	struct2Dicom = toDicom
 	recursiveFill(dicomDataset, v.Elem())
-	return
+	return nil
 }
 
 // Map struct to dicom object, do nothing if tag does not exist
-func MapToDicom(in any, obj *media.DcmObj) (err error) {
-	struct2Dicom = true
-	return MapDicomDataToStruct(obj, in, "dicom")
+func MapToDicom(in any, obj *media.DcmObj, keyword ...string) (err error) {
+	return mapping(obj, in, true, keyword...)
 }
 
 // recursiveFill analyze recursively the target structure and find corresponding Dicom value in the dataset.
