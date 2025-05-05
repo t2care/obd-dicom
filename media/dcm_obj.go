@@ -759,6 +759,12 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 	case transfersyntax.JPEGLosslessSV1.UID:
 		mode = 4
 	case transfersyntax.JPEGBaseline8Bit.UID:
+		obj.WriteUint16(tags.BitsStored, 8)
+		obj.WriteUint16(tags.BitsAllocated, 8)
+		obj.WriteUint16(tags.HighBit, 7)
+		obj.WriteUint16(tags.PixelRepresentation, 0)
+		obj.WriteString(tags.WindowCenter, "127")
+		obj.WriteString(tags.WindowWidth, "255")
 	case transfersyntax.JPEGExtended12Bit.UID:
 	case transfersyntax.JPEG2000.UID:
 		mode = 10
@@ -785,10 +791,10 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		obj.SetTag(index, tag)
 		return nil
 	}
-	return obj.encode(i, img, RGB, cols, rows, bitsa, frames, mode, outTS)
+	return obj.encode(i, img, RGB, cols, rows, bitsa, bitss, frames, mode, outTS)
 }
 
-func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitsa uint16, frames uint32, mode int, ts *transfersyntax.TransferSyntax) error {
+func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitsa uint16, bitss uint16, frames uint32, mode int, ts *transfersyntax.TransferSyntax) error {
 	var JPEGData []byte
 	var JPEGBytes, index int
 	index = *i
@@ -811,7 +817,7 @@ func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16
 	obj.InsertTag(index, newtag)
 	for j := uint32(0); j < frames; j++ {
 		index++
-		if err := ts.Encode(j, RGB, img, cols, rows, 1, bitsa, &JPEGData, &JPEGBytes, mode); err != nil {
+		if err := ts.Encode(j, RGB, img, cols, rows, 1, bitsa, bitss, float64(obj.GetUShort(tags.WindowCenter)), float64(obj.GetUShort(tags.WindowWidth)), &JPEGData, &JPEGBytes, mode); err != nil {
 			return err
 		}
 		newtag = &DcmTag{
