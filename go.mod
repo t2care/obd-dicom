@@ -1,4 +1,4 @@
-module github.com/t2care/obd-dicom
+module github.com/mateusz-t2/obd-dicom
 
 go 1.21
 
