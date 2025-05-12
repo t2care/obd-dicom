@@ -562,12 +562,10 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 					bitss = tag.getUShort()
 				case 0x1050:
 					wcs := tag.getString()
-					wcs = strings.Split(wcs, "\\")[0]
-					wc, _ = strconv.ParseFloat(wcs, 64)
+					wc, _ = strconv.ParseFloat(strings.Split(wcs, "\\")[0], 64)
 				case 0x1051:
 					wws := tag.getString()
-					wws = strings.Split(wws, "\\")[0]
-					ww, _ = strconv.ParseFloat(wws, 64)
+					ww, _ = strconv.ParseFloat(strings.Split(wws, "\\")[0], 64)
 				case 0x1052:
 					ri, _ = strconv.ParseFloat(tag.getString(), 64)
 				case 0x1053:

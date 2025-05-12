@@ -26,9 +26,6 @@ func jpegDecode(j uint32, bitsa uint16, in []byte, inSize uint32, out []byte, ou
 
 func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, bitss uint16, ww, wc, rs, ri float64, JPEGData *[]byte, JPEGBytes *int, mode int) error {
 	offset := calcOffset(j, RGB, cols, rows, bitsa)
-	if RGB {
-		offset = 3 * offset
-	}
 
 	if bitsa == 16 {
 		var err error
