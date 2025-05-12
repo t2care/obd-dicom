@@ -508,7 +508,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 
 	var i int
 	var rows, cols, bitss, bitsa, planar uint16
-	var wc, ww float64
+	var wc, ww, rs, ri float64
 	var PhotoInt string
 	sq := 0
 	frames := uint32(0)
@@ -561,9 +561,17 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				case 0x0101:
 					bitss = tag.getUShort()
 				case 0x1050:
-					wc, _ = strconv.ParseFloat(tag.getString(), 64)
+					wcs := tag.getString()
+					wcs = strings.Split(wcs, "\\")[0]
+					wc, _ = strconv.ParseFloat(wcs, 64)
 				case 0x1051:
-					ww, _ = strconv.ParseFloat(tag.getString(), 64)
+					wws := tag.getString()
+					wws = strings.Split(wws, "\\")[0]
+					ww, _ = strconv.ParseFloat(wws, 64)
+				case 0x1052:
+					ri, _ = strconv.ParseFloat(tag.getString(), 64)
+				case 0x1053:
+					rs, _ = strconv.ParseFloat(tag.getString(), 64)
 				}
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
@@ -605,7 +613,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 						copy(img, tag.Data)
 					}
 				}
-				if err := obj.compress(&i, img, RGB, cols, rows, bitss, wc, ww, bitsa, frames, outTS); err != nil {
+				if err := obj.compress(&i, img, RGB, cols, rows, bitss, wc, ww, rs, ri, bitsa, frames, outTS); err != nil {
 					return err
 				} else {
 					flag = true
@@ -758,7 +766,7 @@ func (obj *DcmObj) CreatePDF(study DCMStudy, SeriesInstanceUID string, SOPInstan
 	obj.WriteString(tags.MIMETypeOfEncapsulatedDocument, "application/pdf")
 }
 
-func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, wc, ww float64, bitsa uint16, frames uint32, outTS *transfersyntax.TransferSyntax) error {
+func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitss uint16, wc, ww, rs, ri float64, bitsa uint16, frames uint32, outTS *transfersyntax.TransferSyntax) error {
 	mode := 0
 	switch outTS.UID {
 	case transfersyntax.JPEGLosslessSV1.UID:
@@ -770,6 +778,8 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		obj.WriteUint16(tags.PixelRepresentation, 0)
 		obj.WriteString(tags.WindowCenter, "127")
 		obj.WriteString(tags.WindowWidth, "255")
+		obj.WriteString(tags.RescaleIntercept, "0")
+		obj.WriteString(tags.RescaleSlope, "1")
 	case transfersyntax.JPEGExtended12Bit.UID:
 	case transfersyntax.JPEG2000.UID:
 		mode = 10
@@ -796,10 +806,10 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 		obj.SetTag(index, tag)
 		return nil
 	}
-	return obj.encode(i, img, RGB, cols, rows, bitsa, bitss, wc, ww, frames, mode, outTS)
+	return obj.encode(i, img, RGB, cols, rows, bitsa, bitss, wc, ww, rs, ri, frames, mode, outTS)
 }
 
-func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitsa uint16, bitss uint16, wc, ww float64, frames uint32, mode int, ts *transfersyntax.TransferSyntax) error {
+func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16, bitsa uint16, bitss uint16, wc, ww, rs, ri float64, frames uint32, mode int, ts *transfersyntax.TransferSyntax) error {
 	var JPEGData []byte
 	var JPEGBytes, index int
 	index = *i
@@ -822,7 +832,7 @@ func (obj *DcmObj) encode(i *int, img []byte, RGB bool, cols uint16, rows uint16
 	obj.InsertTag(index, newtag)
 	for j := uint32(0); j < frames; j++ {
 		index++
-		if err := ts.Encode(j, RGB, img, cols, rows, 1, bitsa, bitss, wc, ww, &JPEGData, &JPEGBytes, mode); err != nil {
+		if err := ts.Encode(j, RGB, img, cols, rows, 1, bitsa, bitss, wc, ww, rs, ri, &JPEGData, &JPEGBytes, mode); err != nil {
 			return err
 		}
 		newtag = &DcmTag{

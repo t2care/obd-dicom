@@ -24,14 +24,19 @@ func jpegDecode(j uint32, bitsa uint16, in []byte, inSize uint32, out []byte, ou
 	}
 }
 
-func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, bitss uint16, ww, wc float64, JPEGData *[]byte, JPEGBytes *int, mode int) error {
-	offset := j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
+func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, bitss uint16, ww, wc, rs, ri float64, JPEGData *[]byte, JPEGBytes *int, mode int) error {
+	offset := calcOffset(j, RGB, cols, rows, bitsa)
 	if RGB {
 		offset = 3 * offset
 	}
 
 	if bitsa == 16 {
-		img, _ = scale16to8(img, bitss, wc, ww)
+		var err error
+		img, err = scale16to8Bits(img, bitss, wc, ww, rs, ri)
+		if err != nil {
+			return err
+		}
+		offset = calcOffset(j, RGB, cols, rows, 8)
 	}
 
 	if RGB {
@@ -41,40 +46,48 @@ func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, sample
 	}
 }
 
-func scale16to8(img16 []byte, bitss uint16, wc, ww float64) ([]byte, error) {
+func calcOffset(j uint32, RGB bool, cols uint16, rows uint16, bitsa uint16) uint32 {
+	offset := j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
+	if RGB {
+		offset = 3 * offset
+	}
+	return offset
+}
+
+func scale16to8Bits(img16 []byte, bitss uint16, wc, ww, rs, ri float64) ([]byte, error) {
 	n := len(img16)
 	if n%2 != 0 {
-		return nil, fmt.Errorf("buffer 16 bits invalide (%d octets)", n)
+		return nil, fmt.Errorf("invalid 16-bit buffer size (%d bytes): the buffer size must be even", n)
 	}
 	out := make([]byte, n/2)
 
-	L := wc - ww/2.0
-	U := wc + ww/2.0
-	if L < 0 {
-		L = 0
-	}
-	maxRaw := float64(int(1) << bitss)
-	if U > maxRaw {
-		U = maxRaw
-	}
-	delta := U - L
-	if delta <= 0 {
-		delta = 1
+	if wc <= 0 || ww <= 0 {
+		maxRaw := float64(int(1) << bitss)
+		wc = maxRaw / 2.0
+		ww = maxRaw
 	}
 
 	for i := 0; i < n/2; i++ {
-		low := img16[2*i]
-		high := img16[2*i+1]
-		raw := float64(int(high)<<8 | int(low))
+		raw := float64(int(img16[2*i+1])<<8 | int(img16[2*i]))
 
-		if raw < L {
-			raw = L
-		} else if raw > U {
-			raw = U
+		//Apply modality rescale if provided
+		if rs != 0 && ri != 0 {
+			raw = raw*rs + ri
 		}
 
-		norm := (raw - L) * 255.0 / delta
-		out[i] = byte(norm)
+		co := wc - 0.5
+		hw := (ww - 1) / 2.0
+
+		//Linear conversion
+		var y float64
+		if raw <= co-hw {
+			y = 0
+		} else if raw > co+hw {
+			y = 255
+		} else {
+			y = ((raw-co)/(ww-1) + 0.5) * 255
+		}
+		out[i] = byte(y)
 	}
 	return out, nil
 }
@@ -84,7 +97,7 @@ func jpeg12Decode(j uint32, _ uint16, in []byte, inSize uint32, out []byte, outS
 	return jpeglib.DIJG12decode(in, inSize, out[offset:], outSize)
 }
 
-func jpeg12Encode(j uint32, _ bool, img []byte, cols uint16, rows uint16, _ uint16, bitsa uint16, bitss uint16, ww, wc float64, JPEGData *[]byte, JPEGBytes *int, _ int) error {
+func jpeg12Encode(j uint32, _ bool, img []byte, cols uint16, rows uint16, _ uint16, bitsa uint16, bitss uint16, ww, wc, rs, ri float64, JPEGData *[]byte, JPEGBytes *int, _ int) error {
 	offset := j * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 	return jpeglib.EIJG12encode(img[offset/2:], cols, rows, 1, JPEGData, JPEGBytes, 0)
 }
