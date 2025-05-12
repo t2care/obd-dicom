@@ -17,7 +17,7 @@ func decode(frame uint32, bitsa uint16, j2kData []byte, j2kSize uint32, outputDa
 	return openjpeg.J2Kdecode(j2kData, j2kSize, outputData[offset:])
 }
 
-func encode(frame uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, bitss uint16, ww, wc float64, JPEGData *[]byte, JPEGBytes *int, ratio int) error {
+func encode(frame uint32, RGB bool, img []byte, cols uint16, rows uint16, samples uint16, bitsa uint16, bitss uint16, ww, wc, rs, ri float64, JPEGData *[]byte, JPEGBytes *int, ratio int) error {
 	offset := frame * uint32(cols) * uint32(rows) * uint32(bitsa) / 8
 	if RGB {
 		offset = 3 * offset
