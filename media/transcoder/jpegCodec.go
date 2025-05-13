@@ -29,7 +29,7 @@ func jpegEncode(j uint32, RGB bool, img []byte, cols uint16, rows uint16, sample
 
 	if bitsa == 16 {
 		var err error
-		img, err = scale16to8Bits(img, bitss, wc, ww, rs, ri)
+		img, err = scaleTo8Bits(img, bitss, wc, ww, rs, ri)
 		if err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ func calcOffset(j uint32, RGB bool, cols uint16, rows uint16, bitsa uint16) uint
 	return offset
 }
 
-func scale16to8Bits(img16 []byte, bitss uint16, wc, ww, rs, ri float64) ([]byte, error) {
+func scaleTo8Bits(img16 []byte, bitss uint16, wc, ww, rs, ri float64) ([]byte, error) {
 	n := len(img16)
 	if n%2 != 0 {
 		return nil, fmt.Errorf("invalid 16-bit buffer size (%d bytes): the buffer size must be even", n)
