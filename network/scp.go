@@ -114,7 +114,7 @@ func (s *scp) handleConnection(conn net.Conn) (err error) {
 				files, status = s.onCMoveRequest(pdu.GetAAssociationRQ(), moveLevel, ddo, dst)
 				scu := NewSCU(dst)
 				scu.onCStoreResult = func(pending, completed, failed uint16) error {
-					return pdu.WriteResp(command, dco, ddo, dicomstatus.Pending, completed, failed)
+					return pdu.WriteResp(command, dco, nil, dicomstatus.Pending, pending, completed, failed)
 				}
 				if err = scu.StoreSCU(files, 0); err != nil {
 					status = dicomstatus.CMoveOutOfResourcesUnableToPerformSubOperations
