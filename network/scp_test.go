@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -101,7 +102,7 @@ func dcmtk_echoscu(port int) error {
 
 func exe(name string, args ...string) error {
 	out, err := exec.Command(name, args...).CombinedOutput()
-	if err != nil {
+	if err != nil || strings.Contains(string(out), "E:") {
 		return fmt.Errorf("%s", string(out))
 	}
 	fmt.Println(string(out)) // For debug logging
