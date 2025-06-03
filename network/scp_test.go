@@ -102,7 +102,7 @@ func dcmtk_echoscu(port int) error {
 
 func exe(name string, args ...string) error {
 	out, err := exec.Command(name, args...).CombinedOutput()
-	if err != nil || strings.Contains(string(out), "E:") {
+	if err != nil || strings.Contains(string(out), "E:") || strings.Contains(string(out), "W:") {
 		return fmt.Errorf("%s", string(out))
 	}
 	fmt.Println(string(out)) // For debug logging
