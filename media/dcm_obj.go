@@ -508,6 +508,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 
 	var i int
 	var rows, cols, bitss, bitsa, planar uint16
+	var wc, ww, rs, ri float64
 	var PhotoInt string
 	sq := 0
 	frames := uint32(0)
@@ -559,7 +560,18 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 					bitsa = tag.getUShort()
 				case 0x0101:
 					bitss = tag.getUShort()
+				case 0x1050:
+					wcs := tag.getString()
+					wc, _ = strconv.ParseFloat(strings.Split(wcs, "\\")[0], 64)
+				case 0x1051:
+					wws := tag.getString()
+					ww, _ = strconv.ParseFloat(strings.Split(wws, "\\")[0], 64)
+				case 0x1052:
+					ri, _ = strconv.ParseFloat(tag.getString(), 64)
+				case 0x1053:
+					rs, _ = strconv.ParseFloat(tag.getString(), 64)
 				}
+
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
 				icon = true
@@ -599,6 +611,14 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 					} else {
 						copy(img, tag.Data)
 					}
+				}
+				if bitsa == 16 && outTS == transfersyntax.JPEGBaseline8Bit {
+					var err error
+					img, err = scaleTo8Bits(img, bitss, wc, ww, rs, ri)
+					if err != nil {
+						return err
+					}
+					bitsa = 8
 				}
 				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, frames, outTS); err != nil {
 					return err
@@ -759,6 +779,14 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 	case transfersyntax.JPEGLosslessSV1.UID:
 		mode = 4
 	case transfersyntax.JPEGBaseline8Bit.UID:
+		obj.WriteUint16(tags.BitsStored, 8)
+		obj.WriteUint16(tags.BitsAllocated, 8)
+		obj.WriteUint16(tags.HighBit, 7)
+		obj.WriteUint16(tags.PixelRepresentation, 0)
+		obj.WriteString(tags.WindowCenter, "127")
+		obj.WriteString(tags.WindowWidth, "255")
+		obj.WriteString(tags.RescaleIntercept, "0")
+		obj.WriteString(tags.RescaleSlope, "1")
 	case transfersyntax.JPEGExtended12Bit.UID:
 	case transfersyntax.JPEG2000.UID:
 		mode = 10
@@ -872,4 +900,42 @@ func (obj *DcmObj) decode(i int, img []byte, size uint32, frames uint32, bitsa u
 	}
 	obj.DelTag(i + 1)
 	return nil
+}
+
+func scaleTo8Bits(img16 []byte, bitss uint16, wc, ww, rs, ri float64) ([]byte, error) {
+	n := len(img16)
+	if n%2 != 0 {
+		return nil, fmt.Errorf("invalid 16-bit buffer size (%d bytes): the buffer size must be even", n)
+	}
+	out := make([]byte, n/2)
+
+	if wc <= 0 || ww <= 0 {
+		maxRaw := float64(int(1) << bitss)
+		wc = maxRaw / 2.0
+		ww = maxRaw
+	}
+
+	for i := 0; i < n/2; i++ {
+		raw := float64(int(img16[2*i+1])<<8 | int(img16[2*i]))
+
+		//Apply modality rescale if provided
+		if rs != 0 && ri != 0 {
+			raw = raw*rs + ri
+		}
+
+		co := wc - 0.5
+		hw := (ww - 1) / 2.0
+
+		//Linear conversion
+		var y float64
+		if raw <= co-hw {
+			y = 0
+		} else if raw > co+hw {
+			y = 255
+		} else {
+			y = ((raw-co)/(ww-1) + 0.5) * 255
+		}
+		out[i] = byte(y)
+	}
+	return out, nil
 }

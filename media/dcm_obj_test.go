@@ -101,6 +101,9 @@ func changeSyntax(filename string, ts *transfersyntax.TransferSyntax) (err error
 	if err = dcmObj.ChangeTransferSynx(ts); err != nil {
 		return
 	}
+	if ts.Name == transfersyntax.JPEGBaseline8Bit.Name && dcmObj.GetUShort(tags.BitsAllocated) != 8 {
+		return fmt.Errorf("BitsAllocated must be 8 for JPEGBaseline8Bit transfer syntax")
+	}
 	out := "tmp"
 	if err = dcmObj.WriteToFile(out); err != nil {
 		return
