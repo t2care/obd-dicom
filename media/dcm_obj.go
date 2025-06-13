@@ -561,11 +561,9 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				case 0x0101:
 					bitss = tag.getUShort()
 				case 0x1050:
-					wcs := tag.getString()
-					wc, _ = strconv.ParseFloat(strings.Split(wcs, "\\")[0], 64)
+					wc, _ = strconv.ParseFloat(strings.Split(tag.getString(), "\\")[0], 64)
 				case 0x1051:
-					wws := tag.getString()
-					ww, _ = strconv.ParseFloat(strings.Split(wws, "\\")[0], 64)
+					ww, _ = strconv.ParseFloat(strings.Split(tag.getString(), "\\")[0], 64)
 				case 0x1052:
 					ri, _ = strconv.ParseFloat(tag.getString(), 64)
 				case 0x1053:
@@ -779,9 +777,9 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 	case transfersyntax.JPEGLosslessSV1.UID:
 		mode = 4
 	case transfersyntax.JPEGBaseline8Bit.UID:
-		obj.WriteUint16(tags.BitsStored, 8)
-		obj.WriteUint16(tags.BitsAllocated, 8)
-		obj.WriteUint16(tags.HighBit, 7)
+		obj.WriteUint16(tags.BitsStored, bitsa)
+		obj.WriteUint16(tags.BitsAllocated, bitsa)
+		obj.WriteUint16(tags.HighBit, bitsa-1)
 		obj.WriteUint16(tags.PixelRepresentation, 0)
 		obj.WriteString(tags.WindowCenter, "127")
 		obj.WriteString(tags.WindowWidth, "255")
