@@ -616,6 +616,7 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 						return err
 					}
 					bitsa = 8
+					bitss = 8
 				}
 				if err := obj.compress(&i, img, RGB, cols, rows, bitss, bitsa, frames, outTS); err != nil {
 					return err
@@ -776,7 +777,7 @@ func (obj *DcmObj) compress(i *int, img []byte, RGB bool, cols uint16, rows uint
 	case transfersyntax.JPEGLosslessSV1.UID:
 		mode = 4
 	case transfersyntax.JPEGBaseline8Bit.UID:
-		obj.WriteUint16(tags.BitsStored, bitsa)
+		obj.WriteUint16(tags.BitsStored, bitss)
 		obj.WriteUint16(tags.BitsAllocated, bitsa)
 		obj.WriteUint16(tags.HighBit, bitsa-1)
 		obj.WriteUint16(tags.PixelRepresentation, 0)
