@@ -569,7 +569,6 @@ func (obj *DcmObj) ChangeTransferSynx(outTS *transfersyntax.TransferSyntax) erro
 				case 0x1053:
 					rs, _ = strconv.ParseFloat(tag.getString(), 64)
 				}
-
 			}
 			if (tag.Group == 0x0088) && (tag.Element == 0x0200) && (tag.Length == 0xFFFFFFFF) {
 				icon = true
