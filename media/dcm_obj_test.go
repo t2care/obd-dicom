@@ -270,3 +270,33 @@ func Test_WriteString(t *testing.T) {
 		assert.Equal(t, tt.newValue, o.GetString(tt.tag), tt.name)
 	}
 }
+
+func TestCharSetEncoder(t *testing.T) {
+	tests := []struct {
+		name             string
+		charset          string
+		studyDescription string
+	}{
+		{
+			name:             "Original charset",
+			charset:          "ISO_IR 100",
+			studyDescription: "CT2 tête, face, sinus",
+		},
+		{
+			name:             "Empty charset",
+			charset:          "",
+			studyDescription: "CT2 tête, face, sinus",
+		},
+		{
+			name:             "Wrong charset",
+			charset:          "ISO_IR 192",
+			studyDescription: "CT2 t�te, face, sinus",
+		},
+	}
+	for _, tt := range tests {
+		o, _ := NewDCMObjFromFile("../samples/test2.dcm", &ParseOptions{SkipPixelData: true})
+		o.WriteString(tags.SpecificCharacterSet, tt.charset)
+		o.setCharacterSet()
+		assert.Equal(t, tt.studyDescription, o.GetString(tags.StudyDescription))
+	}
+}
