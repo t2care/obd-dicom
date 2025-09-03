@@ -10,10 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/t2care/obd-dicom/dictionary/charset"
 	"github.com/t2care/obd-dicom/dictionary/sopclass"
 	"github.com/t2care/obd-dicom/dictionary/tags"
 	"github.com/t2care/obd-dicom/dictionary/transfersyntax"
 	"github.com/t2care/obd-dicom/media/transcoder"
+	"golang.org/x/text/encoding"
 )
 
 type DcmObj struct {
@@ -23,6 +25,7 @@ type DcmObj struct {
 	BigEndian      bool
 	SQtag          *DcmTag
 	Size           int // bytes
+	CharSet        *encoding.Decoder
 }
 
 type ParseOptions struct {
@@ -98,7 +101,7 @@ func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 	if err := bufdata.ReadObj(obj, opt...); err != nil {
 		return nil, err
 	}
-
+	obj.setCharacterSet()
 	return obj, nil
 }
 
@@ -266,7 +269,11 @@ func (obj *DcmObj) GetString(tag *tags.Tag) string {
 func (obj *DcmObj) getStringGE(group uint16, element uint16) string {
 	for _, tag := range obj.GetTags() {
 		if (tag.Group == group) && (tag.Element == element) {
-			return tag.getString()
+			value := tag.getString()
+			if obj.CharSet != nil {
+				value, _ = obj.CharSet.String(tag.getString())
+			}
+			return value
 		}
 	}
 	return ""
@@ -952,4 +959,9 @@ func scaleTo8Bits(img16 []byte, bitss uint16, wc, ww, rs, ri float64) ([]byte, e
 		out[i] = byte(y)
 	}
 	return out, nil
+}
+
+func (obj *DcmObj) setCharacterSet() {
+	cs, _ := charset.ParseSpecificCharacterSet([]string{obj.GetString(tags.SpecificCharacterSet)})
+	obj.CharSet = cs.Ideographic
 }
