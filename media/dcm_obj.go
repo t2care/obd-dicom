@@ -197,15 +197,36 @@ func (obj *DcmObj) DumpTags() error {
 }
 
 func (obj *DcmObj) SortTagsByGroupAndElement() {
+	if obj.AreTagsSortedByGroupAndElement() {
+		return
+	}
 	sort.Slice(obj.Tags, func(i, j int) bool {
 		return obj.Tags[i].isBefore(obj.Tags[j])
 	})
+	// sort the tags inside sequences
+	for _, tag := range obj.Tags {
+		if tag.isSequence() {
+			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
+			if !seq.AreTagsSortedByGroupAndElement() {
+				seq.SortTagsByGroupAndElement()
+				tag.writeSeq(tag.Group, tag.Element, seq)
+			}
+		}
+	}
 }
 
 func (obj *DcmObj) AreTagsSortedByGroupAndElement() bool {
 	for i := 0; i < (obj.TagCount() - 1); i++ {
 		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
 			return false
+		}
+	}
+	for _, tag := range obj.Tags {
+		if tag.isSequence() {
+			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
+			if !seq.AreTagsSortedByGroupAndElement() {
+				return false
+			}
 		}
 	}
 	return true

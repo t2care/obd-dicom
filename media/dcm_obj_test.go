@@ -323,8 +323,25 @@ func TestTagsSorting(t *testing.T) {
 	for _, tt := range tests {
 
 		dicom := NewEmptyDCMObj()
-		for _, tag := range tt.tags {
-			dicom.WriteString(tag, "not an empty tag")
+
+		for idx, tag := range tt.tags {
+			dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
+		}
+		{ //write add a sequence with tags
+			seq := &DcmObj{
+				Tags:           make([]*DcmTag, 0),
+				TransferSyntax: dicom.TransferSyntax,
+				ExplicitVR:     dicom.ExplicitVR,
+				BigEndian:      dicom.BigEndian,
+				SQtag:          &DcmTag{},
+			}
+			for idx, tag := range tt.tags {
+				seq.WriteString(tag, fmt.Sprintf("seq tag #%d", idx))
+			}
+			tag := new(DcmTag)
+			tag.writeSeq(0xFFFE, 0xE000, seq)
+			dicom.Add(tag)
+
 		}
 
 		assert.Equal(t, tt.isSorted, dicom.AreTagsSortedByGroupAndElement(), "original tags sequence is sorted or not")
