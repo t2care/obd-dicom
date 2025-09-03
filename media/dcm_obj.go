@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -190,6 +191,21 @@ func (obj *DcmObj) DumpTags() error {
 	}
 	fmt.Println()
 	return nil
+}
+
+func (obj *DcmObj) SortTagsByGroupAndElement() {
+	sort.Slice(obj.Tags, func(i, j int) bool {
+		return obj.Tags[i].isBefore(obj.Tags[j])
+	})
+}
+
+func (obj *DcmObj) AreTagsSortedByGroupAndElement() bool {
+	for i := 0; i < (obj.TagCount() - 1); i++ {
+		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
+			return false
+		}
+	}
+	return true
 }
 
 func (obj *DcmObj) dumpSeq(indent int) error {

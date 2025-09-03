@@ -270,3 +270,36 @@ func Test_WriteString(t *testing.T) {
 		assert.Equal(t, tt.newValue, o.GetString(tt.tag), tt.name)
 	}
 }
+
+func TestTagsSorting(t *testing.T) {
+	InitDict()
+	tests := []struct {
+		name     string
+		tags     []*tags.Tag
+		isSorted bool
+	}{
+		{
+			name:     "Sorted tags",
+			tags:     []*tags.Tag{tags.StudyDate, tags.AccessionNumber, tags.StudyInstanceUID},
+			isSorted: true,
+		},
+		{
+			name:     "Unsorted tags",
+			tags:     []*tags.Tag{tags.SeriesInstanceUID, tags.SeriesDescription, tags.StudyDate, tags.AccessionNumber, tags.StudyInstanceUID},
+			isSorted: false,
+		},
+	}
+
+	for _, tt := range tests {
+
+		dicom := NewEmptyDCMObj()
+		for _, tag := range tt.tags {
+			dicom.WriteString(tag, "not an empty tag")
+		}
+
+		assert.Equal(t, tt.isSorted, dicom.AreTagsSortedByGroupAndElement(), "original tags sequence is sorted or not")
+		dicom.SortTagsByGroupAndElement()
+		assert.Equal(t, true, dicom.AreTagsSortedByGroupAndElement(), "tags sequence is sorted")
+
+	}
+}
