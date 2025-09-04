@@ -85,11 +85,11 @@ func fillElement(fieldType reflect.Type, dataset *media.DcmObj, targetStructure 
 	if group == "" || elem == "" {
 		return
 	}
-	groupHex, err := strconv.ParseInt("0x"+group, 0, 16)
+	groupHex, err := strconv.ParseInt(group, 16, 16)
 	if err != nil {
 		return
 	}
-	elemHex, err := strconv.ParseInt("0x"+elem, 0, 16)
+	elemHex, err := strconv.ParseInt(elem, 16, 16)
 	if err != nil {
 		return
 	}
