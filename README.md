@@ -56,8 +56,7 @@ obj.WriteToFile(fileName)
 ```golang
 obj, _ := media.NewDCMObjFromFile(fileName, &ParseOptions{SkipPixelData: true})
 obj.WriteString(tags.PatientName, "new value")
-obj.SortTagsByGroupAndElement()
-obj.WriteToFile(fileName)
+obj.WriteToFile(fileName, true)
 ```
 
 ### Send C-Echo Request

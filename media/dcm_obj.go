@@ -305,7 +305,12 @@ func (obj *DcmObj) Add(tag *DcmTag) {
 	obj.Tags = append(obj.Tags, tag)
 }
 
-func (obj *DcmObj) WriteToBytes() []byte {
+func (obj *DcmObj) WriteToBytes(opSortTags ...bool) []byte {
+	if len(opSortTags) > 0 {
+		if opSortTags[0] {
+			obj.SortTagsByGroupAndElement()
+		}
+	}
 	bufdata := NewEmptyBufData()
 	SOPClassUID := obj.getStringGE(0x08, 0x16)
 	SOPInstanceUID := obj.getStringGE(0x08, 0x18)
@@ -320,8 +325,12 @@ func (obj *DcmObj) WriteToBytes() []byte {
 }
 
 // Wrote - Write a DICOM Object to a DICOM File
-func (obj *DcmObj) WriteToFile(fileName string) error {
-	data := obj.WriteToBytes()
+func (obj *DcmObj) WriteToFile(fileName string, opSortTags ...bool) error {
+	sortTags := false
+	if len(opSortTags) > 0 {
+		sortTags = opSortTags[0]
+	}
+	data := obj.WriteToBytes(sortTags)
 	return os.WriteFile(fileName, data, 0644)
 }
 
