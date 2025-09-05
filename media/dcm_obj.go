@@ -23,7 +23,6 @@ type DcmObj struct {
 	TransferSyntax *transfersyntax.TransferSyntax
 	ExplicitVR     bool
 	BigEndian      bool
-	SQtag          *DcmTag
 	Size           int // bytes
 	CharSet        *encoding.Decoder
 }
@@ -42,7 +41,6 @@ func NewEmptyDCMObj() *DcmObj {
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          &DcmTag{},
 	}
 }
 
@@ -81,7 +79,6 @@ func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 		TransferSyntax: transferSyntax,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          &DcmTag{},
 	}
 
 	if obj.TransferSyntax == nil {
@@ -696,14 +693,12 @@ func (obj *DcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	tag := new(DcmTag)
 
@@ -729,14 +724,12 @@ func (obj *DcmObj) AddSRText(text string) {
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	tag := new(DcmTag)
 
