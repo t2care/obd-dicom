@@ -344,9 +344,9 @@ func TestTagsSorting(t *testing.T) {
 
 		}
 
-		assert.Equal(t, tt.isSorted, dicom.AreTagsSortedByGroupAndElement(), "original tags sequence is sorted or not")
-		dicom.SortTagsByGroupAndElement()
-		assert.Equal(t, true, dicom.AreTagsSortedByGroupAndElement(), "tags sequence is sorted")
+		assert.Equal(t, tt.isSorted, dicom.areTagsSortedByGroupAndElement(), "original tags sequence is sorted or not")
+		dicom.sortTagsByGroupAndElement()
+		assert.Equal(t, true, dicom.areTagsSortedByGroupAndElement(), "tags sequence is sorted")
 
 	}
 }

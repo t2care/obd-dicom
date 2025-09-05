@@ -196,8 +196,8 @@ func (obj *DcmObj) DumpTags() error {
 	return nil
 }
 
-func (obj *DcmObj) SortTagsByGroupAndElement() {
-	if obj.AreTagsSortedByGroupAndElement() {
+func (obj *DcmObj) sortTagsByGroupAndElement() {
+	if obj.areTagsSortedByGroupAndElement() {
 		return
 	}
 	sort.Slice(obj.Tags, func(i, j int) bool {
@@ -207,15 +207,15 @@ func (obj *DcmObj) SortTagsByGroupAndElement() {
 	for _, tag := range obj.Tags {
 		if tag.isSequence() {
 			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
-			if !seq.AreTagsSortedByGroupAndElement() {
-				seq.SortTagsByGroupAndElement()
+			if !seq.areTagsSortedByGroupAndElement() {
+				seq.sortTagsByGroupAndElement()
 				tag.writeSeq(tag.Group, tag.Element, seq)
 			}
 		}
 	}
 }
 
-func (obj *DcmObj) AreTagsSortedByGroupAndElement() bool {
+func (obj *DcmObj) areTagsSortedByGroupAndElement() bool {
 	for i := 0; i < (obj.TagCount() - 1); i++ {
 		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
 			return false
@@ -224,7 +224,7 @@ func (obj *DcmObj) AreTagsSortedByGroupAndElement() bool {
 	for _, tag := range obj.Tags {
 		if tag.isSequence() {
 			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
-			if !seq.AreTagsSortedByGroupAndElement() {
+			if !seq.areTagsSortedByGroupAndElement() {
 				return false
 			}
 		}
@@ -308,7 +308,7 @@ func (obj *DcmObj) Add(tag *DcmTag) {
 func (obj *DcmObj) WriteToBytes(opSortTags ...bool) []byte {
 	if len(opSortTags) > 0 {
 		if opSortTags[0] {
-			obj.SortTagsByGroupAndElement()
+			obj.sortTagsByGroupAndElement()
 		}
 	}
 	bufdata := NewEmptyBufData()
