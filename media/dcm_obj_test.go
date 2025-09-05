@@ -333,7 +333,6 @@ func TestTagsSorting(t *testing.T) {
 				TransferSyntax: dicom.TransferSyntax,
 				ExplicitVR:     dicom.ExplicitVR,
 				BigEndian:      dicom.BigEndian,
-				SQtag:          &DcmTag{},
 			}
 			for idx, tag := range tt.tags {
 				seq.WriteString(tag, fmt.Sprintf("seq tag #%d", idx))
