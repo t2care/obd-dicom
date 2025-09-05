@@ -100,3 +100,25 @@ func TestMapToDicom(t *testing.T) {
 	assert.Equal(t, uint16(10), obj.GetUShort(tags.BitsAllocated), "Check map uint value")
 	assert.Equal(t, "", obj.GetString(tags.SeriesNumber), "Should not update unexisted tag")
 }
+
+func BenchmarkMapping(b *testing.B) {
+	type study struct {
+		StudyInstanceUID       string `dicom:"0020,000D"`
+		StudyDescription       string `dicom:"0008,1030"`
+		StudyDate              string `dicom:"0008,0020"`
+		AccessionNumber        string `dicom:"0008,0050"`
+		ModalitiesInStudy      string `dicom:"0008,0061"`
+		ReferringPhysicianName string `dicom:"0008,0090"`
+		PatientName            string `dicom:"0010,0010"`
+		PatientID              string `dicom:"0010,0020"`
+		PatientBirthDate       string `dicom:"0010,0030"`
+		PatientSex             string `dicom:"0010,0040"`
+		DeviceName             string `dicom:"0008,1010"`
+		InstitutionName        string `dicom:"0008,0080"`
+	}
+	var s study
+	o, _ := media.NewDCMObjFromFile("../samples/test2.dcm")
+	for i := 0; i < b.N; i++ {
+		MapDicomDataToStruct(o, &s)
+	}
+}
