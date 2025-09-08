@@ -194,22 +194,9 @@ func (obj *DcmObj) DumpTags() error {
 }
 
 func (obj *DcmObj) sortTagsByGroupAndElement() {
-	if obj.areTagsSortedByGroupAndElement() {
-		return
-	}
 	sort.Slice(obj.Tags, func(i, j int) bool {
 		return obj.Tags[i].isBefore(obj.Tags[j])
 	})
-	// sort the tags inside sequences
-	for _, tag := range obj.Tags {
-		if tag.isSequence() {
-			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
-			if !seq.areTagsSortedByGroupAndElement() {
-				seq.sortTagsByGroupAndElement()
-				tag.writeSeq(tag.Group, tag.Element, seq)
-			}
-		}
-	}
 }
 
 func (obj *DcmObj) areTagsSortedByGroupAndElement() bool {
@@ -303,10 +290,9 @@ func (obj *DcmObj) Add(tag *DcmTag) {
 }
 
 func (obj *DcmObj) WriteToBytes(opSortTags ...bool) []byte {
-	if len(opSortTags) > 0 {
-		if opSortTags[0] {
-			obj.sortTagsByGroupAndElement()
-		}
+	opSortTags = append(opSortTags, false)
+	if opSortTags[0] {
+		obj.sortTagsByGroupAndElement()
 	}
 	bufdata := NewEmptyBufData()
 	SOPClassUID := obj.getStringGE(0x08, 0x16)
@@ -323,11 +309,7 @@ func (obj *DcmObj) WriteToBytes(opSortTags ...bool) []byte {
 
 // Wrote - Write a DICOM Object to a DICOM File
 func (obj *DcmObj) WriteToFile(fileName string, opSortTags ...bool) error {
-	sortTags := false
-	if len(opSortTags) > 0 {
-		sortTags = opSortTags[0]
-	}
-	data := obj.WriteToBytes(sortTags)
+	data := obj.WriteToBytes(opSortTags...)
 	return os.WriteFile(fileName, data, 0644)
 }
 
