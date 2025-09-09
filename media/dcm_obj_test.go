@@ -302,15 +302,6 @@ func TestCharSetEncoder(t *testing.T) {
 	}
 }
 
-func (obj *DcmObj) areTagsSortedByGroupAndElement() bool {
-	for i := 0; i < (obj.TagCount() - 1); i++ {
-		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
-			return false
-		}
-	}
-	return true
-}
-
 func areTagsSortedByGroupAndElement(obj *DcmObj) bool {
 	for i := 0; i < (obj.TagCount() - 1); i++ {
 		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
@@ -328,18 +319,30 @@ func TestTagsSorting(t *testing.T) {
 		isSorted bool
 	}{
 		{
-			name:     "Sorted tags",
-			tags:     []*tags.Tag{tags.StudyDate, tags.AccessionNumber, tags.StudyInstanceUID},
+			name:     "Zero tags",
+			tags:     []*tags.Tag{},
 			isSorted: true,
 		},
 		{
-			name:     "Unsorted tags",
-			tags:     []*tags.Tag{tags.SeriesInstanceUID, tags.SeriesDescription, tags.StudyDate, tags.AccessionNumber, tags.StudyInstanceUID},
-			isSorted: false,
+			name: "Sorted tags",
+			tags: []*tags.Tag{
+				tags.PagePositionID,
+				tags.TextFormatID,
+				tags.NormalReverse,
+				tags.AddGrayScale,
+				tags.Borders,
+				tags.Copies,
+				tags.CommandMagnificationType,
+				tags.Erase,
+				tags.Print,
+				tags.Overlays,
+			},
+			isSorted: true,
 		},
 		{
-			name: "Unsorted random 100 tags",
-			tags: []*tags.Tag{tags.ActualFrameDuration,
+			name: "Unsorted tags",
+			tags: []*tags.Tag{
+				tags.ActualFrameDuration,
 				tags.OtherPatientIDsSequence,
 				tags.SegmentationCreationTemplateLabel,
 				tags.ReferencedDefinedDeviceIndex,
@@ -350,141 +353,24 @@ func TestTagsSorting(t *testing.T) {
 				tags.NumberOfFractionPatternDigitsPerDay,
 				tags.ROIObservationDescription,
 				tags.PositionerSecondaryAngle,
-				tags.Signature,
-				tags.ConfidentialityConstraintOnPatientDataDescription,
-				tags.XRayDetectorID,
-				tags.GPSSatellites,
-				tags.TreatmentStatusComment,
-				tags.CodingSchemeVersion,
-				tags.ImageRotation,
-				tags.VisualFieldTestPointNormalsSequence,
-				tags.GPSDestLongitude,
-				tags.BscanSlabThickness,
-				tags.SegmentReferenceSequence,
-				tags.StorageProtocolElementSpecificationSequence,
-				tags.TargetRefraction,
-				tags.PatientLocationCoordinatesCodeSequence,
-				tags.MeasurementFunctions,
-				tags.AnteriorChamberDepthDefinitionCodeSequence,
-				tags.RTBeamLimitingDeviceOffset,
-				tags.UDISequence,
-				tags.ScanStopPositionSequence,
-				tags.TextString,
-				tags.RefractivePower,
-				tags.RangeOfFreedom,
-				tags.CollimatorShapeSequence,
-				tags.GPSDestLatitude,
-				tags.DocumentTitle,
-				tags.ISOSpeedLatitudeyyy,
-				tags.TransferSyntaxUID,
-				tags.DoseRateDelivered,
-				tags.VolumeToTableMappingMatrix,
-				tags.XRay3DFrameTypeSequence,
-				tags.ElementShape,
-				tags.OphthalmicPatientClinicalInformationRightEyeSequence,
-				tags.NumberOfFractionsPlanned,
-				tags.SourceInstanceSequence,
-				tags.AcquisitionsInStudy,
-				tags.PercentSampling,
-				tags.CalculatedDoseReferenceSequence,
-				tags.ImpedanceMeasurementCurrentType,
-				tags.NotificationFromManufacturerSequence,
-				tags.NumberOfWaveformSamples,
-				tags.ModalitiesInStudy,
-				tags.ReferencedAccessionSequenceTrial,
-				tags.ImageIndex,
-				tags.InterpretationIDIssuer,
-				tags.ControlPoint3DPosition,
-				tags.PixelComponentMask,
-				tags.DisplayWindowLabelVector,
-				tags.ImageBoxNumber,
-				tags.CountsSource,
-				tags.ReferringPhysicianTelephoneNumbers,
-				tags.BlockSlabNumber,
-				tags.PrinterStatusInfo,
-				tags.ApplicationSetupType,
-				tags.AcquisitionStartConditionData,
-				tags.RangeShifterSettingsSequence,
-				tags.TransferTubeNumber,
-				tags.DeliveredDepthDoseParametersSequence,
-				tags.ReferencedVOILUTBoxSequence,
-				tags.BillingSuppliesAndDevicesSequence,
-				tags.OperatingModeSequence,
-				tags.OverrideParameterPointer,
-				tags.ROIElementalCompositionAtomicNumber,
-				tags.RecommendedViewingMode,
-				tags.AnchorPointVisibility,
-				tags.BolusDefinitionSequence,
-				tags.MeasuredValueSequence,
-				tags.DICOMRetrievalSequence,
-				tags.FocalLengthIn35mmFilm,
-				tags.VolumeLocalizationSequence,
-				tags.TransducerOrientation,
-				tags.BlockThickness,
-				tags.ReferencedImageBoxSequenceRetired,
-				tags.ReferencedReferenceImageNumber,
-				tags.Pressure,
-				tags.HardcopyDeviceManufacturer,
-				tags.NumberOfLateralSpreadingDevices,
-				tags.SetupTechnique,
-				tags.ReferencedRTPrescriptionIndex,
-				tags.DetectorConfiguration,
-				tags.ReferencedSeriesSequence,
-				tags.PositionerIsocenterDetectorRotationAngle,
-				tags.SourceApplicatorName,
-				tags.AlgorithmSource,
-				tags.ShieldingDeviceLabel,
-				tags.ReferencedRadiationDoseIdentificationIndex,
-				tags.PriorRecordKey,
-				tags.NominalBeamEnergy,
-				tags.DataPointRows,
-				tags.VerifyingObserverName},
+			},
 			isSorted: false,
 		},
 	}
 
 	for _, tt := range tests {
-
 		dicom := NewEmptyDCMObj()
-
-		if !tt.isSorted {
-
-		}
-
 		for idx, tag := range tt.tags {
 			dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
-		}
-		{ //write add a sequence with tags
-			seq := &DcmObj{
-				Tags:           make([]*DcmTag, 0),
-				TransferSyntax: dicom.TransferSyntax,
-				ExplicitVR:     dicom.ExplicitVR,
-				BigEndian:      dicom.BigEndian,
-			}
-			for idx, tag := range tt.tags {
-				seq.WriteString(tag, fmt.Sprintf("seq tag #%d", idx))
-			}
-			tag := new(DcmTag)
-			tag.writeSeq(0xFFFE, 0xE000, seq)
-			dicom.Add(tag)
-
 		}
 
 		assert.Equal(t, tt.isSorted, areTagsSortedByGroupAndElement(dicom), fmt.Sprint(tt.name, ": original tags are sorting should be ", tt.isSorted))
 		dicom.sortTagsByGroupAndElement()
 		assert.Equal(t, true, areTagsSortedByGroupAndElement(dicom), fmt.Sprint(tt.name, ": tags are not sorted"))
-
 	}
 }
 
-func Shuffle[T any](slice []T) {
-	for i := len(slice) - 1; i > 0; i-- {
-		j := rand.IntN(i + 1) // Random index from 0 to i
-		slice[i], slice[j] = slice[j], slice[i]
-	}
-}
-
-func BenchmarkWritingSorting(b *testing.B) {
+func BenchmarkWritingSortingOffOn(b *testing.B) {
 	df, _ := NewDCMObjFromFile("../samples/rle_color.dcm")
 
 	b.Run("WriteToFile Sorting Off", func(b *testing.B) {
@@ -496,6 +382,27 @@ func BenchmarkWritingSorting(b *testing.B) {
 	b.Run("WriteToFile Sorting On", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			df.WriteToFile("../samples/rle_color-sorted.dcm", true)
+		}
+	})
+}
+
+func Shuffle[T any](slice []T) {
+	for i := len(slice) - 1; i > 0; i-- {
+		j := rand.IntN(i + 1) // Random index from 0 to i
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+func BenchmarkSortingAllPublicTags(b *testing.B) {
+
+	dicom := NewEmptyDCMObj()
+	for idx, tag := range tags.GetTags() {
+		dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
+	}
+	Shuffle(dicom.GetTags())
+
+	b.Run(fmt.Sprintf("Sorting %d tags", len(dicom.GetTags())), func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			dicom.sortTagsByGroupAndElement()
 		}
 	})
 }
