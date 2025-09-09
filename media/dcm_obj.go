@@ -205,14 +205,6 @@ func (obj *DcmObj) areTagsSortedByGroupAndElement() bool {
 			return false
 		}
 	}
-	for _, tag := range obj.Tags {
-		if tag.isSequence() {
-			seq, _ := tag.ReadSeq(obj.IsExplicitVR())
-			if !seq.areTagsSortedByGroupAndElement() {
-				return false
-			}
-		}
-	}
 	return true
 }
 

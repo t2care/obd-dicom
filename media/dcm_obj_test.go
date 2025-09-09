@@ -2,6 +2,7 @@ package media
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"testing"
@@ -318,11 +319,119 @@ func TestTagsSorting(t *testing.T) {
 			tags:     []*tags.Tag{tags.SeriesInstanceUID, tags.SeriesDescription, tags.StudyDate, tags.AccessionNumber, tags.StudyInstanceUID},
 			isSorted: false,
 		},
+		{
+			name: "Unsorted random 100 tags",
+			tags: []*tags.Tag{tags.ActualFrameDuration,
+				tags.OtherPatientIDsSequence,
+				tags.SegmentationCreationTemplateLabel,
+				tags.ReferencedDefinedDeviceIndex,
+				tags.RequestedProcedureCodeSequence,
+				tags.AttenuationCorrectionMethod,
+				tags.PETPositionSequence,
+				tags.DataSetName,
+				tags.NumberOfFractionPatternDigitsPerDay,
+				tags.ROIObservationDescription,
+				tags.PositionerSecondaryAngle,
+				tags.Signature,
+				tags.ConfidentialityConstraintOnPatientDataDescription,
+				tags.XRayDetectorID,
+				tags.GPSSatellites,
+				tags.TreatmentStatusComment,
+				tags.CodingSchemeVersion,
+				tags.ImageRotation,
+				tags.VisualFieldTestPointNormalsSequence,
+				tags.GPSDestLongitude,
+				tags.BscanSlabThickness,
+				tags.SegmentReferenceSequence,
+				tags.StorageProtocolElementSpecificationSequence,
+				tags.TargetRefraction,
+				tags.PatientLocationCoordinatesCodeSequence,
+				tags.MeasurementFunctions,
+				tags.AnteriorChamberDepthDefinitionCodeSequence,
+				tags.RTBeamLimitingDeviceOffset,
+				tags.UDISequence,
+				tags.ScanStopPositionSequence,
+				tags.TextString,
+				tags.RefractivePower,
+				tags.RangeOfFreedom,
+				tags.CollimatorShapeSequence,
+				tags.GPSDestLatitude,
+				tags.DocumentTitle,
+				tags.ISOSpeedLatitudeyyy,
+				tags.TransferSyntaxUID,
+				tags.DoseRateDelivered,
+				tags.VolumeToTableMappingMatrix,
+				tags.XRay3DFrameTypeSequence,
+				tags.ElementShape,
+				tags.OphthalmicPatientClinicalInformationRightEyeSequence,
+				tags.NumberOfFractionsPlanned,
+				tags.SourceInstanceSequence,
+				tags.AcquisitionsInStudy,
+				tags.PercentSampling,
+				tags.CalculatedDoseReferenceSequence,
+				tags.ImpedanceMeasurementCurrentType,
+				tags.NotificationFromManufacturerSequence,
+				tags.NumberOfWaveformSamples,
+				tags.ModalitiesInStudy,
+				tags.ReferencedAccessionSequenceTrial,
+				tags.ImageIndex,
+				tags.InterpretationIDIssuer,
+				tags.ControlPoint3DPosition,
+				tags.PixelComponentMask,
+				tags.DisplayWindowLabelVector,
+				tags.ImageBoxNumber,
+				tags.CountsSource,
+				tags.ReferringPhysicianTelephoneNumbers,
+				tags.BlockSlabNumber,
+				tags.PrinterStatusInfo,
+				tags.ApplicationSetupType,
+				tags.AcquisitionStartConditionData,
+				tags.RangeShifterSettingsSequence,
+				tags.TransferTubeNumber,
+				tags.DeliveredDepthDoseParametersSequence,
+				tags.ReferencedVOILUTBoxSequence,
+				tags.BillingSuppliesAndDevicesSequence,
+				tags.OperatingModeSequence,
+				tags.OverrideParameterPointer,
+				tags.ROIElementalCompositionAtomicNumber,
+				tags.RecommendedViewingMode,
+				tags.AnchorPointVisibility,
+				tags.BolusDefinitionSequence,
+				tags.MeasuredValueSequence,
+				tags.DICOMRetrievalSequence,
+				tags.FocalLengthIn35mmFilm,
+				tags.VolumeLocalizationSequence,
+				tags.TransducerOrientation,
+				tags.BlockThickness,
+				tags.ReferencedImageBoxSequenceRetired,
+				tags.ReferencedReferenceImageNumber,
+				tags.Pressure,
+				tags.HardcopyDeviceManufacturer,
+				tags.NumberOfLateralSpreadingDevices,
+				tags.SetupTechnique,
+				tags.ReferencedRTPrescriptionIndex,
+				tags.DetectorConfiguration,
+				tags.ReferencedSeriesSequence,
+				tags.PositionerIsocenterDetectorRotationAngle,
+				tags.SourceApplicatorName,
+				tags.AlgorithmSource,
+				tags.ShieldingDeviceLabel,
+				tags.ReferencedRadiationDoseIdentificationIndex,
+				tags.PriorRecordKey,
+				tags.NominalBeamEnergy,
+				tags.DataPointRows,
+				tags.VerifyingObserverName},
+			isSorted: false,
+		},
 	}
 
 	for _, tt := range tests {
 
 		dicom := NewEmptyDCMObj()
+
+		if !tt.isSorted {
+
+		}
 
 		for idx, tag := range tt.tags {
 			dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
@@ -343,9 +452,30 @@ func TestTagsSorting(t *testing.T) {
 
 		}
 
-		assert.Equal(t, tt.isSorted, dicom.areTagsSortedByGroupAndElement(), "original tags sequence is sorted or not")
+		assert.Equal(t, tt.isSorted, dicom.areTagsSortedByGroupAndElement(), fmt.Sprint(tt.name, ": original tags are sorting should be ", tt.isSorted))
 		dicom.sortTagsByGroupAndElement()
-		assert.Equal(t, true, dicom.areTagsSortedByGroupAndElement(), "tags sequence is sorted")
+		assert.Equal(t, true, dicom.areTagsSortedByGroupAndElement(), fmt.Sprint(tt.name, ": tags are not sorted"))
 
+	}
+}
+
+func Shuffle[T any](slice []T) {
+	for i := len(slice) - 1; i > 0; i-- {
+		j := rand.IntN(i + 1) // Random index from 0 to i
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+
+func BenchmarkTagsSortingPreShuffled(b *testing.B) {
+	df, _ := NewDCMObjFromFile("../samples/rle_color.dcm")
+	{
+		// randomize the tags order
+		Shuffle(df.Tags)
+	}
+	df.WriteToFile("../samples/rle_color-shuffled.dcm", false)
+
+	for i := 0; i < b.N; i++ {
+		df, _ := NewDCMObjFromFile("../samples/rle_color-shuffled.dcm")
+		df.WriteToFile("../samples/rle_color-shuffled-sorted.dcm", true)
 	}
 }
