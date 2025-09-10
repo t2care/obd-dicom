@@ -103,7 +103,7 @@ func fillElement(fieldType reflect.Type, dataset *media.DcmObj, targetStructure 
 		} else {
 			targetStructure.FieldByName(fieldName).SetString(dataset.GetString(tag))
 		}
-	case reflect.Uint8, reflect.Uint16:
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
 		if struct2Dicom {
 			if dataset.GetTag(tag) != nil {
 				dataset.WriteUint16(tag, uint16(targetStructure.FieldByName(fieldName).Uint()))

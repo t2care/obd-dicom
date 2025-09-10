@@ -12,7 +12,8 @@ import (
 func TestMapDicomDataToStruct(t *testing.T) {
 	obj, _ := media.NewDCMObjFromFile("../samples/test.dcm")
 	type instance struct {
-		BitsAllocated uint8 `dicom:"0028,0100"`
+		BitsAllocated  uint8  `dicom:"0028,0100"`
+		InstanceNumber uint32 `dicom:"0020,0013"`
 	}
 	type series struct {
 		SeriesNumber string `dicom:"0020,0011"`
@@ -50,7 +51,7 @@ func TestMapDicomDataToStruct(t *testing.T) {
 				PatientName: "ACR PHANTOM",
 				Series: []series{{
 					SeriesNumber: "301",
-					Instance:     []instance{{BitsAllocated: 16}},
+					Instance:     []instance{{BitsAllocated: 16, InstanceNumber: 8241}},
 				}},
 			},
 		},
