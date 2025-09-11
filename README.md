@@ -51,6 +51,14 @@ obj.WriteString(tags.PatientName, "new value")
 obj.WriteToFile(fileName)
 ```
 
+### Update string tag + tag sorting
+
+```golang
+obj, _ := media.NewDCMObjFromFile(fileName, &ParseOptions{SkipPixelData: true})
+obj.WriteString(tags.PatientName, "new value")
+obj.WriteToFile(fileName, true)
+```
+
 ### Send C-Echo Request
 ```golang
 scu := network.NewSCU(destination)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +23,6 @@ type DcmObj struct {
 	TransferSyntax *transfersyntax.TransferSyntax
 	ExplicitVR     bool
 	BigEndian      bool
-	SQtag          *DcmTag
 	Size           int // bytes
 	CharSet        *encoding.Decoder
 }
@@ -41,7 +41,6 @@ func NewEmptyDCMObj() *DcmObj {
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          &DcmTag{},
 	}
 }
 
@@ -80,7 +79,6 @@ func parseBufData(bufdata *BufData, opt ...*ParseOptions) (*DcmObj, error) {
 		TransferSyntax: transferSyntax,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          &DcmTag{},
 	}
 
 	if obj.TransferSyntax == nil {
@@ -195,6 +193,12 @@ func (obj *DcmObj) DumpTags() error {
 	return nil
 }
 
+func (obj *DcmObj) sortTagsByGroupAndElement() {
+	sort.Slice(obj.Tags, func(i, j int) bool {
+		return obj.Tags[i].isBefore(obj.Tags[j])
+	})
+}
+
 func (obj *DcmObj) dumpSeq(indent int) error {
 	tabs := "\t"
 	for i := 0; i < indent; i++ {
@@ -268,7 +272,11 @@ func (obj *DcmObj) Add(tag *DcmTag) {
 	obj.Tags = append(obj.Tags, tag)
 }
 
-func (obj *DcmObj) WriteToBytes() []byte {
+func (obj *DcmObj) WriteToBytes(opSortTags ...bool) []byte {
+	opSortTags = append(opSortTags, false)
+	if opSortTags[0] {
+		obj.sortTagsByGroupAndElement()
+	}
 	bufdata := NewEmptyBufData()
 	SOPClassUID := obj.getStringGE(0x08, 0x16)
 	SOPInstanceUID := obj.getStringGE(0x08, 0x18)
@@ -283,8 +291,8 @@ func (obj *DcmObj) WriteToBytes() []byte {
 }
 
 // Wrote - Write a DICOM Object to a DICOM File
-func (obj *DcmObj) WriteToFile(fileName string) error {
-	data := obj.WriteToBytes()
+func (obj *DcmObj) WriteToFile(fileName string, opSortTags ...bool) error {
+	data := obj.WriteToBytes(opSortTags...)
 	return os.WriteFile(fileName, data, 0644)
 }
 
@@ -650,14 +658,12 @@ func (obj *DcmObj) AddConceptNameSeq(group uint16, element uint16, CodeValue str
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	tag := new(DcmTag)
 
@@ -683,14 +689,12 @@ func (obj *DcmObj) AddSRText(text string) {
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	seq := &DcmObj{
 		Tags:           make([]*DcmTag, 0),
 		TransferSyntax: nil,
 		ExplicitVR:     false,
 		BigEndian:      false,
-		SQtag:          new(DcmTag),
 	}
 	tag := new(DcmTag)
 

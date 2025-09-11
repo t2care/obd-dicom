@@ -2,6 +2,7 @@ package media
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"testing"
@@ -299,4 +300,109 @@ func TestCharSetEncoder(t *testing.T) {
 		o.setCharacterSet()
 		assert.Equal(t, tt.studyDescription, o.GetString(tags.StudyDescription))
 	}
+}
+
+func areTagsSortedByGroupAndElement(obj *DcmObj) bool {
+	for i := 0; i < (obj.TagCount() - 1); i++ {
+		if !obj.GetTagAt(i).isBefore(obj.GetTagAt(i + 1)) {
+			return false
+		}
+	}
+	return true
+}
+
+func TestTagsSorting(t *testing.T) {
+	InitDict()
+	tests := []struct {
+		name     string
+		tags     []*tags.Tag
+		isSorted bool
+	}{
+		{
+			name:     "Zero tags",
+			tags:     []*tags.Tag{},
+			isSorted: true,
+		},
+		{
+			name: "Sorted tags",
+			tags: []*tags.Tag{
+				tags.PagePositionID,
+				tags.TextFormatID,
+				tags.NormalReverse,
+				tags.AddGrayScale,
+				tags.Borders,
+				tags.Copies,
+				tags.CommandMagnificationType,
+				tags.Erase,
+				tags.Print,
+				tags.Overlays,
+			},
+			isSorted: true,
+		},
+		{
+			name: "Unsorted tags",
+			tags: []*tags.Tag{
+				tags.ActualFrameDuration,
+				tags.OtherPatientIDsSequence,
+				tags.SegmentationCreationTemplateLabel,
+				tags.ReferencedDefinedDeviceIndex,
+				tags.RequestedProcedureCodeSequence,
+				tags.AttenuationCorrectionMethod,
+				tags.PETPositionSequence,
+				tags.DataSetName,
+				tags.NumberOfFractionPatternDigitsPerDay,
+				tags.ROIObservationDescription,
+				tags.PositionerSecondaryAngle,
+			},
+			isSorted: false,
+		},
+	}
+
+	for _, tt := range tests {
+		dicom := NewEmptyDCMObj()
+		for idx, tag := range tt.tags {
+			dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
+		}
+
+		assert.Equal(t, tt.isSorted, areTagsSortedByGroupAndElement(dicom), fmt.Sprint(tt.name, ": original tags are sorting should be ", tt.isSorted))
+		dicom.sortTagsByGroupAndElement()
+		assert.Equal(t, true, areTagsSortedByGroupAndElement(dicom), fmt.Sprint(tt.name, ": tags are not sorted"))
+	}
+}
+
+func BenchmarkWritingSortingOffOn(b *testing.B) {
+	df, _ := NewDCMObjFromFile("../samples/rle_color.dcm")
+
+	b.Run("WriteToFile Sorting Off", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			df.WriteToFile("../samples/rle_color-notsorted.dcm")
+		}
+	})
+
+	b.Run("WriteToFile Sorting On", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			df.WriteToFile("../samples/rle_color-sorted.dcm", true)
+		}
+	})
+}
+
+func Shuffle[T any](slice []T) {
+	for i := len(slice) - 1; i > 0; i-- {
+		j := rand.IntN(i + 1) // Random index from 0 to i
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+func BenchmarkSortingAllPublicTags(b *testing.B) {
+
+	dicom := NewEmptyDCMObj()
+	for idx, tag := range tags.GetTags() {
+		dicom.WriteString(tag, fmt.Sprintf("tag #%d", idx))
+	}
+	Shuffle(dicom.GetTags())
+
+	b.Run(fmt.Sprintf("Sorting %d tags", len(dicom.GetTags())), func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			dicom.sortTagsByGroupAndElement()
+		}
+	})
 }

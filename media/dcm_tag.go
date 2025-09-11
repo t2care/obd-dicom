@@ -150,3 +150,10 @@ func (tag *DcmTag) isSequenceUndefined() bool {
 func (tag *DcmTag) isSequenceEnd() bool {
 	return (tag.Group == 0xFFFE && tag.Element == 0xE00D) || (tag.Group == 0xFFFE && tag.Element == 0xE0DD)
 }
+
+func (tag *DcmTag) isBefore(otherTag *DcmTag) bool {
+	if tag.Group != otherTag.Group {
+		return tag.Group < otherTag.Group
+	}
+	return tag.Element < otherTag.Element
+}
